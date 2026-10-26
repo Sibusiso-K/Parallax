@@ -4,7 +4,7 @@ Shared source of truth for every planning doc. If another doc disagrees with thi
 
 Confidence labels: **confirmed** = read on the organiser's own page (or, for the Model API, on Meta's developer docs at dev.meta.ai); **reported** = news or secondary source; **unknown** = not published yet, do not assume.
 
-**Updated 26 Oct 2026 (kickoff day):** the official Participant Guide is now read and most earlier "unknown" items are resolved. The full facts are in [section 5](#5-official-participant-guide-read-26-oct-2026); where an older line below disagrees with section 5, section 5 wins.
+**Updated 26 Oct 2026 (kickoff day):** the official Participant Guide is now read and most earlier "unknown" items are resolved. The full facts are in [section 5](#5-official-participant-guide-read-26-oct-2026), cross-checked that evening against the kickoff slides (18:00 SAST); where an older line below disagrees with section 5, section 5 wins.
 
 ---
 
@@ -20,7 +20,7 @@ Confidence labels: **confirmed** = read on the organiser's own page (or, for the
 |---|---|---|
 | Kickoff livestream, build starts | 26 Oct, 12:00 | **26 Oct, 18:00** (confirmed by the guide and the event email, "12PM EST / 9AM PT"; the earlier 19:00 reading is wrong) |
 | Live sessions (27, 28, 30 Oct) | 12:00 – 13:00 | 18:00 – 19:00 |
-| Daily Discord office hours (text only, **not weekends**) | 10:00 – 11:00 | 16:00 – 17:00 |
+| Daily Discord office hours (text only, **not weekends**) | 10:00 – 11:00 | 16:00 – 17:00 until Fri 30 Oct; **17:00 – 18:00 from Mon 2 Nov** (US clocks go back on Sun 1 Nov; SAST does not change) |
 | **Submission deadline** (CV platform; final office hours at the same time) | **4 Nov, 21:00 ET** | **5 Nov, 04:00** (treat 4 Nov 22:00 SAST as our real deadline; late submissions are not considered) |
 | Judging period | **5 – 8 Nov** | same |
 | Closing ceremony, live final round | 9 Nov, 12:00 | 9 Nov, 19:00 |
@@ -32,7 +32,7 @@ Submission requirements, rules and judging criteria are now confirmed: see secti
 
 - **Indie developer track:** individual builders and students. Judged on **creativity, technical ambition, and whether it works**.
 - **Startup track:** teams and founders building a real product. Judged on **technical execution and whether it holds up in production**.
-- Every project enters one track. The form says the track can be changed any time.
+- Every project enters one track. The form says the track can be changed any time. Both tracks can build toward either theme (kickoff slides).
 - **Our track: Startup (team of two).** Sibusiso's application was switched to Startup; confirm both registrations match. Whether a pair may enter Indie is **still unknown** after the guide (section 5): ask in Discord #questions.
 - Judges: **still not named** (the guide does not list them). The criteria are now published: section 5.
 - Reported (one German-language article, mind-verse.de): judging attention on reliability of workflows, traceability of decisions, handling of faulty inputs, and practical use beyond a demo.
@@ -44,7 +44,7 @@ Submission requirements, rules and judging criteria are now confirmed: see secti
 
 ## 2. What Meta gives us
 
-Participant credits: **USD 150 Meta Model API credits per accepted participant** (now confirmed by the Participant Guide; the claim link is "coming soon"; each person claims their own, see section 5). Sponsor credits (confirmed): Baseten USD 100 + 2M TPM (request, per individual), Modal USD 100 (first 1,000 participants), Fireworks USD 25 (shortlisted teams only, by email; workshop by Sinan Ozdemir on Fri 30 Oct). All three are for Meta's **open-weights** models.
+Participant credits: **USD 150 Meta Model API credits per accepted participant** (confirmed by the Participant Guide; request forms are in Discord #resources from kickoff; each person claims their own, see section 5). Sponsor credits (confirmed): Baseten USD 100 + 2M TPM (request, per individual), Modal USD 100 (first 1,000 participants), Fireworks USD 25 (shortlisted teams only, by email; workshop by Sinan Ozdemir on Fri 30 Oct). All three are for Meta's **open-weights** models.
 
 Models and tools (from Meta's own posts; check the live API docs before relying on any detail):
 
@@ -100,19 +100,22 @@ Where the plan now differs from the application (because of §2.1): "by text or 
 ## 4. Team
 
 - **Sibusiso Khumalo** (GitHub Sibusiso-K, Johannesburg). Electrical engineer, full-stack and AI developer, medical background. Agent work: BobSwarm (5-specialist multi-agent audit swarm on IBM Bob 2.0, 3rd place, team lead, React/TypeScript/Vite/Node/WebSocket), Swarm_Corp (7-role coding-agent swarm), StokUp (LangGraph WhatsApp ordering agent), CivicLens (Stats SA assistant where no model writes figures), VUKA (safety app with ledger-anchored records).
-- **Lethabo Hoaeane.** Skills and preferred role: **unknown, Lethabo to fill in**.
+- **Lethabo Hoaeane** (GitHub LethaboMH14, collaborator on the repo).
+- **Roles, agreed 26 Oct** ([ROLES.md](ROLES.md)): Sibusiso leads UI and UX, the back end (including the simulation engine) and API integrations; Lethabo leads avatars, API integrations, feature integration (including the figure guard and traceability) and security.
 - Team rule from SONAR: no more than two overlapping builds at once; every entry must leave a reusable artifact.
 - Location gives us a real "Build for Your World" story: South Africa, where many people make high-stakes money decisions with little safety net.
 
 ## 5. Official Participant Guide (read 26 Oct 2026)
 
-Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the page is JavaScript-rendered; read by the user in Chrome on 26 Oct 2026, facts copied from it). All times in the guide are ET. Label: **confirmed**.
+Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the page is JavaScript-rendered; read by the user in Chrome on 26 Oct 2026, facts copied from it). Cross-checked against the **kickoff slides** (26 Oct, 18:00 SAST); lines marked *(slides)* come from them. All times in the guide are ET. Label: **confirmed**.
+
+**Time-zone note.** ET is 6 hours behind SAST until US clocks go back on Sun 1 Nov, then 7 hours. Kickoff, live sessions, the deadline and the closing ceremony convert as shown; only office hours move (16:00 → 17:00 SAST from Mon 2 Nov).
 
 ### Schedule
 
 - Kickoff Mon 26 Oct 12:00 ET (= 18:00 SAST).
-- Live sessions, all 12:00-13:00 ET (= 18:00-19:00 SAST): Tue 27 Oct "Agents 101: Build a Multimodal AI Agent" (Suraj Subramanian); Wed 28 Oct "Agents 102: Best Practices for Verifiable Agents" (Yash Khare); Fri 30 Oct "Building Specialized Intelligence on Fireworks: From Inference to Training with Muse Open Models" (Sinan Ozdemir).
-- Discord office hours daily 10:00-11:00 ET (= 16:00-17:00 SAST), text only, **not on weekends**. Tue 3 Nov is the last full day for submission questions.
+- Live sessions, all 12:00-13:00 ET (= 18:00-19:00 SAST), each recorded and posted to #resources *(slides)*: Tue 27 Oct Meta Engineering Workshop P1, "Agents 101: Build a Multimodal AI Agent" (Suraj Subramanian, Meta); Wed 28 Oct Meta Engineering Workshop P2, "Agents 102: Best Practices for Verifiable Agents" (Yash Khare, Meta); Fri 30 Oct Fireworks AI Workshop, "Building Specialized Intelligence on Fireworks: From Inference to Training with Muse Open Models" (Sinan Ozdemir, Fireworks AI).
+- Discord office hours daily 10:00-11:00 ET, text only, **not on weekends**: 16:00-17:00 SAST until Fri 30 Oct, 17:00-18:00 SAST from Mon 2 Nov. Tue 3 Nov is the last full day for submission questions.
 - Wed 4 Nov 21:00 ET (= 5 Nov 04:00 SAST): final office hours and **submissions due** on the Cerebral Valley (CV) platform. Late submissions are not considered.
 - Judging period Thu 5 - Sun 8 Nov (not 4-8 Nov).
 - Closing ceremony Mon 9 Nov 12:00 ET (= 19:00 SAST): top 10 teams (5 per track) announced, live final-round judging, winners; community vote opens. Community vote winner announced Mon 16 Nov on Discord.
@@ -121,25 +124,26 @@ Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the pag
 
 - Repositories must be **public** (open source).
 - Team of at most 4; solo allowed.
-- **New work only.** The demo must highlight only features and code built during the Hackathon. Judges must be able to clearly identify what was created during it; failure is **immediate disqualification**. Startups may build on existing products or codebases but must clearly identify what was newly developed.
+- **New work only.** Build it between 26 Oct and 4 Nov *(slides)*. The demo must highlight only features and code built during the Hackathon. Judges must be able to clearly identify what was created during it; failure is **immediate disqualification**. Startups may bring an existing product, but only work from the event counts, and they must clearly identify what was newly developed. We bring no product; [BUILD_LOG.md](BUILD_LOG.md) records what we build each day.
 - Banned: legal, ethical or platform-policy violations; using code, data or assets without the rights to them.
 - Projects must incorporate Meta's models: Muse Spark series, Muse Wonder, Muse Image, Muse Voice Transcribe and SAM 3.1 via the Meta Model API; open weights Muse Glimmer and Muse Spark Open; Muse Code.
-- **Sample Anti-Projects** (generic or policy-violating; avoid): AI that generates or gives medical advice (for example a mental health advisor or skin blemish detector); basic RAG apps; simple image analysers; simple "AI for Education" chatbots; an AI job application screener; an AI nutrition coach; personality analysers; sports analysers or coaches; anything political or involving war.
+- **Sample Anti-Projects** (generic or policy-violating; avoid): AI-generated medical advice (including AI mental health advisors and skin blemish detectors); basic RAG apps; simple image analysers; **Streamlit apps** *(slides)*; **dashboards as the main feature** *(slides)*; simple "AI for Education" chatbots; AI job application screeners; AI nutrition coaches; personality analysers; sports analysers or coaches; anything political or involving war. The slides say the list is not complete. How Parallax stays clear: [RESEARCH.md](RESEARCH.md) §5.
 
 ### Credits
 
-- Accepted participants get USD 150 Meta Model API credits. The claim link is "coming soon".
+- Accepted participants get USD 150 Meta Model API credits. Request forms for all credits open in Discord **#resources** at kickoff *(slides)*.
 - **Each participant (solo, team member or startup entrant) must claim their own credits individually by Wed 4 Nov 21:00 ET; nobody can claim for someone else.**
 - A **credit card must be on the account** to make API calls with credits; set a Spend Limit notification on the Billing page.
 - So the pair has USD 300 only if both claim and both attach a card. Share one API key per project deliberately (rate limits are per team, section 2.1).
 - Baseten: request USD 100 + 2M TPM (up to 2,000 participants, reviewed on use case, per individual). For the hackathon use model `meta-models/muse-spark-open-1026`, **not** `meta-models/muse-spark-open`.
-- Modal: USD 100 to the first 1,000 participants.
-- Fireworks: USD 25 for a shortlist of select teams (per team), by email.
+- Modal: USD 100 to the first 1,000 participants, for Meta open-weights models.
+- Fireworks: USD 25 for select participants only (shortlisted, by email), plus the workshop with Sinan Ozdemir.
 
 ### Submission
 
-- One project per team, entered by one appointed **Representative**. The repo must be publicly accessible, the video link accessible, and everyone who worked on it listed.
-- A **three-minute demo video** of the features, code and functionality built during the Hackathon is required. It is a primary artifact judges use, along with the code and the live product.
+- Submit at https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit *(slides)*, before Wed 4 Nov 21:00 ET; "don't wait for the last hour".
+- One project per team, entered by one appointed **Representative**, with every teammate listed. The repo must be public (check that it opens in a logged-out browser before submitting) and the video link accessible.
+- A **three-minute demo video** showing only what the team built during the event; judges score from it, along with the code and the live product. Checklists: [SUBMISSION.md](SUBMISSION.md).
 
 ### Judging
 
@@ -149,7 +153,7 @@ Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the pag
   2. **Use of Meta AI Tooling:** how creatively; beyond a basic integration; surfaces capabilities that surprise Meta.
   3. **Technical Depth and Execution:** sound, refined engineering, real craft.
   4. **Demo:** working, impressive, holds up live; the video is genuinely cool to watch.
-- **Stage 3:** the top 5 per track go to a live final round using the same rubric.
+- **Stage 3:** the top 5 per track go to a live final round using the same rubric: judges watch the demos live on 9 Nov and rank them *(slides)*.
 - Judges are still not named.
 
 ### Prizes (USD)
@@ -157,11 +161,12 @@ Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the pag
 - **Indie track, 400,000 total:** 1st 150K, 2nd 100K, 3rd 75K, 4th 50K, 5th 25K.
 - **Startup track, 550,000 total:** 1st 250K, 2nd 150K, 3rd 75K, 4th 50K, 5th 25K.
 - **Bonus, 50,000:**
-  - Most Viral Project 20K: engagement on X after the event; post the demo on X and submit the link on the platform; counted up to 8 Nov end of day.
+  - Most Viral Project 20K: engagement on X after the event; post the demo on X and submit the link on the platform; most likes, reposts and comments by **8 Nov 11:59 PM ET (= 9 Nov 06:59 SAST)** wins *(slides)*. Unknown: whether a post made before the submission deadline counts.
   - Best Build on Meta Open Weight Models 10K: Muse Glimmer or Spark Open on your own hardware or partner inference; flagged in round one, verified by the infrastructure partner.
   - Community Vote 10K: public gallery votes, one per verified account; announced 16 Nov.
-  - Best Agentic Use-Case 5K: autonomy, effectiveness, usefulness.
-  - Best Creative Build 5K: Muse Image or Muse Wonder; creative originality and execution.
+  - Best Agentic Use-Case 5K: the strongest use of agents to complete tasks, make decisions or run multi-step workflows; scored on autonomy, effectiveness and practical usefulness.
+  - Best Creative Build 5K: Muse Image or Muse Wonder; flagged in round one; scored on originality, execution and use of the model.
+  - Fit and recommendation for each: [RESEARCH.md](RESEARCH.md) §6.
 
 ### Tracks (still open)
 
@@ -169,8 +174,8 @@ The guide has no explicit statement on whether a team may enter Indie. It says t
 
 ### Discord
 
-Channels: #intros, #team-search, #questions (to Cerebral Valley), #office-hours (Meta), #announcements. The join link is on the event page.
+Join: https://cv.inc/e/meta-ai-developer-hackathon/discord *(slides)*. Channels: #announcements (official updates and deadlines), #questions (ask the Cerebral Valley team, ping @CV), #office-hours (ask the Meta team), **#resources** (docs, credit forms, session recordings), #team-search, #intros (who you are and what you are building).
 
 ### Our repository
 
-The Parallax GitHub repo is currently **private**; the rules require **public**. This needs Sibusiso's decision (nobody changes visibility without it).
+The Parallax GitHub repo was made **public** on 26 Oct 2026, as the rules require, after checking that its history holds only docs and no secrets. Everything pushed from now on is public: keys and account, team or project IDs never go in the repo ([AGENTS_AND_APIS.md](AGENTS_AND_APIS.md) §5).

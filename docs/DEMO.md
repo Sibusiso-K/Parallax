@@ -2,7 +2,7 @@
 
 Event and model facts come from [CONTEXT.md](CONTEXT.md); build details belong in ARCHITECTURE.md.
 
-**Owners (per PLAN.md §1, a proposal until Lethabo confirms):** demo video and pitch: Lethabo, back-up Sibusiso. Seeded session, mock mode and the persona's data: Sibusiso. This doc owns the demo persona; SCOPE.md follows it.
+**Owners (roles agreed 26 Oct, [ROLES.md](ROLES.md)):** demo video and pitch: both, with who presents decided on day 6. Seeded session, fixture (mock) mode and the persona's data: Lethabo (feature integration), with Sibusiso on the back-end side. X post: Sibusiso posts, Lethabo reposts. This doc owns the demo persona; SCOPE.md follows it.
 
 > **Submission format is confirmed (Participant Guide, 26 Oct, CONTEXT.md §5):** a **three-minute demo video** of the features, code and functionality built during the Hackathon, a **public repo**, a live product, and everyone who worked on it listed. The video is a primary artifact judges use. The **3-minute version (§3) is therefore the main submission video**; the 2-minute script (§2) is the cut-down version for social media, the X post and the fallback.
 
@@ -47,9 +47,9 @@ Stage 2 scores four equally weighted criteria, 0-10 each (CONTEXT.md §5). Every
 | **Technical Depth and Execution** | Figures computed in code, never by the model; ranges; trace drawer and assumption IDs; the figure guard replacing an invented number; faulty-input catch ("195000"); live assumption edit that redraws the answer; a short code or architecture glimpse that is clearly new work from this hackathon | Assumptions panel; chat citation chips; faulty-input and live-edit beats |
 | **Demo** | Works live on the deployed URL, no cuts that hide failures, a strong 5-second cold open, readable at 1080p, genuinely pleasant to watch | Whole video; recording checklist (§5); backup plan (§6) |
 
-**New-work evidence.** Show the repo's first commit date (after 26 Oct 12:00 ET) or the commit graph for one second, and say "built during the Hackathon". Anything not built during the event (for example a library) is named as a dependency, never presented as ours.
+**New-work evidence.** Show the date of the first product-code commit (after 26 Oct 12:00 ET) or the commit graph for one second, and say "built during the Hackathon". The only earlier commits are planning docs ([BUILD_LOG.md](BUILD_LOG.md)). Anything not built during the event (for example a library) is named as a dependency, never presented as ours.
 
-**Avoid the anti-project list.** Open on the simulation engine and the multi-path comparison, not on "an AI that gives advice". No health decisions, no political or war content on screen (RISKS.md P7).
+**Avoid the anti-project list.** Open on Naledi's question and the conversation with her future selves, backed by the simulation engine, not on "an AI that gives advice" and never on a chart: "dashboards as the main feature" is on the kickoff slides' list, so the compare view stays a supporting scene. No health decisions, no political or war content on screen (RISKS.md P7, RESEARCH.md §5).
 
 ## 2. The 2-minute cut-down script (social and fallback)
 
@@ -99,7 +99,7 @@ Keep the video under three minutes and test the link in a private window. If the
 
 | Item | Plan |
 |---|---|
-| Most Viral Project: engagement on X, counted to 8 Nov end of day | Post the demo on X from Sibusiso's account (and Lethabo reposts) **as soon as the video is final, aiming for Wed 4 Nov**, not after the deadline. Use the 30-second hook or the 2-minute cut-down as the native video (the 3-minute video is linked). First line is the cold-open question; tag Meta's and Cerebral Valley's accounts; a short thread: the hook, the "figures come from code" moment, the repo link. Submit the post URL on the platform. Reply to comments for the 4 days that count. |
+| Most Viral Project: most likes, reposts and comments on X by 8 Nov 11:59 PM ET (9 Nov 06:59 SAST) | Post the demo on X from Sibusiso's account (and Lethabo reposts) **as soon as the video is final, aiming for Wed 4 Nov**, not after the deadline. The slide says "engagement on X after the event", so ask in #questions whether an earlier post counts; if not, post right after 4 Nov 21:00 ET. Use the 30-second hook or the 2-minute cut-down as the native video (the 3-minute video is linked). First line is the cold-open question; tag Meta's and Cerebral Valley's accounts; a short thread: the hook, the "figures come from code" moment, the repo link. Submit the post URL on the platform. Reply to comments for the 4 days that count. |
 | Community Vote: public gallery votes, one per verified account; opens 9 Nov, announced 16 Nov | Prepare a gallery thumbnail and a two-sentence blurb. Share the gallery link with friends, colleagues and the South African developer community when voting opens. No vote buying or botting: it risks disqualification and the platform-policy ban. |
 | Honesty | Posts use only real footage of the seeded session, labelled "fictional persona". No fake engagement. |
 

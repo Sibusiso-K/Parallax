@@ -1,6 +1,6 @@
 # Parallax: Architecture
 
-Technical design for the 10-day build (26 Oct – 4 Nov 2026). Written 20 Oct 2026. `docs/CONTEXT.md` remains the source of truth for event facts; this doc covers how we build.
+Technical design for the 10-day build (26 Oct – 4 Nov 2026). Written 20 Oct 2026. `docs/CONTEXT.md` remains the source of truth for event facts; this doc covers how we build. The agents, outside services, dev tooling and key handling are summarised in one place in [AGENTS_AND_APIS.md](AGENTS_AND_APIS.md); owners per area are in [ROLES.md](ROLES.md).
 
 Labels: **verified** = read on the vendor's own docs on 20 Oct 2026 (see [Sources](#sources)); **reported** = secondary source; **unverified** = not found, designed around with an adapter.
 
@@ -315,7 +315,7 @@ Assumptions for one full session: 3 paths, 30 avatar turns, 3 minutes of voice, 
 
 ## 16. Open questions for Lethabo
 
-1. Which half do you want to own: screens, images and voice, or engine, API and prompts?
+1. ~~Which half do you want to own?~~ Answered 26 Oct ([ROLES.md](ROLES.md)): Lethabo leads the model-API client, the agents and prompts, avatars, voice input, integration (figure guard, citations, trace) and security; Sibusiso leads the UI, the `/api` routes and the engine.
 2. Are you comfortable with TypeScript, React and Vercel, or do you prefer other tools?
 3. Is your Meta Model API account in the same team as Sibusiso's? Rate limits (and possibly credits) are per team.
 4. Are browser voices good enough for the demo, or is a better TTS worth the cost and the privacy trade-off?

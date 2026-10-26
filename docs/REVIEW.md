@@ -313,3 +313,36 @@ The official Participant Guide was read on 26 Oct 2026 (kickoff day). Full facts
 3. **Representative:** proposal is Sibusiso (Lethabo to agree).
 4. **Open-weights bonus:** chase the USD 10K "Best Build on Meta Open Weight Models" bonus (stretch goal, only after the must-ship flow is stable, not before day 6), or skip it? Both decide; request Baseten and Modal credits on day 1 either way so the option stays open.
 5. Each person claims their own credits and adds a card (no decision, but a hard dependency).
+
+---
+
+## 8. Update after the kickoff slides and the role split (26 Oct, evening)
+
+The kickoff slides (18:00 SAST) were checked against every doc, and the roles were agreed. Sections 1–7 above are kept as written; this addendum supersedes them where they conflict.
+
+**Resolved**
+- **Roles (H3, and "for Lethabo" decision 1 in section 4):** agreed in the new [ROLES.md](ROLES.md). Sibusiso leads UI and UX, the back end and simulation engine, and API routes; Lethabo leads avatars, the model-API client and agents, feature integration (figure guard, traceability) and security. PLAN §1 and §3, RISKS owners, DEMO owners and the open questions in SCOPE, ARCHITECTURE and RISKS now follow it.
+- **Repo visibility (section 7, decision 2):** made public on 26 Oct after checking the history. RISKS H5 now covers the new risk, a secret leaking into a public repo; `.vercel/` was added to `.gitignore` because it holds Vercel project IDs.
+- **H2 (hardest part late):** PLAN now puts the figure guard on day 2, in Lethabo's column.
+
+**New from the slides** (CONTEXT.md §5, marked *(slides)*)
+- Anti-projects add **Streamlit apps** and **dashboards as the main feature**, and the list is "not complete". RISKS P7, SCOPE §4A and DEMO §1A updated; the full check is in RESEARCH.md §5. The compare view must stay a supporting scene.
+- Credit request forms are in Discord **#resources** from kickoff; sessions are recorded there too.
+- Most Viral counts to **8 Nov 11:59 PM ET = 9 Nov 06:59 SAST**; the slide says "after the event", so ask whether an earlier post counts.
+- Submission link: cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit; check the repo in a logged-out browser.
+- **Time-zone catch:** US clocks go back on Sun 1 Nov, so office hours (10:00 ET) move from 16:00 to **17:00 SAST from Mon 2 Nov**. Nothing else we rely on moves.
+
+**New docs:** [ROLES.md](ROLES.md), [BUILD_LOG.md](BUILD_LOG.md), [FEATURES.md](FEATURES.md), [AGENTS_AND_APIS.md](AGENTS_AND_APIS.md), [RESEARCH.md](RESEARCH.md), [SUBMISSION.md](SUBMISSION.md). All planning, no product code.
+
+**Reading order now (for Lethabo, about 45 minutes)**
+1. [ROLES.md](ROLES.md) (10 min): your areas, how we hand work over, the credits you must claim yourself.
+2. [PLAN.md](PLAN.md) §1 and §3 (10 min): your column, day by day.
+3. [FEATURES.md](FEATURES.md) (10 min): the rows where you are lead.
+4. [AGENTS_AND_APIS.md](AGENTS_AND_APIS.md) §2 and §5 (10 min): the agents and the key rules you own.
+5. [SUBMISSION.md](SUBMISSION.md) (5 min). Then anything else as needed.
+
+**Still open**
+- Startup or Indie for a pair (ask in #questions).
+- The Representative (proposal: Sibusiso) and who presents.
+- The scope cuts in section 4, "For both", item 1 (still recommended; FEATURES.md marks them "proposed stretch").
+- Open-weights bonus: decide at the day-6 checkpoint.

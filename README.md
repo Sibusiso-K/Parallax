@@ -8,16 +8,34 @@ Built for the [Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/m
 
 ## Docs
 
+**Start here**
+
 | Doc | What it covers |
 |---|---|
-| [docs/CONTEXT.md](docs/CONTEXT.md) | The hackathon: dates, tracks, judging, Meta's models (with verified Model API facts), sponsors |
+| [docs/ROLES.md](docs/ROLES.md) | Who owns what, how we work together, and the credits each of us claims |
+| [docs/PLAN.md](docs/PLAN.md) | Day-by-day plan, rituals and scope-cut rules |
+| [docs/FEATURES.md](docs/FEATURES.md) | Every feature with its lead, tier, rubric fit and bonus prize |
+| [docs/BUILD_LOG.md](docs/BUILD_LOG.md) | Dated log of what was built during the event |
+
+**Product and design**
+
+| Doc | What it covers |
+|---|---|
 | [docs/SCOPE.md](docs/SCOPE.md) | What the MVP does and does not do |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it is built on Meta's models |
-| [docs/PLAN.md](docs/PLAN.md) | Who does what, day by day |
-| [docs/DEMO.md](docs/DEMO.md) | The demo script |
+| [docs/AGENTS_AND_APIS.md](docs/AGENTS_AND_APIS.md) | The agents in the app, outside APIs and services, dev tooling, keys and security |
 | [docs/RISKS.md](docs/RISKS.md) | Risks, safety and ethics |
-| [docs/REVIEW.md](docs/REVIEW.md) | Independent review of all of the above |
 
-> **What is new work and what is not.** Every line of product code in this repository is written from the hackathon kickoff (Mon 26 Oct 2026, 12:00 ET) onward. The documents in `docs/` and this README are planning material written before kickoff (20-25 Oct); they are the only pre-existing content, contain no product code, and are dated in git history. Judges can treat everything else in the commit history after kickoff as built during the hackathon.
+**Hackathon**
+
+| Doc | What it covers |
+|---|---|
+| [docs/CONTEXT.md](docs/CONTEXT.md) | The hackathon: dates, rules, tracks, judging, prizes, credits, Meta's models (with verified Model API facts) |
+| [docs/RESEARCH.md](docs/RESEARCH.md) | Theme and track fit, rubric mapping, anti-project check, bonus prizes, related work |
+| [docs/DEMO.md](docs/DEMO.md) | The demo video script and pitch |
+| [docs/SUBMISSION.md](docs/SUBMISSION.md) | Where and how we submit, with checklists |
+| [docs/REVIEW.md](docs/REVIEW.md) | Independent review of the plan, with later addenda |
+
+> **What is new work and what is not.** Every line of product code in this repository is written from the hackathon kickoff (Mon 26 Oct 2026, 12:00 ET) onward. The documents in `docs/` and this README are planning material: most were written before kickoff (20–26 Oct) and are the only pre-existing content; the rest were added on kickoff evening. None contain product code, and [docs/BUILD_LOG.md](docs/BUILD_LOG.md) records what was built when. Judges can treat everything else in the commit history after kickoff as built during the hackathon.
 
 > Parallax is a reflection aid. It is not financial, legal or medical advice.

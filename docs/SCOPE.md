@@ -107,7 +107,7 @@ The screen always says: "One possible future, not a prediction."
 
 **Prize fit (no extra scope).** *Best Creative Build* (Muse Image or Muse Wonder) fits the per-path avatars; *Best Agentic Use-Case* (autonomy, effectiveness, usefulness) fits the multi-path agent design in which each future self reasons from its own path and the verification layer stops it inventing figures. We do not build anything extra for these; we make sure the video shows them.
 
-**Anti-project check.** The guide lists generic "AI advisor", personality-analyser, basic-RAG and medical-advice apps as projects to avoid. Parallax stays out of that list by leading with the simulation engine and the multi-path comparison, by keeping health decisions out of scope (§4), and by keeping the "not advice" framing (RISKS.md P7).
+**Anti-project check.** The guide and kickoff slides list projects to avoid, among them AI medical advice, basic RAG, personality analysers, **Streamlit apps** and **dashboards as the main feature** (full list: CONTEXT.md §5). Parallax stays out of that list by leading with the simulation engine and the conversation with each future self (the compare view and charts support it; they are never the headline), by keeping health decisions out of scope (§4), by building in React and TypeScript, and by keeping the "not advice" framing (RISKS.md P7; item-by-item check in RESEARCH.md §5).
 
 ## 5. Success criteria
 
@@ -144,7 +144,7 @@ If we move to **Indie** (creativity, technical ambition, whether it works), we l
 
 ## 7. Open questions for Lethabo
 
-1. Which skills and role do you want (front end, engine, prompts, design, demo video)?
+1. ~~Which skills and role do you want?~~ Answered 26 Oct: avatars, API integrations, feature integration, security ([ROLES.md](ROLES.md); every feature's lead is in [FEATURES.md](FEATURES.md)).
 2. Is decision 1 the right demo, or is decision 2 or 3 closer to people you know?
 3. Can you find 3 to 5 people to test intake, including voice in a range of accents?
 4. Are you happy with illustrated avatars and no photo upload?
