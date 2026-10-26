@@ -341,8 +341,9 @@ The kickoff slides (18:00 SAST) were checked against every doc, and the roles we
 4. [AGENTS_AND_APIS.md](AGENTS_AND_APIS.md) §2 and §5 (10 min): the agents and the key rules you own.
 5. [SUBMISSION.md](SUBMISSION.md) (5 min). Then anything else as needed.
 
+**Track settled:** both of us registered on the **Startup** track (confirmed 26 Oct), so section 7's decision 1 is closed.
+
 **Still open**
-- Startup or Indie for a pair (ask in #questions).
 - The Representative (proposal: Sibusiso) and who presents.
 - The scope cuts in section 4, "For both", item 1 (still recommended; FEATURES.md marks them "proposed stretch").
 - Open-weights bonus: decide at the day-6 checkpoint.

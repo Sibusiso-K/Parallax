@@ -33,7 +33,7 @@ Submission requirements, rules and judging criteria are now confirmed: see secti
 - **Indie developer track:** individual builders and students. Judged on **creativity, technical ambition, and whether it works**.
 - **Startup track:** teams and founders building a real product. Judged on **technical execution and whether it holds up in production**.
 - Every project enters one track. The form says the track can be changed any time. Both tracks can build toward either theme (kickoff slides).
-- **Our track: Startup (team of two).** Sibusiso's application was switched to Startup; confirm both registrations match. Whether a pair may enter Indie is **still unknown** after the guide (section 5): ask in Discord #questions.
+- **Our track: Startup (team of two). Confirmed 26 Oct:** both of us registered on the Startup track. Settled; we no longer need to ask about Indie.
 - Judges: **still not named** (the guide does not list them). The criteria are now published: section 5.
 - Reported (one German-language article, mind-verse.de): judging attention on reliability of workflows, traceability of decisions, handling of faulty inputs, and practical use beyond a demo.
 
@@ -168,9 +168,9 @@ Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the pag
   - Best Creative Build 5K: Muse Image or Muse Wonder; flagged in round one; scored on originality, execution and use of the model.
   - Fit and recommendation for each: [RESEARCH.md](RESEARCH.md) §6.
 
-### Tracks (still open)
+### Tracks (settled)
 
-The guide has no explicit statement on whether a team may enter Indie. It says teams and startups submit one project, with a maximum team size of 4. The Indie page says "individual builders and students"; Startup says "teams and founders building a real product". The Startup registration form asked for company country and funding stage (Sibusiso's form showed South Africa / Bootstrapped, unconfirmed). **Open question: ask in Discord #questions.**
+**Both of us registered on the Startup track** (confirmed 26 Oct). The guide never said whether a team may enter Indie, but that no longer matters. The Startup registration form asked for company country and funding stage (Sibusiso's form showed South Africa / Bootstrapped); check those answers are right before the deadline.
 
 ### Discord
 

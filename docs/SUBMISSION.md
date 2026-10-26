@@ -62,7 +62,7 @@ The exact form fields are **unknown** until we open the form. This is what we ex
 | Project name | Parallax | — | Ready |
 | One-line pitch | "Try a career or money decision before you live it: Parallax simulates each path for 36 months and lets you talk to your future self on each one." | Lethabo | Draft |
 | Description | Opens with the theme statement (RESEARCH.md §2); then problem, what it does, how Meta's models are used, what was built during the event, and "a reflection aid, not financial advice" | Sibusiso | To write by 3 Nov |
-| Track | Startup, **pending the #questions answer** | Both | Open |
+| Track | Startup (both registered, confirmed 26 Oct) | — | Ready |
 | Theme | Build for Your World | — | Ready |
 | Team members | Sibusiso Khumalo, Lethabo Hoaeane (as registered) | Representative | Ready |
 | Repo URL | Public GitHub URL, checked logged out | Sibusiso | To fill in |
@@ -81,7 +81,7 @@ US clocks go back on Sun 1 Nov, so ET is 6 hours behind SAST until then and 7 ho
 
 | When (SAST) | What |
 |---|---|
-| Mon 26 Oct, 18:00 | Kickoff; post the track question; claim credits from #resources |
+| Mon 26 Oct, 18:00 | Kickoff; claim credits from #resources |
 | Thu 29 Oct | Day-4 checkpoint; track decided |
 | Sat 31 Oct | Feature freeze |
 | Tue 3 Nov | Last full day for questions to organisers; video recorded; fields drafted; Lethabo checks CV access; logged-out check |
@@ -98,7 +98,7 @@ US clocks go back on Sun 1 Nov, so ET is 6 hours behind SAST until then and 7 ho
 
 ## 8. Final pre-submit checklist
 
-- [ ] Track answer from #questions recorded; the submission shows the agreed track.
+- [ ] The submission shows the Startup track.
 - [ ] Theme statement is in the first lines of the description and README.
 - [ ] Repo, video and live URL all open in a logged-out window.
 - [ ] No secrets, keys or personal data in the repo, its history or the video.

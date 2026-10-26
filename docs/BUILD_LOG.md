@@ -77,15 +77,15 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 **Decisions**
 - Roles as above (both).
 - Representative: Sibusiso, proposed; Lethabo to confirm.
+- Track: Startup. Both of us registered on it (confirmed 26 Oct).
 
 **Blockers and risks**
-- Track: may a pair enter Indie? Ask in #questions.
 - Credits: each of us claims our own USD 150 from #resources and adds a card; Baseten and Modal requested individually.
 
 **Credits spent (USD):** 0.
 
 **Next**
 - Lethabo reviews PR #1; merge once we both agree.
-- Join Discord, post in #intros, ask the track question.
+- Join Discord, post in #intros.
 - Claim credits; agree who holds the project key.
 - Scaffold the app and API, deploy to Vercel, smoke-test every Meta model (PLAN.md §3, day 1).

@@ -111,7 +111,7 @@ The screen always says: "One possible future, not a prediction."
 
 ## 5. Success criteria
 
-Our track is **Startup** (to be confirmed, see CONTEXT.md §5): technical execution, and whether it holds up in production. The official Stage 2 rubric is Impact, Use of Meta AI Tooling, Technical Depth and Execution, and Demo, equally weighted. Rows marked *(reported)* come from one secondary source (CONTEXT.md §1).
+Our track is **Startup** (both registered, confirmed 26 Oct): technical execution, and whether it holds up in production. The official Stage 2 rubric is Impact, Use of Meta AI Tooling, Technical Depth and Execution, and Demo, equally weighted. Rows marked *(reported)* come from one secondary source (CONTEXT.md §1).
 
 | Lens | Our bar |
 |---|---|
@@ -121,7 +121,7 @@ Our track is **Startup** (to be confirmed, see CONTEXT.md §5): technical execut
 | Faulty inputs *(reported)* | A scripted set of 20 or more bad inputs passes (table below) |
 | Practical use *(reported)* | At least 3 people outside the team complete a session; feedback logged |
 
-If we move to **Indie** (creativity, technical ambition, whether it works), we lead with talking to future selves across paths and with the combined engine, chat, images and voice. The bars stay the same.
+We still lead with talking to future selves across paths, because Impact and Demo carry half the score.
 
 | Faulty or vague input | What Parallax does |
 |---|---|
@@ -150,4 +150,4 @@ If we move to **Indie** (creativity, technical ambition, whether it works), we l
 4. Are you happy with illustrated avatars and no photo upload?
 5. Is a 3-year horizon enough, or should it be 5?
 6. If we reach the language stretch goal, which language matters most?
-7. Have you confirmed your registration is on the Startup track?
+7. ~~Have you confirmed your registration is on the Startup track?~~ Yes, confirmed 26 Oct.

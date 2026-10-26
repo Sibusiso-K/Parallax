@@ -5,7 +5,7 @@ Written 26 Oct 2026 from the Participant Guide ([CONTEXT.md](CONTEXT.md) §5) an
 ## 1. Summary
 
 1. **Theme:** Parallax fits *Build for Your World* closely. Stage 1 (pass/fail) is safe as long as each Meta model visibly does a job.
-2. **Track:** stay **Startup** unless #questions tells us otherwise. The four Stage 2 criteria are the same on both tracks; only the emphasis differs.
+2. **Track:** **Startup**, confirmed 26 Oct (both registered). The four Stage 2 criteria are the same on both tracks; only the emphasis differs.
 3. **Biggest scoring lever:** Technical Depth and Use of Meta AI Tooling both rest on the grounded future-self chat (F10, F11). Build it early.
 4. **Anti-projects:** we are clear of all ten on the slide, but three need care in how we present: medical advice, dashboards as the main feature, and personality analysers.
 5. **Bonus prizes:** Best Agentic Use-Case and Best Creative Build cost nothing extra; Most Viral and Community Vote cost only effort; Best Build on Open Weights is real work and stays a day-6 decision.
@@ -34,9 +34,9 @@ Both tracks can build toward either theme. We enter **Build for Your World**: br
 | Judged on (slides) | Creativity, technical ambition, whether it works | Technical execution, whether it holds up in production |
 | Prizes, USD | 150K / 100K / 75K / 50K / 25K (400K) | 250K / 150K / 75K / 50K / 25K (550K) |
 | Our fit | We are a team of two, not students entering alone | We are a team; our design is built around production hardening (timeouts, failover, fixture mode, traceability) |
-| Status | Whether a pair may enter is **unknown** | Sibusiso's registration; Lethabo to confirm his |
+| Status | Not entered | **Both of us registered here (confirmed 26 Oct)** |
 
-**Recommendation:** stay Startup; ask in #questions on day 1 and save the answer in CONTEXT.md §5. Whichever track, the Stage 2 rubric is the same four criteria, so no build decision depends on the answer. "Startups can bring a product, but only work from the event counts": we bring none, so everything in the product is new.
+**Decision: Startup.** The Stage 2 rubric is the same four criteria on both tracks; the Startup wording adds weight to holding up in production, which our design already targets. "Startups can bring a product, but only work from the event counts": we bring none, so everything in the product is new.
 
 ## 4. Rubric mapping
 
@@ -100,7 +100,7 @@ Not on the list but close: **financial advice** (South Africa's FAIS Act). We fr
 4. Flag Best Creative Build and Best Agentic Use-Case in the submission; ask in #questions how bonus prizes are flagged.
 5. Run three sessions with people outside the team on day 7 or 8 for Impact.
 6. Request Baseten and Modal credits on day 1; decide the open-weights path at the day-6 checkpoint.
-7. Ask in #questions on day 1: may a pair enter Indie; does an X post made before 4 Nov 21:00 ET count for Most Viral.
+7. Ask in #questions on day 1: does an X post made before 4 Nov 21:00 ET count for Most Viral?
 8. Keep BUILD_LOG.md daily so judges can tell exactly what was built during the event.
 
 ## Sources

@@ -76,4 +76,3 @@ Nobody can claim for the other. Request forms are in Discord **#resources** from
 1. Lethabo confirms the Representative (proposal: Sibusiso) and that he can log in to the CV platform.
 2. Who presents in the video and the live final (decided on day 6).
 3. Lethabo's daily hours, time zone and Vercel username (PLAN.md §7).
-4. Startup or Indie: answer from #questions.
