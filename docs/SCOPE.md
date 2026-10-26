@@ -74,7 +74,7 @@ The screen always says: "One possible future, not a prediction."
 - Steps 1 to 10 above for decision 1, polished; decisions 2 and 3 on the same engine.
 - Cash-flow engine with unit tests; avatar placeholder if image generation fails.
 - Input validation and a fallback for every model call.
-- Hosted at a public URL (submission format **unknown** until the Official Rules).
+- Hosted at a public URL, with a **public repo** and a **three-minute demo video** (confirmed submission package, CONTEXT.md §5).
 
 **Out of scope**
 - Decisions outside career and money (health, relationships, legal, emigration).
@@ -91,10 +91,27 @@ The screen always says: "One possible future, not a prediction."
 4. Resume a session later with memory (our own memory store; Muse Wonder Active Memory if and when Meta exposes it to developers).
 5. Monte Carlo ranges instead of three fixed runs.
 6. Intake in a second South African language, typed only, if the model handles it well (isiZulu and Afrikaans are not on Voice Transcribe's language list).
+7. **Open-weights path (stretch, for the USD 10K "Best Build on Meta Open Weight Models" bonus).** Run one clearly bounded part of Parallax, for example the future-self chat for one path, on an open-weights model: Muse Spark Open via Baseten (`meta-models/muse-spark-open-1026`, not `meta-models/muse-spark-open`) or Muse Glimmer on Modal, behind the existing provider adapter and a config flag. The submission must flag it in round one so the infrastructure partner can verify it. Do this only after the must-ship flow is stable (not before day 6) and only if the pair chooses to chase the bonus (REVIEW.md addendum). It also doubles as the failover in RISKS.md T1.
+
+## 4A. Use of Meta AI Tooling (a judging criterion)
+
+"Use of Meta AI Tooling" is one of four equally weighted criteria (CONTEXT.md §5): beyond a basic integration, creative, and surfacing capabilities that surprise Meta. This section only describes how the **already-scoped** features use Meta's stack; it adds no new must-ship work, and the cuts in PLAN.md §5 stand. Technical detail: ARCHITECTURE.md §2A.
+
+| Meta capability | How Parallax uses it beyond a basic call | Status |
+|---|---|---|
+| Muse Spark 1.3 (and Muse Wonder behind a flag) | An **agent loop with tools and verification**: the model proposes paths and assumptions as strict structured output, calls tools (the simulation engine, the assumption lookup) instead of doing arithmetic, and every reply is checked by the figure guard and citation check before the user sees it. Each path has its own persona and memory, so several agents with different facts talk about the same life. | Must ship (Spark); Wonder optional |
+| Muse Image | One avatar per path: a base portrait, then an edit call per path so the person stays recognisable while setting and mood follow the outcome | Must ship |
+| Muse Voice Transcribe | Spoken intake, with the transcript shown and confirmed before anything is extracted | Must ship (cut 5 in PLAN.md §5 if needed) |
+| Structured output | Strict JSON schemas for intake extraction, paths, assumptions and the decision summary | Must ship |
+| Open weights (Muse Spark Open via Baseten `meta-models/muse-spark-open-1026`, or Muse Glimmer on Modal) | See stretch goal 7 below | **Stretch only** |
+
+**Prize fit (no extra scope).** *Best Creative Build* (Muse Image or Muse Wonder) fits the per-path avatars; *Best Agentic Use-Case* (autonomy, effectiveness, usefulness) fits the multi-path agent design in which each future self reasons from its own path and the verification layer stops it inventing figures. We do not build anything extra for these; we make sure the video shows them.
+
+**Anti-project check.** The guide lists generic "AI advisor", personality-analyser, basic-RAG and medical-advice apps as projects to avoid. Parallax stays out of that list by leading with the simulation engine and the multi-path comparison, by keeping health decisions out of scope (§4), and by keeping the "not advice" framing (RISKS.md P7).
 
 ## 5. Success criteria
 
-Our track is **Startup**: technical execution, and whether it holds up in production. Rows marked *(reported)* come from one secondary source (CONTEXT.md §1).
+Our track is **Startup** (to be confirmed, see CONTEXT.md §5): technical execution, and whether it holds up in production. The official Stage 2 rubric is Impact, Use of Meta AI Tooling, Technical Depth and Execution, and Demo, equally weighted. Rows marked *(reported)* come from one secondary source (CONTEXT.md §1).
 
 | Lens | Our bar |
 |---|---|

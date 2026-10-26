@@ -11,7 +11,7 @@ Owners follow the split proposed in [PLAN.md](PLAN.md) §1 (Sibusiso: back end, 
 | ID | Risk | L | I | Mitigation | Owner |
 |---|---|---|---|---|---|
 | T1 | API access or model behaviour differs from Meta's posts (already true: Active Memory is not exposed to developers and Muse Wonder is Preview; CONTEXT.md §2.1) | M | H | Day-1 smoke test of every model we use; one adapter for all model calls; our own memory store; failover `muse-spark-1.3` → `muse-spark-1.2` → open weights → demo fixture (ARCHITECTURE.md §12). Fireworks' serverless Muse Spark Open ends 29 Oct, so a late open-weights fallback needs an on-demand deployment on Modal or Baseten credits. | Sibusiso |
-| T2 | Rate limits, or credits (USD 150 each, reported) run out | M | H | Per-session token budget; cache simulations and images; daily spend check; sponsor credits in reserve. | Sibusiso |
+| T2 | Rate limits, or credits (USD 150 each, confirmed) run out | M | H | Per-session token budget; cache simulations and images; daily spend check; sponsor credits in reserve. See H8 for how credits are claimed. | Sibusiso |
 | T3 | Slow conversation | H | M | Stream short replies; compact context (path card plus summary, not the whole transcript); track latency daily. | Sibusiso |
 | T4 | Persona drift in long chats | M | H | Fixed "path card" (facts, figures, assumptions) sent every turn; separate memory per path; scripted 30-turn drift test. | Sibusiso (Lethabo runs the drift test) |
 | T5 | Model invents numbers | H | H | All figures computed in code. A post-check (the figure guard, ARCHITECTURE.md §8) replaces any number not on the path card or in the user's inputs with "(see chart)" and logs it (the CivicLens rule). | Sibusiso |
@@ -29,6 +29,7 @@ Owners follow the split proposed in [PLAN.md](PLAN.md) §1 (Sibusiso: back end, 
 | P4 | Bias by gender, race, location or class | M | H | Assumptions come from user inputs and a sourced table, never from race or gender; same-situation tests with varied personas; appearance chosen by the user. | Both |
 | P5 | Person in distress or crisis | M | H | Rule S5. | Sibusiso (detection in code and model flag); Lethabo (support card UI and crisis tests) |
 | P6 | Avatar says what the user wants to hear | M | M | Every avatar must name at least one real downside of its path. | Sibusiso |
+| P7 | **Parallax is mistaken for a "sample anti-project"** (Participant Guide, CONTEXT.md §5): a generic AI advisor, personality analyser or simple chatbot, or for financial or medical advice | M | H | Lead the pitch, video and README with the **simulation engine** (figures computed in code, uncertainty ranges), the multi-agent path avatars and the verification layer, not with "chat with an AI". Keep the "not advice" framing (S1). **No medical content:** no health decisions in scope, health topics redirected like any out-of-scope decision. No political or war content in the demo, personas or prompts. Avoid personality or psychological profiling of the user: the profile is money facts and priorities, nothing else. | Both |
 
 ### Legal and privacy
 
@@ -44,10 +45,16 @@ Owners follow the split proposed in [PLAN.md](PLAN.md) §1 (Sibusiso: back end, 
 
 | ID | Risk | L | I | Mitigation | Owner |
 |---|---|---|---|---|---|
-| H1 | Official Rules unpublished: eligibility, whether a pair may enter Indie, whether pre-event work is allowed, submission format, IP terms | H | H | Read the rules the day they appear. Keep pre-event work to planning docs, sketches and accounts, dated in git; no product code until the rules are read (PLAN.md §2). | Both |
+| H1 | Whether a pair may enter Indie is **still unconfirmed** (the Participant Guide, read 26 Oct, resolved the rules, submission format and judging; CONTEXT.md §5). Entering the wrong track could cost eligibility or prize standing. | M | M | Ask in Discord #questions on day 1 and save the answer; both registrations must show the same track; Startup is the default. | Both |
 | H2 | Schedule: ten days (26 Oct evening to 4 Nov), two people, weekdays shared with work or study | H | H | Agreed cut list (PLAN.md §5); a demoable build every evening; feature freeze at the end of day 6 (Sat 31 Oct). | Both |
 | H3 | Submission-day failure (API outage, upload fails, time-zone mix-up) | M | H | Internal deadline 4 Nov 22:00 SAST; demo video by day 9; cached "demo mode" persona; submit a draft early. | Both |
 | H4 | Power or internet outage, including load-shedding | M | M | Hosted deployment; either of us can submit; mobile data backup. | Both |
+| H5 | **Repository must be public** (open source) but the Parallax repo is **private** today | H | H | Sibusiso decides visibility; make it public before the first product commit if possible, and in any case well before 4 Nov. Nobody flips it without his decision. Check that no secret, key or personal data has ever been committed, because history becomes public too. Verify in a private window. | Sibusiso |
+| H6 | **New-work-only rule:** judges must clearly identify what was built during the Hackathon; failure is immediate disqualification | L | H | The `docs/` planning files are the only pre-existing material and contain no product code (stated in README.md and PLAN.md). All product code starts after 26 Oct 12:00 ET, in commits after that time; no code copied from earlier projects (BobSwarm, CivicLens and others) unless it is named, licensed and marked as reused, and even then prefer rewriting; list dependencies; say "built during the Hackathon" in the video and README; never rewrite git history. | Both |
+| H7 | **Submission mechanics:** one appointed Representative enters the project on the CV platform, listing everyone who worked on it, with an accessible repo and video link | M | H | Appoint the Representative on day 1 (proposal: Sibusiso); both confirm the submission fields on day 9; test the repo and video links in a private window; submit by 22:00 SAST on 4 Nov, never on the 04:00 deadline. | Sibusiso |
+| H8 | **Credits are per individual and need a credit card:** each person must claim their own USD 150 by 4 Nov 21:00 ET (the link is "coming soon"); a card must be on the account to make calls; nobody can claim for the other | M | H | Each person claims their own the day the link opens and attaches a card with a spend-limit notification; agree who holds the shared project API key; do not assume USD 300 until both have claimed; log spend daily (T2). | Both |
+| H9 | **Fireworks credits (USD 25) are only for shortlisted teams**, by email; the serverless Muse Spark Open also ends 29 Oct | H | L | Do not plan around Fireworks credits. Use Baseten (request USD 100 + 2M TPM, per individual, model `meta-models/muse-spark-open-1026`) and Modal (USD 100, first 1,000 participants) for open-weights work, and request them on day 1. | Sibusiso |
+| H10 | **Track eligibility for a pair is unconfirmed** (Startup entered; Indie says "individual builders and students") | M | M | See H1. If Discord says teams cannot enter Indie, we stay Startup; if our Startup form answers (company country, funding stage) are wrong, correct them before the deadline. | Both |
 
 ## 2. Safety design
 
@@ -89,7 +96,7 @@ Product rules. Each one gets a test before submission.
 
 ## 4. What Meta and the judges may care about
 
-Judges and full criteria are **not published**. This is a guess from the Startup track wording and one reported article (reliability, traceability, faulty inputs). Revisit when the rules appear.
+The judging criteria are **now published** (Participant Guide, CONTEXT.md §5): Impact, Use of Meta AI Tooling, Technical Depth and Execution, and Demo, equally weighted, 0-10 each, after a pass/fail check that the project fits the theme and uses Meta's models. **Judges are still not named.** The table below keeps the earlier guesses (Startup track wording and one reported article), which still map onto Technical Depth and Demo; DEMO.md §1A maps the video to the four criteria.
 
 | Likely interest | How the demo could show it |
 |---|---|
@@ -104,7 +111,11 @@ In the pitch, say "reflection aid", never "predicts your future".
 
 ## 5. Pre-submission checklist (days 9–10)
 
-- [ ] Official Rules re-read; track, eligibility and submission format match; both registrations on the same track.
+- [ ] Participant Guide rules re-read (public repo, new-work-only, Representative, three-minute video, everyone listed); track confirmed in Discord; both registrations on the same track.
+- [ ] Repo is public and verified in a private window; no secrets in history.
+- [ ] Each of us claimed our own credits and attached a card with a spend limit.
+- [ ] X post published and its URL submitted on the platform (Most Viral bonus).
+- [ ] Not an anti-project: pitch leads with the engine; no medical, political or war content.
 - [ ] Every support-card number re-checked on the official site that day.
 - [ ] Crisis test phrases: card shows, role-play pauses, no text logged.
 - [ ] 30-turn script per path: no invented figures, no drift, a downside named.
@@ -113,8 +124,8 @@ In the pitch, say "reflection aid", never "predicts your future".
 - [ ] Bias check: same situation and city with different names and genders gives the same figures; location effects come only from the sourced table.
 - [ ] Delete verified in storage; logs hold no raw text, audio or images.
 - [ ] Non-training API tier confirmed; no keys in the repo or video.
-- [ ] Enough credits for judging (4–8 Nov) plus a buffer.
-- [ ] Demo video uploaded; cached demo mode works if the APIs are down.
+- [ ] Enough credits for judging (5–8 Nov) plus a buffer.
+- [ ] Three-minute demo video uploaded and its link works; cached demo mode works if the APIs are down.
 - [ ] Submitted before 4 Nov 22:00 SAST.
 
 ## 6. Open questions for Lethabo

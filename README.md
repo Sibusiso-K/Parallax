@@ -18,4 +18,6 @@ Built for the [Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/m
 | [docs/RISKS.md](docs/RISKS.md) | Risks, safety and ethics |
 | [docs/REVIEW.md](docs/REVIEW.md) | Independent review of all of the above |
 
+> **What is new work and what is not.** Every line of product code in this repository is written from the hackathon kickoff (Mon 26 Oct 2026, 12:00 ET) onward. The documents in `docs/` and this README are planning material written before kickoff (20-25 Oct); they are the only pre-existing content, contain no product code, and are dated in git history. Judges can treat everything else in the commit history after kickoff as built during the hackathon.
+
 > Parallax is a reflection aid. It is not financial, legal or medical advice.

@@ -162,7 +162,7 @@ Dates and times: 26 Oct 2026 is a Monday; 12:00 EDT = 18:00 SAST; 4 Nov 21:00 ES
 | H1 | Must-ship scope is larger than ten part-time days allow (above) | At the first sync: move decisions 2 and 3, the model-collected open-questions list and the PDF export to stretch (browser print is enough). Keep the engine generic so 2 and 3 are cheap later |
 | H2 | The core differentiator (grounded chat with the figure guard) is scheduled late and is the hardest part | Build the figure guard and placeholder substitution against fixtures on day 2; measure time to first sentence from day 3 |
 | H3 | Lethabo's role, skills and hours are unknown; every Lethabo row in PLAN is a proposal | Lethabo answers section 5 (questions 1–3) before 26 Oct; re-balance PLAN §1 the same day |
-| H4 | Official Rules are unpublished (pre-event code, submission format, video length, IP) | Already handled as well as possible: read on the day, re-plan. Keep it high until read |
+| H4 | ~~Official Rules are unpublished (pre-event code, submission format, video length, IP)~~ **Resolved 26 Oct:** the Participant Guide is read (CONTEXT.md §5). New issues it raised: addendum below | Done |
 
 **Medium**
 
@@ -187,7 +187,7 @@ Dates and times: 26 Oct 2026 is a Monday; 12:00 EDT = 18:00 SAST; 4 Nov 21:00 ES
 | L3 | Vercel Hobby plan: check its terms on commercial use before relying on it for a Startup-track product | Check on day 1; budget for Pro if needed |
 | L4 | "Ask this on another path" is not in PLAN's never-cut list, though the key demo moment needs it | Add it at the day-4 checkpoint |
 | L5 | The bad and good case runs put every assumption at its extreme at once, which may make all paths look scarier than they are | Fine for the MVP; show the top 2–3 drivers (already in SCOPE) so the band is explained |
-| L6 | The kickoff hour (18:00 or 19:00 SAST) is unresolved | Confirm on the day; nothing depends on it |
+| L6 | ~~The kickoff hour (18:00 or 19:00 SAST) is unresolved~~ **Resolved 26 Oct:** 18:00 SAST (12:00 ET) | Done |
 
 ---
 
@@ -276,3 +276,40 @@ Source docs in brackets. Duplicates are merged.
 - **The privacy promise in RISKS.md §3.** Would you be comfortable saying it to a friend who uses the app?
 
 **How to respond:** comment on lines in the PR, and answer section 5 in one comment, numbered. Approve once the "for Lethabo" decisions in section 4 are answered or explicitly parked.
+
+
+---
+
+## 7. Update after the Participant Guide (26 Oct)
+
+The official Participant Guide was read on 26 Oct 2026 (kickoff day). Full facts: [CONTEXT.md §5](CONTEXT.md). The review sections above are kept as written on 20 Oct; this addendum supersedes them where they conflict.
+
+**Resolved**
+- **"Official Rules unknown" (H4) is resolved.** Rules, submission package, judging criteria, prize split, schedule and credit terms are now confirmed.
+- Kickoff is **18:00 SAST** (not 19:00); L6 is closed.
+- Judging is **5-8 Nov** (not 4-8 Nov); closing ceremony Mon 9 Nov 12:00 ET = **19:00 SAST**.
+- The video is **three minutes**, and the repo must be **public**. The 3-minute script is now the main submission video; the 2-minute script is the cut-down.
+- USD 150 Meta credits are confirmed (no longer "reported"), but **each person claims their own** and a **credit card** is required.
+- The judging rubric is published: Impact, Use of Meta AI Tooling, Technical Depth and Execution, Demo, equally weighted. This changes section 3.1: Startup-track wording (execution, production) is no longer the whole story, and Impact and Meta tooling now carry half the score.
+- Pre-event work: new-work-only is confirmed; we wrote no product code before kickoff, so the planning docs are the only pre-existing material.
+
+**New**
+- **Sample anti-projects** (generic advisors, personality analysers, basic RAG, medical advice, anything political or war): Parallax must not read like one (RISKS.md P7).
+- **Repo is private; rules require public** (RISKS.md H5).
+- **New-work-only with immediate disqualification** (RISKS.md H6).
+- Appointed **Representative** submits; everyone who worked on it is listed (H7).
+- Bonus prizes: Most Viral Project (X post, USD 20K), Best Build on Open Weights (USD 10K), Community Vote (USD 10K), Best Agentic Use-Case (USD 5K), Best Creative Build (USD 5K). The last two fit the existing design (SCOPE.md §4A); the first needs a plan (DEMO.md); the open-weights one is a labelled stretch goal (SCOPE.md stretch 7).
+- Fireworks credits are for shortlisted teams only; Baseten and Modal are by request and per individual; use `meta-models/muse-spark-open-1026` on Baseten.
+- Workshops 18:00-19:00 SAST on 27, 28 and 30 Oct; Agents 102 (Verifiable Agents) is directly relevant to our traceability design. Office hours are weekdays only, 16:00-17:00 SAST.
+- No scope has been added; the cuts decided in section 4 stand.
+
+**Still open**
+- Whether a team of two may enter **Indie** (the guide does not say; ask in #questions).
+- Judges are still not named.
+
+**Decisions now needed**
+1. **Startup vs Indie:** stay Startup unless Discord says otherwise (Sibusiso and Lethabo; both registrations must match).
+2. **Repo visibility:** make the repo public (Sibusiso decides; check history for secrets first).
+3. **Representative:** proposal is Sibusiso (Lethabo to agree).
+4. **Open-weights bonus:** chase the USD 10K "Best Build on Meta Open Weight Models" bonus (stretch goal, only after the must-ship flow is stable, not before day 6), or skip it? Both decide; request Baseten and Modal credits on day 1 either way so the option stays open.
+5. Each person claims their own credits and adds a card (no decision, but a hard dependency).

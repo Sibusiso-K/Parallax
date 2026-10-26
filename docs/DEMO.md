@@ -4,7 +4,7 @@ Event and model facts come from [CONTEXT.md](CONTEXT.md); build details belong i
 
 **Owners (per PLAN.md §1, a proposal until Lethabo confirms):** demo video and pitch: Lethabo, back-up Sibusiso. Seeded session, mock mode and the persona's data: Sibusiso. This doc owns the demo persona; SCOPE.md follows it.
 
-> **Submission format is unknown** until the Official Rules are published (before 26 Oct). We design for the typical package: a **2–3 minute video, a public repo and a README**, and re-check limits the day the rules land.
+> **Submission format is confirmed (Participant Guide, 26 Oct, CONTEXT.md §5):** a **three-minute demo video** of the features, code and functionality built during the Hackathon, a **public repo**, a live product, and everyone who worked on it listed. The video is a primary artifact judges use. The **3-minute version (§3) is therefore the main submission video**; the 2-minute script (§2) is the cut-down version for social media, the X post and the fallback.
 
 **Honesty rule:** answers on screen are real output from a seeded session. Quoted lines below show the *shape* we expect, not hard-coded text. Any sped-up wait is labelled on screen.
 
@@ -36,9 +36,24 @@ Naledi is a payroll administrator who caters birthdays, funerals and church even
 
 ---
 
-## 2. The 2-minute video script
+## 1A. How the demo maps to the four judging criteria
 
-About 150 words of voiceover, so the screen has time to speak.
+Stage 2 scores four equally weighted criteria, 0-10 each (CONTEXT.md §5). Every scene should earn points on at least one; the 3-minute video must show all four.
+
+| Criterion | What the video must show | Where in the script |
+|---|---|---|
+| **Impact** | A real person with real stakes (supporting her mother, thin savings), who benefits, and that people could use it tomorrow; South African story; fits "Build for Your World" | Opening question; Naledi's constraints; close (who benefits, who pays) |
+| **Use of Meta AI Tooling** | Beyond a basic integration: Muse Spark 1.3 with structured output and tool calls inside a verified agent loop; per-path future-self personas; Muse Image avatars (base portrait plus an edit per path); Muse Voice Transcribe at intake; Muse Wonder behind a flag if it works; optionally an open-weights path. One on-screen "Built on Meta" beat names each model doing a visible job (ARCHITECTURE.md §2A) | Intake (Voice Transcribe), path cards (Image), chat (Spark), "how it works" beat |
+| **Technical Depth and Execution** | Figures computed in code, never by the model; ranges; trace drawer and assumption IDs; the figure guard replacing an invented number; faulty-input catch ("195000"); live assumption edit that redraws the answer; a short code or architecture glimpse that is clearly new work from this hackathon | Assumptions panel; chat citation chips; faulty-input and live-edit beats |
+| **Demo** | Works live on the deployed URL, no cuts that hide failures, a strong 5-second cold open, readable at 1080p, genuinely pleasant to watch | Whole video; recording checklist (§5); backup plan (§6) |
+
+**New-work evidence.** Show the repo's first commit date (after 26 Oct 12:00 ET) or the commit graph for one second, and say "built during the Hackathon". Anything not built during the event (for example a library) is named as a dependency, never presented as ours.
+
+**Avoid the anti-project list.** Open on the simulation engine and the multi-path comparison, not on "an AI that gives advice". No health decisions, no political or war content on screen (RISKS.md P7).
+
+## 2. The 2-minute cut-down script (social and fallback)
+
+This is the short version for the X post, the community-vote gallery blurb and the fallback (§6). It is **not** the submission video; the 3-minute version in §3 is. About 150 words of voiceover, so the screen has time to speak.
 
 | Time | On screen | Voiceover |
 |---|---|---|
@@ -64,27 +79,38 @@ About 150 words of voiceover, so the screen has time to speak.
 | 0:07–0:22 | Split screen, made in the video editor from the two real answers in the 2-minute flow (the app itself shows one path at a time; "Ask every path" side by side is a stretch goal): same question to Path B and Path A, two answers, two assumption chips | "She asked both her futures the same question. They answered differently, and each showed its working." |
 | 0:22–0:30 | Decision summary, logo | "Parallax. Talk to your future before you choose it." |
 
-### 3-minute live-finals version
+### 3-minute submission video (the main one) and live-finals version
 
-Finals format is **unknown** (live demo, pitch or both). This version assumes a live screen share.
+The Participant Guide requires a three-minute video; the same script serves the top-5 live final round (9 Nov, 19:00 SAST), which uses the same rubric. The live format itself is still unannounced, so assume a live screen share and keep the pre-recorded video as the fallback.
 
-| Time | Segment |
+| Time | Segment | Criterion it scores |
+|---|---|---|
+| 0:00–0:05 | **Cold open:** Naledi's hardest question on screen ("Could I still send Ma R3,000 every month?") | Demo, Impact |
+| 0:05–0:20 | The problem, no slides: who loses most from a wrong move | Impact |
+| 0:20–1:40 | The 2-minute flow, live on the seeded session | All four |
+| 1:40–2:00 | **Faulty input:** take-home typed as "195000". Parallax asks: "That doesn't fit your budget. Did you mean R19,500?" | Technical Depth |
+| 2:00–2:20 | **Live edit:** B3 from −40% to −20%; the range redraws and Path B's answer changes, proving figures come from code | Technical Depth, Demo |
+| 2:20–2:35 | **Guardrail:** "Should I put my savings in crypto?" The future self declines investment advice and returns to her decision | Impact (responsible use) |
+| 2:35–3:00 | **Built on Meta, built this week:** one line per model doing a job (Spark, Image, Voice Transcribe, Wonder if used, open weights if used); a one-second glimpse of the repo and commit history from 26 Oct; who benefits and who pays; close | Use of Meta AI Tooling, Technical Depth, Impact |
+
+Keep the video under three minutes and test the link in a private window. If the app itself cannot show everything, the video is cut together from real sessions (honesty rule above).
+
+### Most Viral Project bonus (USD 20K) and Community Vote (USD 10K)
+
+| Item | Plan |
 |---|---|
-| 0:00–0:20 | The problem, no slides: who loses most from a wrong move |
-| 0:20–1:40 | The 2-minute flow, live on the seeded session |
-| 1:40–2:00 | **Faulty input:** take-home typed as "195000". Parallax asks: "That doesn't fit your budget. Did you mean R19,500?" |
-| 2:00–2:20 | **Live edit:** B3 from −40% to −20%; the range redraws and Path B's answer changes, proving figures come from code |
-| 2:20–2:35 | **Guardrail:** "Should I put my savings in crypto?" The future self declines investment advice and returns to her decision |
-| 2:35–3:00 | How it works, who pays, close |
+| Most Viral Project: engagement on X, counted to 8 Nov end of day | Post the demo on X from Sibusiso's account (and Lethabo reposts) **as soon as the video is final, aiming for Wed 4 Nov**, not after the deadline. Use the 30-second hook or the 2-minute cut-down as the native video (the 3-minute video is linked). First line is the cold-open question; tag Meta's and Cerebral Valley's accounts; a short thread: the hook, the "figures come from code" moment, the repo link. Submit the post URL on the platform. Reply to comments for the 4 days that count. |
+| Community Vote: public gallery votes, one per verified account; opens 9 Nov, announced 16 Nov | Prepare a gallery thumbnail and a two-sentence blurb. Share the gallery link with friends, colleagues and the South African developer community when voting opens. No vote buying or botting: it risks disqualification and the platform-policy ban. |
+| Honesty | Posts use only real footage of the seeded session, labelled "fictional persona". No fake engagement. |
 
 ---
 
 ## 4. Pitch narrative (Startup track)
 
-The track is judged on **technical execution and holding up in production**, so the pitch spends its time on reliability.
+The Startup track page says it is judged on **technical execution and holding up in production**, and the official Stage 2 rubric weights four criteria equally (§1A), so the pitch spends its time on reliability *and* on impact and Meta tooling.
 
 1. **Problem.** Big money decisions are made on gut feel and scattered advice. People with the least safety net pay most for a wrong move, and nobody can try a path before living it.
-2. **Demo.** The 2-minute flow.
+2. **Demo.** The 2-minute flow inside the 3-minute video.
 3. **How it works** (check every detail against the live API docs; ARCHITECTURE.md decides):
    - **Muse Spark 1.3** turns her story into structured inputs, proposes paths and assumptions, and voices each future self. (Muse Wonder is in Preview; we use it only behind a flag.) Our own memory store keeps each future self consistent; Wonder's Active Memory is not available to developers yet, so we do not claim it.
    - **Our simulation engine** computes every figure and range. The model never writes a number.
@@ -118,7 +144,7 @@ We are in Johannesburg, where someone who supports her mother and caters on week
 | Audio | Headset or USB mic, quiet room; voiceover recorded separately; levels normalised; no music under speech |
 | Captions | Burned-in plus an .srt file; check rand amounts and names |
 | Pacing | Speak at no more than 140 words a minute; hold key screens 3+ seconds; zoom on the citation chip and comfort check |
-| Final check | Length within the rules; watch once on a phone, sound off |
+| Final check | Length no more than three minutes; link works in a private window; watch once on a phone, sound off |
 
 ---
 
@@ -129,7 +155,7 @@ We are in Johannesburg, where someone who supports her mother and caters on week
 | 0. Live | Real models, real engine | Default |
 | 1. Seeded session | Simulation and avatars cached; chat live | Generation slow or failing |
 | 2. Offline mock mode | Recorded model responses replayed; engine runs locally | API down or no internet |
-| 3. Pre-recorded video | The 2-minute video | Laptop or screen share fails |
+| 3. Pre-recorded video | The 3-minute submission video (or the 2-minute cut-down if time is short) | Laptop or screen share fails |
 
 Also: charged laptop, UPS or power bank for the router (load-shedding), mobile-data hotspot, video saved locally and in the cloud.
 
@@ -164,4 +190,5 @@ Also: charged laptop, UPS or power bank for the router (load-shedding), mobile-d
 4. Should the intake show isiZulu–English code-switching? Only if Voice Transcribe handles it in testing; isiZulu is not on its published language list, so expect it to fail.
 5. Illustrated or more realistic avatars?
 6. Any contacts at a career office, bank or HR team to test H1–H3?
-7. Are you free for the finals on 9 November (time TBA)?
+7. Are you free for the closing ceremony and live final round on 9 November, 19:00 SAST?
+8. Will you post from your own X account for the Most Viral Project bonus, or only repost?

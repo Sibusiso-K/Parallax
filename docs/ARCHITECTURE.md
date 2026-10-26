@@ -35,7 +35,23 @@ Labels: **verified** = read on the vendor's own docs on 20 Oct 2026 (see [Source
 | Errors | Retry 429/500/503 with exponential backoff and jitter, honouring `Retry-After`. Do not retry 400/401/402/403/404/413. A 504 means use streaming or less work per call [14] | verified |
 | Region | South Africa is not on the restricted list, but access applies "only in jurisdictions where Meta has enabled access" [19][20] | verified, but **smoke-test from SA** |
 | Data retention / training (standard mode) | Not stated on the pages we read; they point to the AI Developer Legal Center. Zero Data Retention exists only for qualified organisations via sales [17][18] | **unverified** |
-| Hackathon credits | USD 150 per participant (CONTEXT.md). Whether they cover Wonder, Image and Voice is unknown | reported |
+| Hackathon credits | USD 150 per accepted participant, claimed individually, credit card required (CONTEXT.md §5). Whether they cover Wonder, Image and Voice is unknown | confirmed amount; coverage unknown |
+
+## 2A. Use of Meta AI Tooling (judging criterion)
+
+Added 26 Oct after the Participant Guide. "Use of Meta AI Tooling" is scored on how creatively the project uses Meta's stack, beyond a basic integration, and on surfacing capabilities that surprise Meta. This section maps the existing design to that criterion; it does not add must-ship scope.
+
+| Capability | Where it lives | Beyond-basic detail |
+|---|---|---|
+| Muse Spark 1.3: tools and verification (agent loop) | `/api/paths`, `/api/chat` (§4, §5) | Tool calls into the deterministic engine instead of model arithmetic; the figure guard (§8) and citation check (§11) as the verification step; `tool_choice` is `auto` only, so the loop handles both tool calls and plain text; a bounded retry and failover chain (§12). This is the "verifiable agent" pattern that the Agents 102 session (Wed 28 Oct) covers; attend it and adjust. |
+| Per-path agents with their own memory | §8 | One persona per path, each seeing only its own path card plus shared facts, so several agents reason about one life without leaking futures into each other |
+| Muse Wonder (Preview) | Behind a feature flag | Used only if it demonstrably adds value in testing (error recovery, goal pursuit); Active Memory is not claimed because it is not exposed (§2) |
+| Muse Image avatars | §9 | Base portrait plus an edit call per path (no `seed` exists), cached; stylised and labelled AI-generated |
+| Muse Voice Transcribe | §10 | Spoken intake; the transcript is shown for confirmation before extraction; typed fallback |
+| Structured output | §4 | Strict JSON schemas for every model-to-code hand-off |
+| Open weights (stretch) | Provider adapter | See below |
+
+**Open-weights path (stretch goal, SCOPE.md stretch 7).** The provider adapter (design principle 3) already lets one capability switch provider by config. For the Best Build on Open Weights bonus, add a second chat provider that speaks the OpenAI-compatible protocol to Baseten with model `meta-models/muse-spark-open-1026` (the guide says to use this ID for the hackathon, not `meta-models/muse-spark-open`), or to Muse Glimmer served on Modal. Scope it to one bounded job, for example the future-self chat for a single path, flagged in config and in the submission. This also serves as the late-event failover in §12, because Fireworks' serverless Muse Spark Open ends 29 Oct. Baseten credits are requested per individual, and Modal's USD 100 goes to the first 1,000 participants, so request both on day 1. Open weights run outside Meta's Model API, so the Model API's contributor-mode and retention terms do not apply to that path; the data-handling statement in RISKS.md §3 must then name the host.
 
 ## 3. Stack
 
@@ -282,12 +298,12 @@ Assumptions for one full session: 3 paths, 30 avatar turns, 3 minutes of voice, 
 | **Total** | **44** | **≈ 386k** | **≈ 62.5k** |
 
 - **Text:** input ≈ USD 0.29, output ≈ USD 0.27. **Images:** USD 0.06. **Voice:** about USD 0.01. Adding 30% for retries and repairs gives **≈ USD 0.80 per session**. Using Muse Wonder for the simulation step adds ≈ USD 0.24 (≈ USD 1.05).
-- **Credits:** USD 300 (2 × 150, reported). Reserving about USD 120 for development leaves about USD 180: **roughly 170–220 full sessions**, or 60–75 if our estimates are 3× too low. Credits, not rate limits, are the constraint: a session peaks at about 3 parallel calls against a 3,000 RPM limit.
+- **Credits:** USD 300 only if both of us claim our own USD 150 and attach a card (2 × 150, amount confirmed, CONTEXT.md §5). Reserving about USD 120 for development leaves about USD 180: **roughly 170–220 full sessions**, or 60–75 if our estimates are 3× too low. Credits, not rate limits, are the constraint: a session peaks at about 3 parallel calls against a 3,000 RPM limit.
 - **Savers:** prefix caching, low reasoning effort for chat, fixtures during UI work, `-contributor` models for synthetic-only evals (never real user data), and a cap of 60 avatar turns per session.
 
 ## 15. Build order (dependencies first)
 
-1. **Day-1 smoke test** (kickoff evening, 26 Oct; earlier only if the Official Rules allow it and keys exist, see PLAN.md §2) with real keys from South Africa: each model ID, structured output, a tool call, one image, one transcription; confirm which team holds the credits.
+1. **Day-1 smoke test** (kickoff evening, 26 Oct, after 12:00 ET; no product code existed before kickoff, see PLAN.md §2) with real keys from South Africa: each model ID, structured output, a tool call, one image, one transcription; confirm which team holds the credits.
 2. `/shared` types, Zod schemas and the engine with unit tests, plus one fixture profile. No AI needed.
 3. Provider adapter: Meta chat client, retry, trace, model routing by config.
 4. `/api/paths` and `/api/simulate`, then the intake → assumptions editor → timeline and fan chart screens.
