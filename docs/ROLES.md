@@ -35,7 +35,7 @@ Agreed 26 Oct 2026 (kickoff day). This replaces the role proposal in the 20 Oct 
 We work fluidly. Ownership says who makes sure something happens, not who is allowed to touch it.
 
 - **Daily sync, 15 minutes:** 08:30 SAST on weekdays, 10:00 on the weekend (Lethabo may move it). Each says what they finished, what they do today, what blocks them, and credits spent. Decisions go in [BUILD_LOG.md](BUILD_LOG.md) the same day.
-- **Small PRs, reviewed by the other person:** one concern, roughly under 300 changed lines, on a `feat/…`, `fix/…` or `docs/…` branch. The other person reviews on the Vercel preview, ideally within four waking hours. Squash-merge; `main` is always deployable.
+- **Small PRs, reviewed by the other person:** one concern, roughly under 300 changed lines, on a `feat/…`, `fix/…` or `docs/…` branch. The other person reviews on the Vercel preview, ideally within four waking hours. Merge with a merge commit, never squash, so every commit stays visible (SUBMISSION.md §5). `main` is always deployable.
 - **Work-in-progress handovers:** stopping mid-task, or about to go offline? Push the branch, open a draft PR and post this in it:
   > **Handover:** what works · what is half done · next step · how to run it · anything surprising
 - **Owners decide in their own area.** The other person gives input in review; if we still disagree, the owner decides and we move on.

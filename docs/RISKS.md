@@ -1,6 +1,6 @@
 # Risks, safety and ethics
 
-Draft, 20 Oct 2026; owners and hackathon risks updated 26 Oct after the kickoff slides. Facts and confidence labels follow [CONTEXT.md](CONTEXT.md). This is a hackathon planning aid, **not legal advice**: a South African privacy lawyer must review it before any real launch.
+Draft, 20 Oct 2026; owners and hackathon risks updated 26 Oct after the kickoff slides, and checked again 27 Oct. Facts and confidence labels follow [CONTEXT.md](CONTEXT.md). This is a hackathon planning aid, **not legal advice**: a South African privacy lawyer must review it before any real launch.
 
 Owners follow the roles agreed on 26 Oct ([ROLES.md](ROLES.md); Sibusiso: UI and UX, back end and simulation engine, API routes; Lethabo: avatars, model-API client and agents, feature integration including the figure guard and traceability, security). L = likelihood, I = impact (Low/Medium/High).
 

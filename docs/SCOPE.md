@@ -18,7 +18,7 @@ Decision types are numbered 1–3 so they are not confused with paths, which are
 | 2 | Take a loan for a qualification or a vehicle (e.g. a car for e-hailing) | No loan / Loan now / Save first, smaller loan later |
 | 3 | Move city for a job offer (e.g. Polokwane to Cape Town) | Stay / Move alone, send money home / Move with dependants |
 
-**Demo default: decision 1.** It has the clearest money story (steady salary against uncertain revenue) and three truly different paths. The demo persona is **Naledi Mokoena** (fictional), owned by [DEMO.md](DEMO.md) §1: 27, Soweto, R19,500 take-home as a payroll administrator, weekend catering profit of about R6,000 a month (range R2,500–R11,000), R3,000 a month to her mother (non-negotiable), R30,000–R40,000 saved, a R4,000 store account, low risk comfort. The "bridge" idea (stay 12 months, then leap) is not a separate path: it is what the person can arrive at by comparing A and B, as Naledi does in the demo. Decisions 2 and 3 ship as working templates with less polish (see REVIEW.md: candidates to cut).
+**Demo default: decision 1.** It has the clearest money story (steady salary against uncertain revenue) and three truly different paths. The demo persona is **Naledi Mokoena** (fictional), owned by [DEMO.md](DEMO.md) §1: 27, Soweto, R19,500 take-home as a payroll administrator, weekend catering profit of about R6,000 a month (range R2,500–R11,000), R3,000 a month to her mother (non-negotiable), R30,000–R40,000 saved, a R4,000 store account, low risk comfort. The "bridge" idea (stay 12 months, then leap) is not a separate path: it is what the person can arrive at by comparing A and B, as Naledi does in the demo. Decisions 2 and 3 are proposed stretch, not must-ship (REVIEW.md H1; FEATURES.md F22). The engine is generic, so they are cheap to add later if the day-4 checkpoint allows.
 
 ## 3. User flow
 
@@ -29,12 +29,12 @@ Decision types are numbered 1–3 so they are not confused with paths, which are
 | Required field | Used for |
 |---|---|
 | The decision, in their own words | Template and paths |
-| Age; city and country | Framing, currency, cost defaults |
+| Age band; province (or country, outside South Africa) | Framing, currency, cost defaults |
 | Monthly take-home income | Baseline (take-home avoids tax modelling) |
-| Essential expenses; support to family; debt repayments | Fixed monthly costs |
+| Essential expenses; monthly support to family (never cut without the person's consent); debt repayments | Fixed monthly costs |
 | Savings | Runway |
 | Risk comfort (low / medium / high) | How trade-offs are framed, never the numbers |
-| Top 3 priorities (security, income, freedom, family time, growth) | What each future self reflects on |
+| Top 3 priorities, stored as `goals` (security, income, freedom, family time, growth) | What each future self reflects on |
 
 Templates add optional fields (side-business revenue and costs; loan amount, rate and term; offer salary and new rent).
 
@@ -63,15 +63,15 @@ The screen always says: "One possible future, not a prediction."
 
 **9. Reaching "comfortable".** Parallax does not decide when the person is done; it shows what is still missing.
 - **Comfort check:** a 1 to 5 rating per path plus "What is still bothering you?", after each chat and on demand, with the trend shown.
-- **Open questions list:** worries the model collects from the chats, editable by the person, each tagged with what could settle it: change an assumption, ask a future self, or find out in real life ("get a quote for a second oven").
+- **Open questions list:** the person's own worries, typed or confirmed from the chats, editable, each tagged with what could settle it: change an assumption, ask a future self, or find out in real life ("get a quote for a second oven"). The version where the model collects the list is proposed stretch (FEATURES.md F23).
 - The session ends with "I've decided: path X" or "Not ready yet". Both are valid.
 
-**10. What they leave with.** A one-page decision summary: paths and key ranges, the chosen or leaning path with reasons in their own words, assumptions, the setback to watch, open questions, things to check in real life, and the disclaimer. Printable or saved as PDF, next to the "Delete everything" button (RISKS.md §3).
+**10. What they leave with.** A one-page decision summary: paths and key ranges, the chosen or leaning path with reasons in their own words, assumptions, the setback to watch, open questions, things to check in real life, and the disclaimer. Printable with the browser's print (PDF export is proposed stretch, FEATURES.md F24), next to the "Delete everything" button (RISKS.md §3).
 
 ## 4. In scope, out of scope, stretch
 
 **In scope (must ship)**
-- Steps 1 to 10 above for decision 1, polished; decisions 2 and 3 on the same engine.
+- Steps 1 to 10 above for decision 1, polished. Decisions 2 and 3 are proposed stretch (see §2).
 - Cash-flow engine with unit tests; avatar placeholder if image generation fails.
 - Input validation and a fallback for every model call.
 - Hosted at a public URL, with a **public repo** and a **three-minute demo video** (confirmed submission package, CONTEXT.md §5).
@@ -99,7 +99,7 @@ The screen always says: "One possible future, not a prediction."
 
 | Meta capability | How Parallax uses it beyond a basic call | Status |
 |---|---|---|
-| Muse Spark 1.3 (and Muse Wonder behind a flag) | An **agent loop with tools and verification**: the model proposes paths and assumptions as strict structured output, calls tools (the simulation engine, the assumption lookup) instead of doing arithmetic, and every reply is checked by the figure guard and citation check before the user sees it. Each path has its own persona and memory, so several agents with different facts talk about the same life. | Must ship (Spark); Wonder optional |
+| Muse Spark 1.3 (and Muse Wonder behind a flag) | An **agent loop with tools and verification**: the model proposes paths and assumptions as strict structured output (no tools there; code fills the defaults), the future-self chat calls tools (`get_figure`, `remember`) instead of doing arithmetic, and every reply is checked by the figure guard and citation check before the user sees it. Each path has its own persona and memory, so several agents with different facts talk about the same life. | Must ship (Spark); Wonder optional |
 | Muse Image | One avatar per path: a base portrait, then an edit call per path so the person stays recognisable while setting and mood follow the outcome | Must ship |
 | Muse Voice Transcribe | Spoken intake, with the transcript shown and confirmed before anything is extracted | Must ship (cut 5 in PLAN.md §5 if needed) |
 | Structured output | Strict JSON schemas for intake extraction, paths, assumptions and the decision summary | Must ship |

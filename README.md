@@ -36,6 +36,6 @@ Built for the [Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/m
 | [docs/SUBMISSION.md](docs/SUBMISSION.md) | Where and how we submit, with checklists |
 | [docs/REVIEW.md](docs/REVIEW.md) | Independent review of the plan, with later addenda |
 
-> **What is new work and what is not.** Every line of product code in this repository is written from the hackathon kickoff (Mon 26 Oct 2026, 12:00 ET) onward. The documents in `docs/` and this README are planning material: most were written before kickoff (20–26 Oct) and are the only pre-existing content; the rest were added on kickoff evening. None contain product code, and [docs/BUILD_LOG.md](docs/BUILD_LOG.md) records what was built when. Judges can treat everything else in the commit history after kickoff as built during the hackathon.
+> **What is new work and what is not.** Every line of product code in this repository is written from the hackathon kickoff (Mon 26 Oct 2026, 12:00 ET) onward. The documents in `docs/` and this README are planning material: most were written before kickoff (20–26 Oct) and are the only pre-existing content; the rest were added on kickoff evening. None contain product code. [docs/BUILD_LOG.md](docs/BUILD_LOG.md) records what was built each day; product code, when it exists, starts after kickoff.
 
 > Parallax is a reflection aid. It is not financial, legal or medical advice.

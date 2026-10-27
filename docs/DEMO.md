@@ -49,7 +49,7 @@ Stage 2 scores four equally weighted criteria, 0-10 each (CONTEXT.md §5). Every
 
 **New-work evidence.** Show the date of the first product-code commit (after 26 Oct 12:00 ET) or the commit graph for one second, and say "built during the Hackathon". The only earlier commits are planning docs ([BUILD_LOG.md](BUILD_LOG.md)). Anything not built during the event (for example a library) is named as a dependency, never presented as ours.
 
-**Avoid the anti-project list.** Open on Naledi's question and the conversation with her future selves, backed by the simulation engine, not on "an AI that gives advice" and never on a chart: "dashboards as the main feature" is on the kickoff slides' list, so the compare view stays a supporting scene. No health decisions, no political or war content on screen (RISKS.md P7, RESEARCH.md §5).
+**Avoid the anti-project list.** Open on Naledi's question and the conversation with her future selves, backed by the simulation engine, not on "an AI that gives advice" and never on a chart: Streamlit apps and "dashboards as the main feature" are on the kickoff slides' list, so the compare view stays a supporting scene. No health decisions, no political or war content on screen (RISKS.md P7, RESEARCH.md §5).
 
 ## 2. The 2-minute cut-down script (social and fallback)
 
@@ -81,7 +81,7 @@ This is the short version for the X post, the community-vote gallery blurb and t
 
 ### 3-minute submission video (the main one) and live-finals version
 
-The Participant Guide requires a three-minute video; the same script serves the top-5 live final round (9 Nov, 19:00 SAST), which uses the same rubric. The live format itself is still unannounced, so assume a live screen share and keep the pre-recorded video as the fallback.
+The Participant Guide requires a three-minute video; the same script serves the top-5 live final round (9 Nov, 19:00 SAST), which uses the same rubric. The kickoff slides say judges watch the demos live and rank them, so assume a live screen share and keep the pre-recorded video as the fallback.
 
 | Time | Segment | Criterion it scores |
 |---|---|---|
@@ -99,7 +99,7 @@ Keep the video under three minutes and test the link in a private window. If the
 
 | Item | Plan |
 |---|---|
-| Most Viral Project: most likes, reposts and comments on X by 8 Nov 11:59 PM ET (9 Nov 06:59 SAST) | Post the demo on X from Sibusiso's account (and Lethabo reposts) **as soon as the video is final, aiming for Wed 4 Nov**, not after the deadline. The slide says "engagement on X after the event", so ask in #questions whether an earlier post counts; if not, post right after 4 Nov 21:00 ET. Use the 30-second hook or the 2-minute cut-down as the native video (the 3-minute video is linked). First line is the cold-open question; tag Meta's and Cerebral Valley's accounts; a short thread: the hook, the "figures come from code" moment, the repo link. Submit the post URL on the platform. Reply to comments for the 4 days that count. |
+| Most Viral Project: most likes, reposts and comments on X by 8 Nov 11:59 PM ET (9 Nov 06:59 SAST) | Post the demo on X from Sibusiso's account (and Lethabo reposts) **as soon as the video is final, aiming for Wed 4 Nov before we submit**, because the form asks for the post link. The slide says "engagement on X after the event", and the guide does not say whether a pre-deadline post counts. Ask in #questions now; if the answer is no, post a second thread after 4 Nov 21:00 ET. Either way, engagement counts to 8 Nov 11:59 PM ET. Use the 30-second hook or the 2-minute cut-down as the native video (the 3-minute video is linked). First line is the cold-open question; tag Meta's and Cerebral Valley's accounts; a short thread: the hook, the "figures come from code" moment, the repo link. Submit the post URL on the platform. Reply to comments for the 4 days that count. |
 | Community Vote: public gallery votes, one per verified account; opens 9 Nov, announced 16 Nov | Prepare a gallery thumbnail and a two-sentence blurb. Share the gallery link with friends, colleagues and the South African developer community when voting opens. No vote buying or botting: it risks disqualification and the platform-policy ban. |
 | Honesty | Posts use only real footage of the seeded session, labelled "fictional persona". No fake engagement. |
 

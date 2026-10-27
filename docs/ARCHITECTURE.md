@@ -1,6 +1,6 @@
 # Parallax: Architecture
 
-Technical design for the 10-day build (26 Oct – 4 Nov 2026). Written 20 Oct 2026. `docs/CONTEXT.md` remains the source of truth for event facts; this doc covers how we build. The agents, outside services, dev tooling and key handling are summarised in one place in [AGENTS_AND_APIS.md](AGENTS_AND_APIS.md); owners per area are in [ROLES.md](ROLES.md).
+Technical design for the 10-day build (26 Oct – 4 Nov 2026). Written 20 Oct 2026, updated 27 Oct 2026. `docs/CONTEXT.md` remains the source of truth for event facts; this doc covers how we build. The agents, outside services, dev tooling and key handling are summarised in one place in [AGENTS_AND_APIS.md](AGENTS_AND_APIS.md); owners per area are in [ROLES.md](ROLES.md).
 
 Labels: **verified** = read on the vendor's own docs on 20 Oct 2026 (see [Sources](#sources)); **reported** = secondary source; **unverified** = not found, designed around with an adapter.
 
@@ -62,7 +62,7 @@ Added 26 Oct after the Participant Guide. "Use of Meta AI Tooling" is scored on 
 | AI client | `openai` npm SDK pointed at Meta. Zod schemas converted to JSON Schema for `response_format` | One client works for Meta and for OpenAI-compatible open-weights hosts |
 | Engine | Pure TypeScript module in `/shared`, tested with Vitest | Runs on the server and in the browser (instant what-if sliders) |
 | Session storage | Browser IndexedDB (`idb-keyval`) | No database; deleting a session is local and complete |
-| Abuse guard (optional) | Upstash Redis for per-IP counters only (no user content), plus a demo passcode | Protects the credits on a public URL |
+| Abuse guard (optional) | Upstash Redis (free tier not verified) for per-IP counters only (no user content); no passcode by default (FEATURES.md F21) | Protects the credits on a public URL |
 
 **Why not WebSocket:** SSE over `fetch` covers token streaming, and Vercel's WebSocket support is still public beta [24]. Realtime transcription would need a server relay to keep the key secret, so the MVP uses push-to-talk with file transcription.
 
@@ -99,7 +99,7 @@ flowchart LR
     IM["muse-image-1.0"]
     VT["muse-voice-transcribe-1.0"]
   end
-  OW["Fallback: muse-spark-1.2, then open weights on Fireworks, Baseten or Modal"]
+  OW["Fallback: muse-spark-1.2, then open weights on Baseten or Modal"]
   UI <--> IDB
   UI --> EC
   UI -->|JSON + SSE| API
@@ -123,7 +123,7 @@ flowchart LR
 | 3 | Simulation | `/api/simulate`, Spark (Wonder behind a flag), one call per path in parallel | `TimelineEvent`s whose effects **reference assumption IDs**, never amounts | Low / base / high runs (Monte Carlo is stretch), figures, milestones, sensitivity | Sees timeline and range chart |
 | 4 | Persona | `/api/persona`, Spark | `PersonaCard` grounded in event IDs | Checks that every cited ID exists | — |
 | 5 | Avatar image | `/api/image`, Muse Image | Base portrait, then one edit per path | Builds prompts from a fixed style plus the persona card | Picks look attributes (no photo) |
-| 6 | Conversation | `/api/chat` (SSE), Spark, tools | Text containing figure placeholders and citation IDs; tool calls | Substitutes figures, guards numbers, checks citations, writes memory | Talks, switches paths, adjusts what-ifs |
+| 6 | Conversation | `/api/chat` (SSE), Spark, tools; a parallel safety-flag call (AGENTS_AND_APIS.md §2A, RISKS S5) | Text containing figure placeholders and citation IDs; tool calls | Substitutes figures, guards numbers, checks citations, applies the safety flag, writes memory | Talks, switches paths, adjusts what-ifs |
 | 7 | Compare | `/api/compare`, Spark | Side-by-side narrative with placeholders | Comparison table and sensitivity ranking | Pins "what matters to me" |
 | 8 | Decision summary | `/api/compare?mode=summary`, Spark | Reflection: trade-offs, open questions, next steps to check | Same figure substitution; "not financial advice" footer | Exports or deletes |
 
@@ -152,7 +152,7 @@ sequenceDiagram
 type Range = { low: number; base: number; high: number };
 
 interface Profile {
-  ageBand: string; province?: string; netMonthlyIncome: number; monthlyExpenses: number;
+  ageBand: string; province?: string; netMonthlyIncome: number; monthlyExpenses: number; familySupportMonthly: number;
   savings: number; debts: { label: string; balance: number; ratePct: number; payment: number }[];
   dependants: number; skills: string[]; riskTolerance: 'low' | 'medium' | 'high';
   goals: string[]; constraints: string[];
@@ -295,10 +295,11 @@ Assumptions for one full session: 3 paths, 30 avatar turns, 3 minutes of voice, 
 | Avatar turns | 30 | 300k (about 60% cached) | 30k |
 | Rolling summaries | 3 | 15k | 3k |
 | Compare + summary | 2 | 30k | 6k |
-| **Total** | **44** | **≈ 386k** | **≈ 62.5k** |
+| Safety flags, one per user turn, in parallel (about 800 input and 30 output tokens each; not cached) | 30 | 24k | 1k |
+| **Total** | **74** | **≈ 410k** | **≈ 63.5k** |
 
-- **Text:** input ≈ USD 0.29, output ≈ USD 0.27. **Images:** USD 0.06. **Voice:** about USD 0.01. Adding 30% for retries and repairs gives **≈ USD 0.80 per session**. Using Muse Wonder for the simulation step adds ≈ USD 0.24 (≈ USD 1.05).
-- **Credits:** USD 300 only if both of us claim our own USD 150 and attach a card (2 × 150, amount confirmed, CONTEXT.md §5). Reserving about USD 120 for development leaves about USD 180: **roughly 170–220 full sessions**, or 60–75 if our estimates are 3× too low. Credits, not rate limits, are the constraint: a session peaks at about 3 parallel calls against a 3,000 RPM limit.
+- **Text:** input ≈ USD 0.32 (including the safety flags), output ≈ USD 0.27. **Images:** USD 0.06. **Voice:** about USD 0.01. Adding 30% for retries and repairs gives **≈ USD 0.85 per session**. Using Muse Wonder for the simulation step adds ≈ USD 0.24 (≈ USD 1.10).
+- **Credits:** USD 300 only if both of us claim our own USD 150 and attach a card (2 × 150, amount confirmed, CONTEXT.md §5). Reserving about USD 120 for development leaves about USD 180: **roughly 170–210 full sessions**, or 60–70 if our estimates are 3× too low. Credits, not rate limits, are the constraint: a session peaks at about 3 parallel calls against a 3,000 RPM limit.
 - **Savers:** prefix caching, low reasoning effort for chat, fixtures during UI work, `-contributor` models for synthetic-only evals (never real user data), and a cap of 60 avatar turns per session.
 
 ## 15. Build order (dependencies first)

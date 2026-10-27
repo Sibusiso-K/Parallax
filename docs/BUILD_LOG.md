@@ -9,9 +9,9 @@ A dated record of what we built and when, so judges can tell exactly what was cr
 | What existed | When | Commits | Product code? |
 |---|---|---|---|
 | `.gitignore` | 20 Oct | `f4d3239` | No |
-| README.md and planning docs in `docs/` (CONTEXT, SCOPE, ARCHITECTURE, PLAN, DEMO, RISKS, REVIEW) | 20 Oct, updated 26 Oct before kickoff | `2a72c64`, `7e71557` | No |
+| README.md and planning docs in `docs/` (CONTEXT, SCOPE, ARCHITECTURE, PLAN, DEMO, RISKS, REVIEW) | 20 Oct; last edited before kickoff at 12:03 SAST on 26 Oct | `2a72c64`, `7e71557` | No |
 
-Nothing else existed: no app scaffold, engine, prompts, designs in the repo or code copied from earlier projects. Planning docs added after kickoff are still planning, not product code, and their entries below say so.
+Nothing else existed: no app scaffold, engine, prompts, designs in the repo or code copied from earlier projects. Commits after kickoff (`5a3b6b7` at 18:47 SAST and `3327b4b` at 18:52 SAST) changed planning docs only. They are listed under Day 1 and are still planning, not product code.
 
 ## How to write an entry
 
@@ -69,7 +69,7 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 **At and after kickoff (18:00)**
 - Kickoff livestream. Cross-checked every doc against the kickoff slides: anti-project list (adds Streamlit apps and dashboards as the main feature), bonus-prize rules, Discord channels, credit forms in #resources, live-session names, submission link.
 - Agreed the roles ([ROLES.md](ROLES.md)). Sibusiso: UI and UX, back end and the simulation engine, API integrations. Lethabo: avatars, API integrations, feature integration (figure guard, traceability), security.
-- Added planning docs, not product code: ROLES.md, this build log, FEATURES.md, AGENTS_AND_APIS.md, RESEARCH.md and SUBMISSION.md; aligned the existing docs with the slides and the roles. Added `.vercel/` to `.gitignore` so Vercel project IDs never reach the public repo. All on PR #1.
+- Added planning docs, not product code: ROLES.md, this build log, FEATURES.md, AGENTS_AND_APIS.md, RESEARCH.md and SUBMISSION.md; aligned the existing docs with the slides and the roles. Added `.vercel/` to `.gitignore` so Vercel project IDs never reach the public repo. All on PR #1 (`5a3b6b7`, `3327b4b`).
 - Found that US clocks go back on Sun 1 Nov, so office hours (10:00 ET) move from 16:00 to 17:00 SAST from Mon 2 Nov. Kickoff, live sessions, the deadline and the closing ceremony are unaffected.
 
 **Meta models used today:** none yet.
@@ -89,3 +89,32 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 - Join Discord, post in #intros.
 - Claim credits; agree who holds the project key.
 - Scaffold the app and API, deploy to Vercel, smoke-test every Meta model (PLAN.md §3, day 1).
+
+---
+
+## Day 2 · Tue 27 Oct 2026
+
+**Product code written today:** no.
+
+**Built** (planning docs only)
+- Reconciled the docs with the kickoff slides, the Participant Guide and the roles: anti-project lists, Stage 3 wording, Most Viral timing, Fireworks wording, the Muse Code and SAM 3.1 question, and the safety-flag cost.
+- Settled the open conflicts: the open-weights fallback is Baseten or Modal, not Fireworks; the path planner has no tools; the profile fields match ARCHITECTURE; "Ask this on another path" is on the never-cut list.
+- Checked the public repo: visibility public; GitHub secret scanning and push protection enabled.
+
+**Meta models used today:** none.
+
+**Decisions** (who decided)
+- Merge with merge commits, not squash, so the build history stays visible (Sibusiso; for Lethabo to agree).
+- Decisions 2 and 3, the model-collected open-questions list and PDF export are proposed stretch (REVIEW.md H1; to agree at the next sync).
+- Safety layer 2 (model flag) is costed at about USD 0.04 per session in ARCHITECTURE §14 (Lethabo to confirm).
+
+**Blockers and risks**
+- Lethabo has not reviewed PR #1 yet.
+- Most Viral: whether a post before the 4 Nov deadline counts is still open; the question is not yet asked in #questions.
+
+**Credits spent today (USD):** not recorded here yet; each of us fills in from our own Billing page.
+
+**Next**
+- Lethabo reviews PR #1, starting with ROLES.md, PLAN.md §1 and §3, and AGENTS_AND_APIS.md §2 and §5.
+- Meta Engineering Workshop P1 at 18:00 SAST (recorded to #resources).
+- Ask the Most Viral and track questions in #questions (Sibusiso).

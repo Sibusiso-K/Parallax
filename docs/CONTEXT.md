@@ -44,7 +44,7 @@ Submission requirements, rules and judging criteria are now confirmed: see secti
 
 ## 2. What Meta gives us
 
-Participant credits: **USD 150 Meta Model API credits per accepted participant** (confirmed by the Participant Guide; request forms are in Discord #resources from kickoff; each person claims their own, see section 5). Sponsor credits (confirmed): Baseten USD 100 + 2M TPM (request, per individual), Modal USD 100 (first 1,000 participants), Fireworks USD 25 (shortlisted teams only, by email; workshop by Sinan Ozdemir on Fri 30 Oct). All three are for Meta's **open-weights** models.
+Participant credits: **USD 150 Meta Model API credits per accepted participant** (confirmed by the Participant Guide; request forms are in Discord #resources from kickoff; each person claims their own, see section 5). Sponsor credits (confirmed): Baseten USD 100 + 2M TPM (request, per individual), Modal USD 100 (first 1,000 participants), Fireworks USD 25 (select participants only, by email; workshop by Sinan Ozdemir on Fri 30 Oct). All three are for Meta's **open-weights** models.
 
 Models and tools (from Meta's own posts; check the live API docs before relying on any detail):
 

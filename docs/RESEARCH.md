@@ -7,9 +7,9 @@ Written 26 Oct 2026 from the Participant Guide ([CONTEXT.md](CONTEXT.md) §5) an
 1. **Theme:** Parallax fits *Build for Your World* closely. Stage 1 (pass/fail) is safe as long as each Meta model visibly does a job.
 2. **Track:** **Startup**, confirmed 26 Oct (both registered). The four Stage 2 criteria are the same on both tracks; only the emphasis differs.
 3. **Biggest scoring lever:** Technical Depth and Use of Meta AI Tooling both rest on the grounded future-self chat (F10, F11). Build it early.
-4. **Anti-projects:** we are clear of all ten on the slide, but three need care in how we present: medical advice, dashboards as the main feature, and personality analysers.
+4. **Anti-projects:** we are clear of every item on the list, but three need care in how we present: medical advice, dashboards as the main feature, and personality analysers.
 5. **Bonus prizes:** Best Agentic Use-Case and Best Creative Build cost nothing extra; Most Viral and Community Vote cost only effort; Best Build on Open Weights is real work and stays a day-6 decision.
-6. **Landscape:** MIT Media Lab's *Future You* showed that talking to a simulated future self can reduce anxiety. Parallax goes further: several futures for one real decision, with figures computed in code.
+6. **Landscape:** MIT Media Lab's *Future You* preprint reports that talking to a simulated future self reduces anxiety. Parallax goes further: several futures for one real decision, with figures computed in code.
 
 ## 2. Theme fit (confirmed: slides and guide)
 
@@ -89,6 +89,7 @@ Not on the list but close: **financial advice** (South Africa's FAIS Act). We fr
 | General chatbots (Meta AI and others) asked "should I quit my job?" | Fluent, generic, invents numbers, gives one answer | Grounded figures, several futures, traceable answers, no verdict |
 | Spreadsheets, budget and loan calculators | Correct arithmetic, no story, no uncertainty, no conversation | The same arithmetic, explained by the person you might become |
 | Bank and robo-adviser tools | Regulated advice tied to products | No products, no advice: reflection only |
+| **"Usaid" (2026 hackathon project)** | Tagline "Experience the future before you choose it" (from team notes; not checked) | Our tagline "Talk to your future before you choose it" is close: see recommendation 9 |
 
 **Pitch line we can defend:** "Research from MIT's Media Lab found that talking to a future self can reduce anxiety about the future. Parallax lets you talk to each future a decision could lead to, with numbers you can check." Cite the preprint in the README, not just in the video.
 
@@ -100,8 +101,9 @@ Not on the list but close: **financial advice** (South Africa's FAIS Act). We fr
 4. Flag Best Creative Build and Best Agentic Use-Case in the submission; ask in #questions how bonus prizes are flagged.
 5. Run three sessions with people outside the team on day 7 or 8 for Impact.
 6. Request Baseten and Modal credits on day 1; decide the open-weights path at the day-6 checkpoint.
-7. Ask in #questions on day 1: does an X post made before 4 Nov 21:00 ET count for Most Viral?
+7. Ask in #questions now: does an X post made before 4 Nov 21:00 ET count for Most Viral? Still open on 27 Oct.
 8. Keep BUILD_LOG.md daily so judges can tell exactly what was built during the event.
+9. Decide the tagline before the form and README are final. "Talk to your future before you choose it" is close to the "Usaid" tagline in §7; check that project before we keep ours.
 
 ## Sources
 

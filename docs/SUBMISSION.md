@@ -48,7 +48,7 @@ Written 26 Oct 2026 from the kickoff slides and the Participant Guide ([CONTEXT.
 The rules disqualify anything not clearly identified as event work. The only pre-kickoff material is the planning docs written 20 to 26 Oct before 18:00 SAST (README.md says so). Docs written after kickoff are still planning, not product code. [BUILD_LOG.md](BUILD_LOG.md) records, day by day, what was built and when.
 
 - **README section "Built during the hackathon":** kickoff time (26 Oct, 12:00 ET = 16:00 UTC); a list of the pre-kickoff files; the first product-code commit.
-- **A tag on the last pre-kickoff commit** (for example `pre-kickoff`), plus a GitHub compare link from that tag to `main`, so a judge sees every line added during the event in one view. Tags add a label; they do not rewrite history.
+- **A tag on the last pre-kickoff commit, `7e71557`** (26 Oct, 12:03 SAST; for example `pre-kickoff`), plus a GitHub compare link from that tag to `main`, so a judge sees every line added during the event in one view. Tags add a label; they do not rewrite history.
 - **Small, dated commits** pushed daily; never squash or rewrite history before submission.
 - **In the video:** one second of the commit history starting 26 Oct, and the words "built between 26 October and 4 November".
 - **Docs written during the event** (this file, RESEARCH.md and the others) are planning, not product, and say so.
@@ -110,4 +110,4 @@ US clocks go back on Sun 1 Nov, so ET is 6 hours behind SAST until then and 7 ho
 - [ ] Credits left for judging 5 to 8 Nov.
 - [ ] Confirmation screen or email saved; both told in team chat.
 
-**Questions to ask in #questions by Tue 3 Nov:** must every teammate accept on CV? Can a submission be edited after it is sent? Do bonus prizes need an opt-in? Does X engagement before 4 Nov count?
+**Questions to ask in #questions by Tue 3 Nov:** must every teammate accept on CV? Can a submission be edited after it is sent? Do bonus prizes need an opt-in? Does X engagement before 4 Nov count? Must the models the rules list (Muse Code, SAM 3.1) be used inside the product, or is "Meta Model API and/or open-weight models" (Stage 1) enough?

@@ -294,12 +294,12 @@ The official Participant Guide was read on 26 Oct 2026 (kickoff day). Full facts
 - Pre-event work: new-work-only is confirmed; we wrote no product code before kickoff, so the planning docs are the only pre-existing material.
 
 **New**
-- **Sample anti-projects** (generic advisors, personality analysers, basic RAG, medical advice, anything political or war): Parallax must not read like one (RISKS.md P7).
-- **Repo is private; rules require public** (RISKS.md H5).
+- **Sample anti-projects** (kickoff slides and guide: AI medical advice, basic RAG, simple image analysers, Streamlit apps, dashboards as the main feature, "AI for Education" chatbots, job-application screeners, nutrition coaches, personality analysers, sports analysers or coaches, anything political or war; the list is not complete): Parallax must not read like one (RISKS.md P7).
+- **The repo was private until 26 Oct; the rules require public** (done that day; RISKS.md H5).
 - **New-work-only with immediate disqualification** (RISKS.md H6).
 - Appointed **Representative** submits; everyone who worked on it is listed (H7).
 - Bonus prizes: Most Viral Project (X post, USD 20K), Best Build on Open Weights (USD 10K), Community Vote (USD 10K), Best Agentic Use-Case (USD 5K), Best Creative Build (USD 5K). The last two fit the existing design (SCOPE.md §4A); the first needs a plan (DEMO.md); the open-weights one is a labelled stretch goal (SCOPE.md stretch 7).
-- Fireworks credits are for shortlisted teams only; Baseten and Modal are by request and per individual; use `meta-models/muse-spark-open-1026` on Baseten.
+- Fireworks credits are for select participants only; Baseten and Modal are by request and per individual; use `meta-models/muse-spark-open-1026` on Baseten.
 - Workshops 18:00-19:00 SAST on 27, 28 and 30 Oct; Agents 102 (Verifiable Agents) is directly relevant to our traceability design. Office hours are weekdays only, 16:00-17:00 SAST.
 - No scope has been added; the cuts decided in section 4 stand.
 

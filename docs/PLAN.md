@@ -1,6 +1,6 @@
 # Plan: who does what, day by day
 
-Draft of 20 Oct 2026, updated 26 Oct 2026 after the official Participant Guide. Times are SAST. Facts come from [CONTEXT.md](CONTEXT.md); **unknown** means not published yet.
+Draft of 20 Oct 2026, updated 26 Oct 2026 after the official Participant Guide and 27 Oct 2026 in a contradictions pass. Times are SAST. Facts come from [CONTEXT.md](CONTEXT.md); **unknown** means not published yet.
 
 > **What is new work and what is not.** All product code is written from kickoff, **26 Oct 2026, 12:00 ET (18:00 SAST)**. These planning docs (and the README) contain no product code; most were written before kickoff and are the only pre-existing material, and the rest were added on kickoff evening ([BUILD_LOG.md](BUILD_LOG.md)), so judges can tell them apart from what was built during the Hackathon. The rules make this a disqualification matter (RISKS.md H6).
 
@@ -44,7 +44,7 @@ Draft of 20 Oct 2026, updated 26 Oct 2026 after the official Participant Guide. 
 - [ ] Introduce ourselves in **#intros**. (Track settled: both registered on Startup.)
 - [ ] **Each** of us claims our own USD 150 Meta credits from the form in **#resources**, adds a credit card, and sets a Spend Limit notification on the Billing page. Nobody can claim for the other. Agree who holds the project API key ([ROLES.md](ROLES.md) §5).
 - [ ] Request Baseten credits (USD 100 + 2M TPM; model `meta-models/muse-spark-open-1026`) and Modal credits (USD 100, first 1,000 participants), each as an individual, from the forms in #resources.
-- [ ] Sibusiso turns on GitHub secret scanning and push protection for the public repo (AGENTS_AND_APIS.md §5).
+- [x] Sibusiso turns on GitHub secret scanning and push protection for the public repo (AGENTS_AND_APIS.md §5). Checked 27 Oct: both enabled.
 - [ ] First [BUILD_LOG.md](BUILD_LOG.md) entry for the day.
 - [x] **Repo made public** on 26 Oct (rules require it). History checked first: docs only, no secrets. From now on everything we push is public, so keys live only in env vars.
 - [ ] Appoint the **Representative** who will enter the submission (proposal: Sibusiso) and note everyone to list.
@@ -87,13 +87,15 @@ Full detail, the form-field drafts and the day-10 run sheet: [SUBMISSION.md](SUB
 - **Checkpoints:** 30 minutes on the evenings of day 4 and day 6 to apply the scope-cut rules.
 - **Task board:** GitHub Projects, columns Backlog, Today, In progress, In review, Done. Every task is an issue with one owner, a feature ID from [FEATURES.md](FEATURES.md) in its title, and a label (`frontend`, `backend`, `simulation`, `ai`, `avatars`, `integration`, `security`, `demo`, `docs`, `bug`, `cut-candidate`). Not on the board means nobody is doing it.
 - **Handovers:** stopping mid-task or going offline means pushing the branch with a handover note in a draft PR ([ROLES.md](ROLES.md) §3).
-- **Branches and PRs:** `main` is always deployable and is what Vercel serves. Work on `feat/…`, `fix/…` or `docs/…` branches. Small PRs: one concern, roughly under 300 changed lines. The other person reviews, ideally within four waking hours, on the Vercel preview link. Squash-merge. Keys live in Vercel environment variables, never in the repo. Days 9–10: fixes only, agreed in chat first.
+- **Branches and PRs:** `main` is always deployable and is what Vercel serves. Work on `feat/…`, `fix/…` or `docs/…` branches. Small PRs: one concern, roughly under 300 changed lines. The other person reviews, ideally within four waking hours, on the Vercel preview link. Merge with a merge commit, never squash, so every commit stays in the history (SUBMISSION.md §5). Keys live in Vercel environment variables, never in the repo. Days 9–10: fixes only, agreed in chat first.
 - **Live sessions** (confirmed, 18:00–19:00 SAST, all recorded to #resources): Tue 27 Oct Meta Engineering Workshop P1, Agents 101 (Build a Multimodal AI Agent; Suraj Subramanian); **Wed 28 Oct Meta Engineering Workshop P2, Agents 102 (Best Practices for Verifiable Agents; Yash Khare)**; Fri 30 Oct Fireworks AI Workshop on Muse open models (Sinan Ozdemir). **Both of us attend P1 and P2**: Lethabo leads the agents and the figure guard, and our traceability design (assumption IDs, figure guard, citation checks, trace drawer) is a verifiable-agent design, so we compare it with Meta's guidance and adjust before the day-4 checkpoint. Fireworks: Lethabo if free (open weights), otherwise the recording. Each attendee posts three bullet points in team chat.
 - **Discord office hours:** weekdays only, text only, 10:00–11:00 ET: **16:00–17:00 SAST until Fri 30 Oct, then 17:00–18:00 SAST from Mon 2 Nov** (US clocks go back on Sun 1 Nov). This collides with work or study hours, so post questions in #questions (Cerebral Valley, ping @CV) or #office-hours (Meta) and read the answers later. Last full day for submission questions is Tue 3 Nov. Ask rules and API-limit questions early, not on day 9.
 
 ## 5. Scope-cut rules
 
-**Never cut:** money figures computed in code with assumptions and uncertainty shown; open-ended conversation with each future self; switching between paths; a basic decision summary; handling of faulty inputs; the "not financial advice" notice. These are the product and what judges look at.
+**Never cut:** money figures computed in code with assumptions and uncertainty shown; open-ended conversation with each future self; switching between paths and "Ask this on another path"; a basic decision summary; handling of faulty inputs; the "not financial advice" notice. These are the product and what judges look at.
+
+**Proposed for the first sync (not yet agreed):** move decisions 2 and 3, the model-collected open-questions list and PDF export to stretch now, as REVIEW.md H1 and FEATURES.md recommend. Browser print covers the export.
 
 **Day 4 checkpoint.** If the full flow does not work end to end, cut in this order:
 
@@ -119,7 +121,7 @@ After day 6 nothing new goes in, unless both agree at the sync.
 | API access opens only at kickoff; credit forms are in #resources from kickoff | Day 1 evening is for keys; UI work runs against a mock model reply so it never waits. Each of us claims our own credits and adds a card on day 1. |
 | Public repo leaks a secret | Repo went public on 26 Oct; keys only in env vars; Lethabo runs a secrets scan before every merge to main and on day 10; RISKS.md H5. |
 | Submission mechanics (Representative, public repo, three-minute video, everyone listed) | Submission checklist above; Representative appointed on day 1. |
-| Credits run short (USD 150 each, confirmed, per individual, card required) | Log spend daily; cache simulation results; cheaper models or sponsor credits for development; Fireworks credits are for shortlisted teams only, so do not rely on them. |
+| Credits run short (USD 150 each, confirmed, per individual, card required) | Log spend daily; cache simulation results; cheaper models or sponsor credits for development; Fireworks credits are for select participants only, so do not rely on them. |
 | Other commitments on weekdays | Availability declared before 26 Oct; heavy work on the weekend; days 7–8 double as buffer. |
 | SONAR rule: no more than two overlapping builds | Check before 26 Oct; if Parallax would be a third, pause another build. |
 | One of us ill or offline (including power or internet cuts) | Small commits pushed daily; both can deploy; every area has a back-up. |
