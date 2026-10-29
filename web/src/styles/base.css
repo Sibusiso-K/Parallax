@@ -1,0 +1,97 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 var(--font);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.start {
+  flex: 1;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 3rem 1rem 2rem;
+}
+
+.mark {
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.lede {
+  margin: 0.5rem 0 1.5rem;
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.notice {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1rem 1rem 2rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.notice li + li {
+  margin-top: 0.5rem;
+}
+
+.check {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 44px;
+}
+
+.begin {
+  margin-top: 1rem;
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.begin:hover:not(:disabled),
+.begin:focus-visible {
+  transform: scale(1.04);
+}
+
+.begin:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.disclaimer {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
