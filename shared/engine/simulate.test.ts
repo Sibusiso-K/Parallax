@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { simulate, type PathInput } from './simulate';
+import { editAssumption, simulate, type PathInput } from './simulate';
 
 // Fictional demo persona, Naledi (DEMO.md §1), Path A: stay and grow.
 const stay: PathInput = {
@@ -74,6 +74,23 @@ describe('simulate', () => {
     expect(() =>
       simulate({ ...resign, assumptions: [{ ...resign.assumptions[0]!, fromMonth: 5, toMonth: 2 }] }),
     ).toThrow('fromMonth');
+  });
+
+  it('edits one assumption, marks it as yours and re-runs', () => {
+    const res = editAssumption(stay, 'A2', { low: 4000, base: 8000, high: 12000 });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.path.assumptions.find((a) => a.id === 'A2')).toMatchObject({ base: 8000, source: 'you' });
+    expect(stay.assumptions.find((a) => a.id === 'A2')?.base).toBe(6000); // original untouched
+    expect(simulate(res.path).likely.rows.at(-1)!.savings).toBe(35000 + 36 * 10700);
+  });
+
+  it('refuses an invalid edit and an unknown ID', () => {
+    expect(editAssumption(stay, 'A2', { low: 9000, base: 8000, high: 12000 })).toEqual({
+      ok: false,
+      error: 'needs low <= base <= high',
+    });
+    expect(editAssumption(stay, 'A99', { low: 1, base: 1, high: 1 })).toMatchObject({ ok: false });
   });
 
   it('rejects low above high, negatives and non-numbers', () => {

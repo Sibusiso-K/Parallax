@@ -1,12 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { AssumptionsPanel } from './AssumptionsPanel';
 import { formatRand } from '../../../shared/intake/amount';
 import { simulate } from '../../../shared/engine/simulate';
 import type { PathCard } from '../../../shared/paths/templates';
 
 // Path cards (DEMO.md §7 #3): avatar, name and a three-year range band.
 // The avatar is a path-colour silhouette until Muse Image portraits land (F9).
-export function Paths({ paths, fromTemplates }: { paths: PathCard[]; fromTemplates: boolean }) {
+type Props = { paths: PathCard[]; fromTemplates: boolean; onChange: (p: PathCard) => void };
+
+export function Paths({ paths, fromTemplates, onChange }: Props) {
   const results = useMemo(() => paths.map((p) => ({ path: p, sim: simulate(p) })), [paths]);
+  const [open, setOpen] = useState<string | null>(null);
 
   // One shared scale so bands can be compared across cards.
   const all = results.flatMap(({ sim }) => [sim.bad.rows.at(-1)!.savings, sim.good.rows.at(-1)!.savings]);
@@ -55,6 +59,20 @@ export function Paths({ paths, fromTemplates }: { paths: PathCard[]; fromTemplat
                 </p>
                 {shortfall !== undefined && (
                   <p className="small">In the bad case, savings run out in month {shortfall}.</p>
+                )}
+                <button
+                  type="button"
+                  className="quiet toggle"
+                  aria-expanded={open === path.id}
+                  aria-controls={`assumptions-${path.id}`}
+                  onClick={() => setOpen(open === path.id ? null : path.id)}
+                >
+                  {open === path.id ? 'Hide' : 'Show'} assumptions ({path.assumptions.length})
+                </button>
+                {open === path.id && (
+                  <div id={`assumptions-${path.id}`}>
+                    <AssumptionsPanel path={path} onChange={onChange} />
+                  </div>
                 )}
               </div>
             </li>

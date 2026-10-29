@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Extraction, FieldKey } from '../../shared/intake/schema';
-import { templatePaths } from '../../shared/paths/templates';
+import { templatePaths, type PathCard } from '../../shared/paths/templates';
 import { buildProfile } from '../../shared/profile/profile';
 import { Intake } from './screens/Intake';
 import { Paths } from './screens/Paths';
@@ -15,7 +15,8 @@ export function App() {
   const [step, setStep] = useState<Step>('intake');
   const [answers, setAnswers] = useState<{ fields: Extraction; skipped: FieldKey[] } | null>(null);
   const profile = useMemo(() => (answers ? buildProfile(answers.fields) : null), [answers]);
-  const paths = useMemo(() => (profile ? templatePaths(profile) : []), [profile]);
+  // Paths are state so assumption edits (F8) stick; they reset from the profile on "Show me my paths".
+  const [paths, setPaths] = useState<PathCard[]>([]);
 
   return (
     <div className="app">
@@ -29,9 +30,20 @@ export function App() {
         )}
 
         {started && step === 'paths' && profile ? (
-          <Paths paths={paths} fromTemplates />
+          <Paths
+            paths={paths}
+            fromTemplates
+            onChange={(next) => setPaths((ps) => ps.map((p) => (p.id === next.id ? next : p)))}
+          />
         ) : started && step === 'profile' && profile ? (
-          <Profile profile={profile} onEdit={() => setStep('intake')} onContinue={() => setStep('paths')} />
+          <Profile
+            profile={profile}
+            onEdit={() => setStep('intake')}
+            onContinue={() => {
+              setPaths(templatePaths(profile));
+              setStep('paths');
+            }}
+          />
         ) : started ? (
           <Intake
             initial={answers ?? undefined}
