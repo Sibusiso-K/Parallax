@@ -2,7 +2,7 @@
 
 Draft of 20 Oct 2026, updated 26 Oct 2026 after the official Participant Guide and 27 Oct 2026 in a contradictions pass. Times are SAST. Facts come from [CONTEXT.md](CONTEXT.md); **unknown** means not published yet.
 
-> **What is new work and what is not.** All product code is written from kickoff, **26 Oct 2026, 12:00 ET (18:00 SAST)**. These planning docs (and the README) contain no product code; most were written before kickoff and are the only pre-existing material, and the rest were added on kickoff evening ([BUILD_LOG.md](BUILD_LOG.md)), so judges can tell them apart from what was built during the Hackathon. The rules make this a disqualification matter (RISKS.md H6).
+> **What is new work and what is not.** All product code is written from kickoff, **26 Oct 2026, 12:00 ET (18:00 SAST)**. These planning docs (and the README) contain no product code; most were written before kickoff and are the only pre-existing material, and the rest were added after kickoff ([BUILD_LOG.md](BUILD_LOG.md) and the git history give the dates), so judges can tell them apart from what was built during the Hackathon. The rules make this a disqualification matter (RISKS.md H6).
 
 ## 1. Team split
 
