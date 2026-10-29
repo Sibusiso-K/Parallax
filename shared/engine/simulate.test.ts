@@ -59,6 +59,23 @@ describe('simulate', () => {
     expect(simulate(thin).likely.shortfallMonths[0]).toBe(3);
   });
 
+  it('applies an amount only inside its month window', () => {
+    const resign: PathInput = {
+      id: 'B',
+      startingSavings: 0,
+      assumptions: [
+        { id: 'B1', label: 'Salary', kind: 'income', low: 1000, base: 1000, high: 1000, toMonth: 3 },
+        { id: 'B2', label: 'Business', kind: 'income', low: 500, base: 500, high: 500, fromMonth: 4 },
+      ],
+      months: 6,
+    };
+    const rows = simulate(resign).likely.rows;
+    expect(rows.map((r) => r.income)).toEqual([1000, 1000, 1000, 500, 500, 500]);
+    expect(() =>
+      simulate({ ...resign, assumptions: [{ ...resign.assumptions[0]!, fromMonth: 5, toMonth: 2 }] }),
+    ).toThrow('fromMonth');
+  });
+
   it('rejects low above high, negatives and non-numbers', () => {
     const bad = (low: number, base: number, high: number): PathInput => ({
       id: 'X',

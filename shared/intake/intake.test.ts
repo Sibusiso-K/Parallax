@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAmount } from './amount';
+import { formatRand, parseAmount } from './amount';
 import { handleIntake } from './handle';
 import { NALEDI_TEXT } from './fixture';
 
@@ -22,6 +22,13 @@ describe('parseAmount', () => {
     expect(parseAmount('lots')).toMatchObject({ ok: false });
     expect(parseAmount('-500')).toMatchObject({ ok: false, error: 'Amounts cannot be negative' });
     expect(parseAmount('12k to 8k')).toMatchObject({ ok: false });
+  });
+});
+
+describe('formatRand', () => {
+  it('puts the minus sign before the R', () => {
+    expect(formatRand(-476800)).toBe('−R476 800');
+    expect(formatRand(19500)).toBe('R19 500');
   });
 });
 
