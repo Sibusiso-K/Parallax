@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { editAssumption, simulate, type PathInput } from './simulate';
+import { editAssumption, simulate, type PathInput } from './simulate.js';
 
 // Fictional demo persona, Naledi (DEMO.md §1), Path A: stay and grow.
 const stay: PathInput = {

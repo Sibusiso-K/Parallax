@@ -1,5 +1,5 @@
-import za from '../defaults/za.json';
-import type { Extraction, FieldKey } from '../intake/schema';
+import za from '../defaults/za.json' with { type: 'json' };
+import type { Extraction, FieldKey } from '../intake/schema.js';
 
 // F5 "You, today": facts from the person, defaults we filled in (marked assumed), and priorities.
 // Every path and avatar reads from this one profile so they stay consistent.

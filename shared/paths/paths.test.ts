@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { simulate, validateAssumption } from '../engine/simulate';
-import { NALEDI_EXTRACTION } from '../intake/fixture';
-import { buildProfile } from '../profile/profile';
-import { templatePaths } from './templates';
+import { simulate, validateAssumption } from '../engine/simulate.js';
+import { NALEDI_EXTRACTION } from '../intake/fixture.js';
+import { buildProfile } from '../profile/profile.js';
+import { templatePaths } from './templates.js';
 
 const profile = buildProfile(NALEDI_EXTRACTION);
 

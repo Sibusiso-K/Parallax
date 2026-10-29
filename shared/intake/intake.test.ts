@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { formatRand, parseAmount } from './amount';
-import { handleIntake } from './handle';
-import { NALEDI_TEXT } from './fixture';
+import { formatRand, parseAmount } from './amount.js';
+import { handleIntake } from './handle.js';
+import { NALEDI_TEXT } from './fixture.js';
 
 describe('parseAmount', () => {
   it('reads exact amounts in the ways people type them', () => {
