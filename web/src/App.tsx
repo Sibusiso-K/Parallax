@@ -1,19 +1,28 @@
 import { useState } from 'react';
+import type { Extraction } from '../../shared/intake/schema';
+import { Intake } from './screens/Intake';
 
 // F1 start and consent. Intake stays locked until the person confirms they are 18 or older.
 export function App() {
   const [adult, setAdult] = useState(false);
   const [started, setStarted] = useState(false);
+  const [profile, setProfile] = useState<Extraction | null>(null);
 
   return (
     <div className="app">
       <main className="start">
         <ParallaxMark />
-        <h1>Parallax</h1>
-        <p className="lede">Talk to each possible future before you choose one.</p>
+        {!started && (
+          <>
+            <h1>Parallax</h1>
+            <p className="lede">Talk to each possible future before you choose one.</p>
+          </>
+        )}
 
-        {started ? (
-          <p role="status">Intake comes next.</p>
+        {profile ? (
+          <p role="status">Got it. Your "You, today" profile comes next.</p>
+        ) : started ? (
+          <Intake onDone={(fields) => setProfile(fields)} />
         ) : (
           <>
             <ul className="notice">
