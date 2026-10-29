@@ -266,3 +266,129 @@ textarea {
     opacity: 0;
   }
 }
+
+.card {
+  padding: 0.25rem 1rem 0.5rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.chip.assumed {
+  background: color-mix(in srgb, var(--path-b) 22%, transparent);
+}
+
+.paths {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border-top: 4px solid var(--path);
+  animation: rise var(--dur-slow) var(--ease-out) both;
+}
+
+.path-card:nth-child(2) {
+  animation-delay: calc(var(--stagger) * 2);
+}
+
+.path-card:nth-child(3) {
+  animation-delay: calc(var(--stagger) * 4);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--path) 18%, transparent);
+  fill: var(--path);
+}
+
+.path-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.path-body h3 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.path-letter {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.25rem;
+  border-radius: 6px;
+  background: var(--path);
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.band-label {
+  margin: 0.75rem 0 0.375rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.band {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 15%, transparent);
+}
+
+.band-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--path) 35%, transparent), var(--path), color-mix(in srgb, var(--path) 35%, transparent));
+}
+
+.band-likely,
+.band-zero {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--text);
+}
+
+.band-zero {
+  background: var(--text-muted);
+  width: 1px;
+}
+
+.band-figures {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.375rem 0 0;
+}
+
+@media (min-width: 900px) {
+  .start:has(.paths) {
+    max-width: 64rem;
+  }
+
+  .paths {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .path-card {
+    flex-direction: column;
+  }
+}
