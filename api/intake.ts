@@ -1,4 +1,4 @@
-import { handleIntake } from '../shared/intake/handle';
+import { handleIntake } from '../shared/intake/handle.js';
 
 // Vercel Function: POST /api/intake. Runs in fixture mode until the intake agent
 // (Lethabo, F2) is wired in; the response says which mode answered.

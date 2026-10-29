@@ -1,4 +1,4 @@
-import type { Extraction } from './schema';
+import type { Extraction } from './schema.js';
 
 // Fixture mode (FEATURES.md F20): used while there is no Meta key, and as the fallback
 // when the model fails. Naledi Mokoena is the fictional demo persona (DEMO.md §1).
