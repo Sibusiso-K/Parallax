@@ -67,7 +67,20 @@ Weekdays compete with work and study; the weekend of 31 Oct – 1 Nov is our big
 | 9 | Tue 3 Nov (last full day for submission questions) | Submission materials | README (set-up, architecture, Meta models used, what was built during the Hackathon); technical write-up | Security and data notes for the README; screenshots; X post drafted. **Both:** record the three-minute video and the 2-minute cut-down | All reviewed by the other person; submission fields drafted (SUBMISSION.md); open questions to organisers asked today |
 | 10 | Wed 4 Nov | Final checks; **SUBMIT by 22:00 SAST** | Code freeze 16:00; final deploy and tag; smoke test; Representative submits | Secrets scan of the public repo; check every link in a logged-out browser; post on X | Submitted (aim 20:00, latest 22:00); confirmation saved; X link submitted |
 
-The official deadline (4 Nov 21:00 ET = 5 Nov 04:00 SAST; late submissions are not considered) is for disasters only; we never plan on it. Judging runs Thu 5 - Sun 8 Nov (keep the app up, credits reserved, X post engagement counts to 8 Nov 11:59 PM ET = 9 Nov 06:59 SAST). **Closing ceremony and live final round: Mon 9 Nov, 12:00 ET = 19:00 SAST** (top 10 teams, 5 per track); community vote opens then and is announced 16 Nov on Discord.
+The official deadline (4 Nov 21:00 ET = 5 Nov 04:00 SAST; late submissions are not considered) is for disasters only; we never plan on it. Judging runs Thu 5 - Sun 8 Nov (keep the app up, credits reserved, X post engagement counts to 8 Nov EOD). **Closing ceremony and final round: Mon 9 Nov, 12:00 ET = 19:00 SAST** (top 10 teams, 5 per track; judges watch the video demos live); community vote opens then and is announced 16 Nov on Discord.
+
+### 3A. Re-plan after the founder pivot (Sun 1 Nov)
+
+On day 7 we changed direction to founders ([FOUNDERS.md](FOUNDERS.md)) and chose Mockup 5, Control Room, as the UI ([DESIGN.md](DESIGN.md) §0). The feature freeze planned for Sat 31 Oct is replaced by this plan. Built on day 7: the founder intake, engine, three decision templates and screens (PR `feat/founder-pivot`, 105 tests) and the founder docs (PR `docs/founder-pivot`). The rubric now weights Impact at 30%, so the plan protects the demo founder story and one real founder's reaction above everything else.
+
+| Day | Date | Sibusiso | Lethabo | Definition of done |
+|---|---|---|---|---|
+| 7 | Sun 1 Nov | Founder pivot in code and docs; PRs open | Review PRs #1, #6, #7 and the two founder PRs; reply on the decisions in them | Both founder PRs reviewed or commented |
+| 8 | Mon 2 Nov (office hours 17:00 SAST) | Control Room layout for the path and chat screens; the setback stress test on screen; compare row for the setback to watch | Founder agents (F10) with the figure guard (F11) on the demo story; avatars (F9) for the three paths; decide open weights at the sync | The demo story runs end to end with live agents and avatars on the deployed URL |
+| 9 | Tue 3 Nov (last day for questions) | Source or label the za.json values the demo shows; README; BUILD_LOG days 3–9 | One real founder session (with consent); security pass; submission form: add Lethabo to the team. **Both:** record the 3-minute video, the 2-minute cut and the 30-second hook | Video recorded; form drafted (SUBMISSION.md §6) |
+| 10 | Wed 4 Nov | Code freeze 16:00; final deploy and tag; Representative submits by 20:00 | Secrets scan; logged-out checks; post on X | Submitted; X link on the form |
+
+**Merge order.** #1 (plan) and `docs/founder-pivot` (into #1's branch) can merge any time. Code: #6 → #7 → `feat/founder-pivot`, each into the one below it, then the stack into `main`, with merge commits only.
 
 ### Submission checklist (the Representative submits; both verify)
 
@@ -100,13 +113,13 @@ Full detail, the form-field drafts and the day-10 run sheet: [SUBMISSION.md](SUB
 **Day 4 checkpoint.** If the full flow does not work end to end, cut in this order:
 
 1. Any voice output (Meta has no text-to-speech; voice output is a stretch goal anyway).
-2. The third path: simulate two paths. *Demo fallback:* DEMO.md drops Path C (Qualify up); the key chat moment already uses only A and B, and the compare view shows two columns.
+2. The third path: simulate two paths. *Demo fallback (founder direction, 1 Nov):* DEMO.md keeps B (Take it as offered) and C (Take it on safer terms), because the late-payment moment needs both, and drops A (Stay lean); the compare view shows two columns.
 3. Avatar extras: one image per path, generated once and cached, with a neutral placeholder if generation fails.
 4. Compare view: replace with a plain side-by-side table.
 
 **Day 6 checkpoint.** If not demo-ready, also cut, in this order:
 
-5. Voice input: text only. *Demo fallback:* Naledi types her intake in DEMO.md's 0:10 scene; the range chip ("you said 'about'") is the point of that scene and still works. The pitch then names Voice Transcribe as next, not as shown.
+5. Voice input: text only. *Demo fallback:* the demo founder types the story in DEMO.md's 0:08 scene; the quotes and the range chip on sales are the point of that scene and still work. The pitch then names Voice Transcribe as next, not as shown.
 6. Memory beyond the current session (a stretch goal in SCOPE.md, so normally never built).
 7. Any feature the DEMO.md script does not use.
 8. Visual polish beyond readable and consistent.

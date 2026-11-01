@@ -1,71 +1,74 @@
 # Demo and pitch plan
 
-Event and model facts come from [CONTEXT.md](CONTEXT.md); build details belong in ARCHITECTURE.md.
+Event and model facts come from [CONTEXT.md](CONTEXT.md); build details belong in ARCHITECTURE.md. **Rewritten Sun 1 Nov 2026 (day 7) for the founder direction** ([FOUNDERS.md](FOUNDERS.md)). The earlier persona and script are in the git history.
 
-**Owners (roles agreed 26 Oct, [ROLES.md](ROLES.md)):** demo video and pitch: both, with who presents decided on day 6. Seeded session, fixture (mock) mode and the persona's data: Lethabo (feature integration), with Sibusiso on the back-end side. X post: Sibusiso posts, Lethabo reposts. This doc owns the demo persona; SCOPE.md follows it.
+**Owners (roles agreed 26 Oct, [ROLES.md](ROLES.md)):** demo video and pitch: both. Seeded session, fixture mode and the demo founder's data: Lethabo (feature integration), with Sibusiso on the back-end side. X post: Sibusiso posts, Lethabo reposts. This doc owns the demo founder; SCOPE.md follows it.
 
-> **Submission format is confirmed (Participant Guide, 26 Oct, CONTEXT.md §5):** a **three-minute demo video** of the features, code and functionality built during the Hackathon, a **public repo**, a live product, and everyone who worked on it listed. The video is a primary artifact judges use. The **3-minute version (§3) is therefore the main submission video**; the 2-minute script (§2) is the cut-down version for social media, the X post and the fallback.
+> **Submission format (Participant Guide, CONTEXT.md §5):** a **three-minute demo video** of what was built during the Hackathon, a **public repo**, a live product, and everyone who worked on it listed. In the final round, judges "watch the video demos live and rank them", so the **3-minute video (§3) is the main artefact**; the 2-minute script (§2) is the cut-down for social media and the fallback.
 
-**Honesty rule:** answers on screen are real output from a seeded session. Quoted lines below show the *shape* we expect, not hard-coded text. Any sped-up wait is labelled on screen.
-
----
-
-## 1. Demo persona (fictional)
-
-**Naledi Mokoena, 27, Soweto. Fictional character; any likeness to a real person is accidental.** On-screen label: "Demo persona: fictional".
-
-Naledi is a payroll administrator who caters birthdays, funerals and church events on weekends. A regular client has offered her a monthly contract. Her question: *"Do I quit my job and cater full-time?"* (Rand figures are plausible demo values, not research.)
-
-| Input | What she says | What Parallax records |
-|---|---|---|
-| Take-home pay | "R19,500 a month" | R19,500 |
-| Catering profit | "About six thousand, more in December" | R6,000 a month, range R2,500–R11,000 |
-| Savings | "About 40k, maybe less after December" | **R30,000–R40,000** (vague input kept as a range) |
-| Fixed costs | Rent R5,500, transport R1,800, living R5,000 | R12,300 a month |
-| Family support | "I send my mother R3,000 every month. That can't stop." | R3,000, marked non-negotiable |
-| Debt | Store account | R4,000 |
-| Risk appetite | "Low. My mother depends on me." | Low (the scale is low / medium / high, SCOPE.md §3) |
-
-**Paths Parallax proposes**
-
-| Path | Description |
-|---|---|
-| A. Stay and grow | Keep the job, grow catering on weekends |
-| B. Go full-time | Resign in three months, take the contract, cater full-time |
-| C. Qualify up | R60,000 study loan for a two-year part-time accounting diploma, keep the job (interest rate is an editable demo assumption, not a real quote) |
+**Honesty rule:** answers on screen are real output from a seeded session. Quoted replies below show the *shape* we expect, not hard-coded text. **The figures below are real engine output** from the demo story (`shared/intake/fixture.ts`) with wages answered as R21,000; the template values behind them (direct-cost share, equipment rent) are placeholders in `shared/defaults/za.json`, and the video says so if they are still unsourced. Any sped-up wait is labelled on screen.
 
 ---
 
-## 1A. How the demo maps to the four judging criteria
+## 1. Demo founder (fictional)
 
-Stage 2 scores four equally weighted criteria, 0-10 each (CONTEXT.md §5). Every scene should earn points on at least one; the 3-minute video must show all four.
+**Ayanda Dube (she/her), founder of a meal-prep and catering business in Johannesburg. Fictional character; any likeness to a real person or business is accidental.** On-screen label: "Demo founder: fictional".
 
-| Criterion | What the video must show | Where in the script |
+The business is two years old with three staff. A corporate client has offered a 12-month contract to cater staff lunches. It is the biggest offer the business has had, and it pays 60 days after each invoice. Ayanda's question: *"Should I take the contract?"*
+
+| Input | What Ayanda says | What Parallax records |
 |---|---|---|
-| **Impact** | A real person with real stakes (supporting her mother, thin savings), who benefits, and that people could use it tomorrow; South African story; fits "Build for Your World" | Opening question; Naledi's constraints; close (who benefits, who pays) |
-| **Use of Meta AI Tooling** | Beyond a basic integration: Muse Spark 1.3 with structured output and tool calls inside a verified agent loop; per-path future-self personas; Muse Image avatars (base portrait plus an edit per path); Muse Voice Transcribe at intake; Muse Wonder behind a flag if it works; optionally an open-weights path. One on-screen "Built on Meta" beat names each model doing a visible job (ARCHITECTURE.md §2A) | Intake (Voice Transcribe), path cards (Image), chat (Spark), "how it works" beat |
-| **Technical Depth and Execution** | Figures computed in code, never by the model; ranges; trace drawer and assumption IDs; the figure guard replacing an invented number; faulty-input catch ("195000"); live assumption edit that redraws the answer; a short code or architecture glimpse that is clearly new work from this hackathon | Assumptions panel; chat citation chips; faulty-input and live-edit beats |
-| **Demo** | Works live on the deployed URL, no cuts that hide failures, a strong 5-second cold open, readable at 1080p, genuinely pleasant to watch | Whole video; recording checklist (§5); backup plan (§6) |
+| Sales | "About R90,000 a month, anywhere from R75k to R105k" | R75,000–R105,000, usually R90,000 (range chip) |
+| Direct costs | "Ingredients and packaging cost R36,000 a month" | R36,000, so a 60% gross margin |
+| Running costs | "Rent, power, fuel and software come to R16,000" | R16,000 |
+| Wages | Not in the story; asked as the one follow-up | "21k" → R21,000 |
+| Own pay | "I pay myself R12,000" | R12,000 |
+| Debt | "We repay R3,500 a month on the delivery van" | R3,500 |
+| Cash | "R120,000 in the business account" | R120,000 |
+| The offer | "12-month contract … worth R60,000 a month, but they pay 60 days after each invoice"; "another cook at R8,500 a month and a second fridge for R25,000" | Contract R60,000 a month, paid 60 days later; extra staff R8,500; equipment R25,000 |
+| Risk comfort and priorities | "I'm careful with risk. What matters most is cash safety and growth." | Low; cash safety, growth |
 
-**New-work evidence.** Show the date of the first product-code commit (after 26 Oct 12:00 ET) or the commit graph for one second, and say "built during the Hackathon". The only earlier commits are planning docs ([BUILD_LOG.md](BUILD_LOG.md)). Anything not built during the event (for example a library) is named as a dependency, never presented as ours.
+**The three paths, from the engine** (likely case unless stated)
 
-**Avoid the anti-project list.** Open on Naledi's question and the conversation with her future selves, backed by the simulation engine, not on "an AI that gives advice" and never on a chart: Streamlit apps and "dashboards as the main feature" are on the kickoff slides' list, so the compare view stays a supporting scene. No health decisions, no political or war content on screen (RISKS.md P7, RESEARCH.md §5).
+| Path | What it means | Cash at month 36 | Lowest cash | With a 2-month late payment |
+|---|---|---|---|---|
+| **A. Stay lean** | Turn it down and keep running as today | R174,000 | R121,500 in month 1; **the bad case runs out of cash in month 17** | The setback to watch is a lost client instead |
+| **B. Take it as offered** | Paid 60 days after each invoice; extra cook; fridge bought up front | R479,000 | **R33,000 in month 2**; back to the starting R120,000 in month 5 | **Runs out of cash in month 4** (−R29,000) |
+| **C. Take it on safer terms** | Only if paid within 30 days; rent the fridge (R1,250 a month) | R489,000 | R87,750 in month 1 | Lowest point R23,250 in month 3: **tight, but it survives** |
+
+**The insight the demo turns on:** B is the most exciting offer and the only path where one late payment kills the business. C ends in the same place with a far safer low point. Ayanda leaves with a decision ("Take it, but only on 30-day terms, and rent the fridge") and the setback to watch.
+
+---
+
+## 1A. How the demo maps to the judging criteria
+
+Stage 2 scores four criteria, 0–10 each, **weighted** (CONTEXT.md §5). Every scene should earn points on at least one; the 3-minute video must show all four.
+
+| Criterion (weight) | What the video must show | Where in the script |
+|---|---|---|
+| **Impact (30%)** | A real founder problem with real stakes (a contract that could sink the business), who benefits (owner-led businesses; about three million in SA), and that founders could use it tomorrow with no books; one real founder's line if we have it | Cold open; the late-payment moment; close (who benefits, who pays) |
+| **Use of Meta AI Tooling (25%)** | Muse Spark 1.3 in a verified agent loop (intake, paths, one founder agent per path with tools); Muse Image avatars (base portrait plus an edit per path); Muse Voice Transcribe at intake; a "Built on Meta" beat naming each model's job | Intake, path cards, chat, how-it-works beat |
+| **Technical Depth and Execution (20%)** | Figures from code, never the model; ranges; assumption IDs and the trace drawer; the figure guard replacing an invented number; a faulty-input catch; a live edit that redraws; new work from this hackathon | Assumptions panel, chips, faulty-input and live-edit beats |
+| **Demo (25%)** | Works live on the deployed URL, a strong cold open, readable at 1080p, pleasant to watch | Whole video; §5 checklist; §6 backup |
+
+**New-work evidence.** Show the first product-code commit (after 26 Oct 12:00 ET) or the commit graph for a second, and say "built during the Hackathon". Libraries are named as dependencies, never shown as ours.
+
+**Avoid the anti-project list.** Open on Ayanda's question and the conversation with the future founders, never on a chart. "Dashboards as the main feature" is on the kickoff slides' list and our design is data-rich, so the compare view and charts stay supporting scenes (DESIGN.md §0). No health, political or war content.
 
 ## 2. The 2-minute cut-down script (social and fallback)
 
-This is the short version for the X post, the community-vote gallery blurb and the fallback (§6). It is **not** the submission video; the 3-minute version in §3 is. About 150 words of voiceover, so the screen has time to speak.
+About 150 words of voiceover, so the screen has time to speak.
 
 | Time | On screen | Voiceover |
 |---|---|---|
-| 0:00–0:10 | Black screen. Naledi's question types itself out. Label: "Demo persona: fictional". | "Naledi is 27. She has a steady job, a catering business, and a mother who depends on her. Should she quit?" |
-| 0:10–0:28 | *Robustness.* Intake: she speaks, the transcript appears (Voice Transcribe). "About 40k, maybe less" becomes a chip: **Savings R30,000–R40,000: you said "about", so we kept a range.** | "She describes her life in her own words. When she's vague, Parallax doesn't invent a number. It keeps a range and tells her." |
-| 0:28–0:42 | Three path cards appear, each with an illustrated future-self avatar (Muse Image) and a three-year money band. | "Parallax proposes three paths and simulates three years of each. Every figure is calculated in code and shown as a range, not a promise." |
-| 0:42–0:52 | Assumptions panel opens on Path B: ID, value, range, source ("you said", "Parallax default" or "AI-suggested"). | "Every assumption is on the table, and she can change any of them." |
-| 0:52–1:10 | **The moment, part 1** (*traceability*). Chat with 2029 Naledi on Path B. She asks: "Could I still send Ma R3,000 every month?" Reply, in shape: "Most months. In winter 2027 bookings dropped, I sent R1,500 for two months and used R9,000 of savings." Chip **[B3: winter bookings −40%, range −20% to −60%]**. Click: the panel highlights B3. | "Then she asks her future self the question that matters most. The answer is specific, and it shows where it came from." |
-| 1:10–1:25 | **Part 2.** One click: "Ask this on Path A". 2029 Naledi in office clothes answers, in shape: "Every month. Money wasn't the problem. Time was: I turned down most wedding bookings." Chip **[A2: 2 events a month]**. | "Same question, another future. A different answer, grounded in the same facts about her." |
-| 1:25–1:38 | Compare view: money to Ma, savings range in year 3, debt, working hours, for A, B and C. | "She compares all three side by side, including the study-loan path." |
-| 1:38–1:52 | Comfort check on her leaning path rises from 2/5 to 4/5 (SCOPE.md §3 step 9). Decision summary: "Stay 12 months. Go full-time once catering clears R12,000 a month for three months in a row. Watch B3." | "When she's ready, Parallax writes down what she decided, why, and what would change her mind." |
-| 1:52–2:00 | End card: logo, "Talk to your future before you choose it." Models used. "A reflection aid, not financial advice." | "Parallax. Built on Meta's Muse models." |
+| 0:00–0:08 | Black screen. The question types itself out: "Should I take the contract?" Label: "Demo founder: fictional". | "Ayanda runs a catering business. A corporate client just offered the biggest contract she's ever had. Should she take it?" |
+| 0:08–0:25 | *Robustness.* Intake: Ayanda speaks; the transcript appears (Voice Transcribe); "Here is what I heard" with her own words beside every figure; a range chip on sales; one follow-up: wages. | "She describes the business in her own words. Parallax quotes her back, keeps her rough numbers as ranges, and asks only for what's missing." |
+| 0:25–0:40 | Three path cards, each with an illustrated avatar of Ayanda on that path (Muse Image) and a 36-month cash band. | "Three ways to handle it, 36 months of cash each, computed in code. Not a promise: a rehearsal." |
+| 0:40–0:55 | Chat with Path B's founder: "When did cash get tightest?" Reply, in shape: "Month 2. We were down to R33,000 before the first payment landed." Chips **[B6 contract income, paid 60 days after each invoice] [B9 equipment, bought up front]**. | "She asks the founder she'd become if she says yes. The answer is specific, and it shows where it came from." |
+| 0:55–1:10 | **The moment.** Stress test "Late payment" on Path B: the band drops below zero; "Cash runs out in month 4." One click: "Ask this on another path" → C. Reply, in shape: "The same late payment took us to R23,250. Tight, but we never ran out." | "One late payment, and the best offer she's ever had runs her out of cash in month 4. On safer terms, the same shock is survivable." |
+| 1:10–1:25 | Compare view: cash at months 12 and 36, lowest cash, when cash runs out, for A, B and C. | "Side by side: the safer deal ends in the same place, without the cliff." |
+| 1:25–1:40 | Comfort check on C rises from 2 to 4. Decision memo: "Take the contract only on 30-day terms; rent the fridge. Watch: late payment." | "When she's ready, Parallax writes down what she decided, why, and what to watch." |
+| 1:40–2:00 | End card: logo, "Rehearse the decision before you bet the business." Models used. "A reflection aid, not financial advice." | "Parallax. For founders. Built on Meta's Muse models." |
 
 ---
 
@@ -75,63 +78,55 @@ This is the short version for the X post, the community-vote gallery blurb and t
 
 | Time | On screen | Voiceover |
 |---|---|---|
-| 0:00–0:07 | The question types out | "Should Naledi quit her job to cater full-time?" |
-| 0:07–0:22 | Split screen, made in the video editor from the two real answers in the 2-minute flow (the app itself shows one path at a time; "Ask every path" side by side is a stretch goal): same question to Path B and Path A, two answers, two assumption chips | "She asked both her futures the same question. They answered differently, and each showed its working." |
-| 0:22–0:30 | Decision summary, logo | "Parallax. Talk to your future before you choose it." |
+| 0:00–0:07 | "This contract would have run my business out of cash in month 4." | "This contract would have run my business out of cash in month 4." |
+| 0:07–0:22 | Split screen, made in the editor from two real answers (the app shows one path at a time; "Ask every path" is stretch): Path B "we ran out in month 4", Path C "tight, but we never ran out", each with its chip | "Same contract, same late payment. Different terms, different future. Every figure computed in code." |
+| 0:22–0:30 | Decision memo, logo | "Parallax. Rehearse the decision before you bet the business." |
 
-### 3-minute submission video (the main one) and live-finals version
-
-The Participant Guide requires a three-minute video; the same script serves the top-5 live final round (9 Nov, 19:00 SAST), which uses the same rubric. The kickoff slides say judges watch the demos live and rank them, so assume a live screen share and keep the pre-recorded video as the fallback.
+### 3-minute submission video (the main one, and the final round)
 
 | Time | Segment | Criterion it scores |
 |---|---|---|
-| 0:00–0:05 | **Cold open:** Naledi's hardest question on screen ("Could I still send Ma R3,000 every month?") | Demo, Impact |
-| 0:05–0:20 | The problem, no slides: who loses most from a wrong move | Impact |
+| 0:00–0:05 | **Cold open:** "This contract would have run my business out of cash in month 4." | Demo, Impact |
+| 0:05–0:20 | The problem, no slides: founders decide alone; cash, not profit, kills businesses; late payment is a South African fact (one cited figure from FOUNDERS.md §2) | Impact |
 | 0:20–1:40 | The 2-minute flow, live on the seeded session | All four |
-| 1:40–2:00 | **Faulty input:** take-home typed as "195000". Parallax asks: "That doesn't fit your budget. Did you mean R19,500?" | Technical Depth |
-| 2:00–2:20 | **Live edit:** B3 from −40% to −20%; the range redraws and Path B's answer changes, proving figures come from code | Technical Depth, Demo |
-| 2:20–2:35 | **Guardrail:** "Should I put my savings in crypto?" The future self declines investment advice and returns to her decision | Impact (responsible use) |
-| 2:35–3:00 | **Built on Meta, built this week:** one line per model doing a job (Spark, Image, Voice Transcribe, Wonder if used, open weights if used); a one-second glimpse of the repo and commit history from 26 Oct; who benefits and who pays; close | Use of Meta AI Tooling, Technical Depth, Impact |
+| 1:40–2:00 | **Faulty input:** sales typed as "9000000". Parallax asks: "Did you mean R900 000? Please confirm the amount." | Technical Depth |
+| 2:00–2:15 | **Live edit:** raise Path B's contract direct costs; the band redraws and B's answer changes, proving figures come from code | Technical Depth, Demo |
+| 2:15–2:25 | **Figure guard:** a reply that tries to invent a figure shows "(see chart)" instead; the trace drawer logs it | Technical Depth, Meta tooling |
+| 2:25–2:35 | **Guardrail:** "Should I put the business's cash into crypto?" The founder agent declines investment advice and returns to the decision | Impact (responsible use) |
+| 2:35–3:00 | **Built on Meta, built this week:** one line per model doing a job; a glimpse of the commit history from 26 Oct; who benefits and who pays (§4); close | Meta tooling, Technical Depth, Impact |
 
-Keep the video under three minutes and test the link in a private window. If the app itself cannot show everything, the video is cut together from real sessions (honesty rule above).
+Keep the video under three minutes; test the link in a private window. If the app cannot show everything, the video is cut from real sessions (honesty rule).
 
-### Most Viral Project bonus (USD 20K) and Community Vote (USD 10K)
+### Most Viral Project (USD 20K) and Community Vote (USD 10K)
 
 | Item | Plan |
 |---|---|
-| Most Viral Project: most likes, reposts and comments on X by 8 Nov 11:59 PM ET (9 Nov 06:59 SAST) | Post the demo on X from Sibusiso's account (and Lethabo reposts) **as soon as the video is final, aiming for Wed 4 Nov before we submit**, because the form asks for the post link. The slide says "engagement on X after the event", and the guide does not say whether a pre-deadline post counts. Ask in #questions now; if the answer is no, post a second thread after 4 Nov 21:00 ET. Either way, engagement counts to 8 Nov 11:59 PM ET. Use the 30-second hook or the 2-minute cut-down as the native video (the 3-minute video is linked). First line is the cold-open question; tag Meta's and Cerebral Valley's accounts; a short thread: the hook, the "figures come from code" moment, the repo link. Submit the post URL on the platform. Reply to comments for the 4 days that count. |
-| Community Vote: public gallery votes, one per verified account; opens 9 Nov, announced 16 Nov | Prepare a gallery thumbnail and a two-sentence blurb. Share the gallery link with friends, colleagues and the South African developer community when voting opens. No vote buying or botting: it risks disqualification and the platform-policy ban. |
-| Honesty | Posts use only real footage of the seeded session, labelled "fictional persona". No fake engagement. |
+| Most Viral: highest engagement on X after the event, counted up to 8 Nov EOD | Post the 30-second hook from Sibusiso's account as soon as the video is final (aim Wed 4 Nov, before we submit, since the form asks for the link); Lethabo reposts. First line: "This contract would have run my business out of cash in month 4." Thread: the hook, "the model never writes a number", the repo. Founders are the audience, so ask founder friends to reply with the decision they would rehearse. Reply to comments until 8 Nov. |
+| Community Vote: one vote per verified account; opens 9 Nov, announced 16 Nov | Gallery thumbnail and two-sentence blurb; share with SA founder communities, incubators and developer groups. No vote buying. |
+| Honesty | Only real footage of the seeded session, labelled "Demo founder: fictional". No fake engagement. |
 
 ---
 
 ## 4. Pitch narrative (Startup track)
 
-The Startup track page says it is judged on **technical execution and holding up in production**, and the official Stage 2 rubric weights four criteria equally (§1A), so the pitch spends its time on reliability *and* on impact and Meta tooling.
-
-1. **Problem.** Big money decisions are made on gut feel and scattered advice. People with the least safety net pay most for a wrong move, and nobody can try a path before living it.
+1. **Problem.** Founders make one high-stakes decision after another with no finance team. Cash, not profit, decides whether a business survives, and a deal can look profitable and still empty the account. About three million small businesses in South Africa face this with little room for error (FOUNDERS.md §2).
 2. **Demo.** The 2-minute flow inside the 3-minute video.
-3. **How it works** (check every detail against the live API docs; ARCHITECTURE.md decides):
-   - **Muse Spark 1.3** turns her story into structured inputs, proposes paths and assumptions, and voices each future self. (Muse Wonder is in Preview; we use it only behind a flag.) Our own memory store keeps each future self consistent; Wonder's Active Memory is not available to developers yet, so we do not claim it.
-   - **Our simulation engine** computes every figure and range. The model never writes a number.
-   - **Muse Image** draws one avatar per path.
-   - **Muse Voice Transcribe** handles spoken input. Meta has no text-to-speech, so replies are text; spoken replies, if we add them, use the browser's built-in voice and are labelled as such.
-4. **Why it is trustworthy.** Figures from code; answers cite assumption IDs; vague input stays a range; outliers are confirmed; no investment advice; she can delete her session.
-5. **Who pays.** Hypotheses, not facts.
+3. **How it works** (ARCHITECTURE.md decides every detail):
+   - **Muse Spark 1.3** reads the founder's story into structured fields (each checked against their own words), proposes the paths, and voices one founder agent per path, each seeing only its own figures.
+   - **Our simulation engine** computes every figure and range, month by month, including payment timing. The model never writes a number; the figure guard checks every reply.
+   - **Muse Image** draws the founder on each path.
+   - **Muse Voice Transcribe** takes spoken input. Meta has no text-to-speech, so replies are text.
+4. **Why it is trustworthy.** Figures from code; answers cite assumption IDs; vague input stays a range; outliers are confirmed; no products, no investment advice; the founder can delete the session.
+5. **Who pays** (hypotheses, FOUNDERS.md §6): freemium for founders; enterprise and supplier development programmes and incubators paying per founder; platforms founders already use embedding it.
+6. **Why us, why now.** We are founders; Meta wants agents that "help you run your whole business" (Meta Business Agent, June 2026), and Parallax is the agent that helps a founder decide.
 
-### Business-model hypotheses
-
-| Hypothesis | Who pays | What would prove it wrong |
-|---|---|---|
-| H1. B2C freemium | Individuals: one decision free; pay for saved sessions and more decision types | People won't pay for a one-off decision |
-| H2. Institutions as a benefit | University career offices; employers' HR benefits; per-seat licence | Slow sales cycles; no budget line |
-| H3. Banks' financial-wellness programmes | Banks, for customers facing loan or business decisions | Advice regulation, or a conflict of interest the bank can't remove |
+**Competition, in one line** (COMPETITORS.md): spreadsheets have numbers but no conversation; chatbots have conversation but no numbers; Parallax has both, and the model never writes a number.
 
 ### Build for Your World
 
-We are in Johannesburg, where someone who supports her mother and caters on weekends is a familiar story, not an edge case. Side businesses, family obligations and thin savings mean one bad move can take years to undo. (Any statistic we quote must cite Stats SA directly.)
+We are two founders in Johannesburg, and our beachhead is food businesses: caterers, bakeries and meal-prep kitchens that sell on WhatsApp, buy ingredients before they are paid, and take every big order on gut feel. (Any statistic we quote must cite its source directly.)
 
-**Why it works in every country Meta operates in:** the engine is country-agnostic; currency, cost defaults and language are configuration. Choosing under uncertainty with little room for error is universal.
+**Why it works everywhere:** the engine is country-agnostic; currency, defaults and language are configuration; every owner-led business makes contract, hiring and pricing decisions.
 
 ---
 
@@ -139,12 +134,12 @@ We are in Johannesburg, where someone who supports her mother and caters on week
 
 | Area | Checklist |
 |---|---|
-| Screen | 1920×1080, 30 fps; browser zoom 125%; clean profile, no bookmarks bar; Windows notifications off |
-| Data | Seeded session, fictional label visible, no real personal data |
-| Audio | Headset or USB mic, quiet room; voiceover recorded separately; levels normalised; no music under speech |
+| Screen | 1920×1080, 30 fps; browser zoom 125%; clean profile; notifications off |
+| Data | Seeded session, "Demo founder: fictional" visible, no real business data |
+| Audio | Headset or USB mic, quiet room; voiceover recorded separately; no music under speech |
 | Captions | Burned-in plus an .srt file; check rand amounts and names |
-| Pacing | Speak at no more than 140 words a minute; hold key screens 3+ seconds; zoom on the citation chip and comfort check |
-| Final check | Length no more than three minutes; link works in a private window; watch once on a phone, sound off |
+| Pacing | No more than 140 words a minute; hold key screens 3+ seconds; zoom on the citation chip and the late-payment band |
+| Final check | No more than three minutes; link works in a private window; watch once on a phone, sound off |
 
 ---
 
@@ -154,41 +149,39 @@ We are in Johannesburg, where someone who supports her mother and caters on week
 |---|---|---|
 | 0. Live | Real models, real engine | Default |
 | 1. Seeded session | Simulation and avatars cached; chat live | Generation slow or failing |
-| 2. Offline mock mode | Recorded model responses replayed; engine runs locally | API down or no internet |
-| 3. Pre-recorded video | The 3-minute submission video (or the 2-minute cut-down if time is short) | Laptop or screen share fails |
+| 2. Offline mode | Fixture intake and recorded replies; engine runs locally (`web-offline` preview forces model calls off) | API down or no internet |
+| 3. Pre-recorded video | The 3-minute submission video | Laptop or screen share fails |
 
-Also: charged laptop, UPS or power bank for the router (load-shedding), mobile-data hotspot, video saved locally and in the cloud.
+Also: charged laptop, power bank for the router (load-shedding), mobile-data hotspot, video saved locally and in the cloud.
 
 ---
 
 ## 7. Screens and features the demo depends on
 
-| # | Screen / feature | Must be polished |
-|---|---|---|
-| 1 | Intake, voice and text | Live transcript, range chips, outlier confirmation |
-| 2 | Generation progress | Progress messages, no blank waits |
-| 3 | Path cards | Avatar, name, three-year range band |
-| 4 | Assumptions panel | IDs, values, ranges, source, edit in place |
-| 5 | Future-self chat | Citation chips that open the panel |
-| 6 | "Ask this on another path" | One click, keeps the question |
-| 7 | Compare view | Four or five rows, readable at 1080p |
-| 8 | Comfort check | 1–5 per path, trend tracked over the session |
-| 9 | Decision summary | Choice, reasons, revisit triggers, export |
-| 10 | Guardrail reply | Polite refusal of investment advice |
-| 11 | Seeded session, mock mode | One command each |
-| 12 | Disclaimer, fictional label | On every screen in the video |
+| # | Screen / feature | Must be polished | Status (1 Nov) |
+|---|---|---|---|
+| 1 | Intake, voice and text | Quotes beside figures, range chips, one follow-up | Text built; voice not started |
+| 2 | Generation progress | Real steps, no blank waits | Built |
+| 3 | Path cards | Avatar, name, 36-month cash band | Built without avatars |
+| 4 | Assumptions panel | IDs, values, ranges, source, edit in place | Built |
+| 5 | Future-founder chat | Citation chips that open the panel | UI built; agents not started |
+| 6 | Setback stress test on a path | "Cash runs out in month 4" shown from the engine | Engine built; screen to add |
+| 7 | "Ask this on another path" | One click, keeps the question | Built |
+| 8 | Compare view | Readable at 1080p | Built |
+| 9 | Comfort check | 1–5 per path, trend | Built |
+| 10 | Decision memo | Choice, reasons, setback to watch, print | Basic built |
+| 11 | Guardrail reply | Polite refusal of investment advice | Agents not started |
+| 12 | Disclaimer and fictional label | On every screen in the video | Built (label to add to the video) |
 
-**If PLAN.md §5 scope cuts are applied:** with two paths, drop Path C and the "including the study-loan path" line, and the compare shows A and B. With voice input cut, Naledi types her intake and the range chip still carries the scene. Nothing else in this script depends on a cuttable or stretch feature.
+**If PLAN.md §5 scope cuts are applied:** with two paths, keep B and C (the late-payment moment needs both) and drop A. With voice input cut, Ayanda types; the range chip still carries the scene.
 
 ---
 
 ## 8. Open questions for Lethabo
 
-1. Would you rather present the finals, record the voiceover, or edit the video?
-2. Which video editor do you know (Clipchamp, CapCut, DaVinci Resolve)?
-3. Does Naledi's story ring true? What would you change?
-4. Should the intake show isiZulu–English code-switching? Only if Voice Transcribe handles it in testing; isiZulu is not on its published language list, so expect it to fail.
-5. Illustrated or more realistic avatars?
-6. Any contacts at a career office, bank or HR team to test H1–H3?
-7. Are you free for the closing ceremony and live final round on 9 November, 19:00 SAST?
-8. Will you post from your own X account for the Most Viral Project bonus, or only repost?
+1. Does Ayanda's story ring true for food businesses you know? Would another business type make a stronger demo?
+2. Who presents the finals, records the voiceover, or edits the video?
+3. Which avatar settings for the three paths (home kitchen, commercial kitchen, café)?
+4. Can you bring one real founder to a session by Tue 3 Nov, for a quote with consent?
+5. Will you post from your own X account for Most Viral, or only repost?
+6. Are you free for the closing ceremony and live final round on Mon 9 Nov, 19:00 SAST?

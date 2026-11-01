@@ -23,13 +23,13 @@ Owners follow the roles agreed on 26 Oct ([ROLES.md](ROLES.md); Sibusiso: UI and
 
 | ID | Risk | L | I | Mitigation | Owner |
 |---|---|---|---|---|---|
-| P1 | Output treated as financial advice | H | H | Rule S1; no named products or lenders; avatars turn "what should I do?" back into questions; summary suggests a registered financial adviser. | Both |
+| P1 | Output treated as financial or business advice | H | H | Rule S1; no named banks, lenders, products or suppliers; loans and investors are out of the MVP; founder agents turn "what should I do?" back into questions; the decision memo suggests an accountant or registered adviser for funding decisions. | Both |
 | P2 | Overconfidence from precise-looking projections | H | H | Rule S2: ranges, rounding to the nearest R1,000, assumptions beside every figure. | Sibusiso |
 | P3 | Emotional harm from a bleak future self | M | H | Rule S4; a short note before a hard path; pause or leave any time. | Lethabo (persona prompts); Sibusiso (the note and pause in the UI) |
 | P4 | Bias by gender, race, location or class | M | H | Assumptions come from user inputs and a sourced table, never from race or gender; same-situation tests with varied personas; appearance chosen by the user. | Both |
 | P5 | Person in distress or crisis | M | H | Rule S5. | Lethabo (detection in code, model flag and crisis tests); Sibusiso (support card UI) |
 | P6 | Avatar says what the user wants to hear | M | M | Every avatar must name at least one real downside of its path. | Lethabo |
-| P7 | **Parallax is mistaken for a "sample anti-project"** (Participant Guide and kickoff slides, CONTEXT.md §5; the list is not complete): AI-generated medical advice (including mental-health advisers), a basic RAG app, a simple image analyser, a **Streamlit app**, a **dashboard as the main feature**, an "AI for Education" chatbot, a job-application screener, a nutrition coach, a personality analyser, a sports coach; or mistaken for financial advice | M | H | Lead the pitch, video and README with the **simulation engine** (figures computed in code, uncertainty ranges), the multi-agent path avatars and the verification layer, not with "chat with an AI". Keep the "not advice" framing (S1). **No medical content:** no health decisions in scope, health topics redirected like any out-of-scope decision; the crisis card lists hard-coded helplines and never counsels. **Not a dashboard:** charts and the compare view support the conversation; the video never opens on a chart. **Not Streamlit:** React, Vite and TypeScript. No political or war content in the demo, personas or prompts. Avoid personality or psychological profiling of the user: the profile is money facts and priorities, nothing else. Full check: RESEARCH.md §5. | Both |
+| P7 | **Parallax is mistaken for a "sample anti-project"** (Participant Guide and kickoff slides, CONTEXT.md §5; the list is not complete): AI-generated medical advice (including mental-health advisers), a basic RAG app, a simple image analyser, a **Streamlit app**, a **dashboard as the main feature**, an "AI for Education" chatbot, a job-application screener, a nutrition coach, a personality analyser, a sports coach; or mistaken for financial advice | M | H | Lead the pitch, video and README with the **simulation engine** (figures computed in code, uncertainty ranges), the multi-agent path avatars and the verification layer, not with "chat with an AI". Keep the "not advice" framing (S1). **No medical content:** no health decisions in scope, health topics redirected like any out-of-scope decision; the crisis card lists hard-coded helplines and never counsels. **Not a dashboard:** charts and the compare view support the conversation; the video never opens on a chart. The chosen Control Room layout (1 Nov) makes this risk higher; DESIGN.md §0 sets the rule that the avatar and the conversation lead every path page. **Not Streamlit:** React, Vite and TypeScript. No political or war content in the demo, personas or prompts. Avoid personality or psychological profiling of the user: the profile is money facts and priorities, nothing else. Full check: RESEARCH.md §5. | Both |
 
 ### Legal and privacy
 
@@ -55,6 +55,9 @@ Owners follow the roles agreed on 26 Oct ([ROLES.md](ROLES.md); Sibusiso: UI and
 | H8 | **Credits are per individual and need a credit card:** each person must claim their own USD 150 by 4 Nov 21:00 ET (request forms in Discord #resources from kickoff); a card must be on the account to make calls; nobody can claim for the other | M | H | Each person claims their own the day the link opens and attaches a card with a spend-limit notification; agree who holds the shared project API key; do not assume USD 300 until both have claimed; log spend daily (T2). | Both |
 | H9 | **Fireworks credits (USD 25) are only for select participants**, by email; the serverless Muse Spark Open also ends 29 Oct | H | L | Do not plan around Fireworks credits. Use Baseten (request USD 100 + 2M TPM, per individual, model `meta-models/muse-spark-open-1026`) and Modal (USD 100, first 1,000 participants) for open-weights work, and each of us requests them on day 1 (ROLES.md §5). | Both (each requests their own); Lethabo (open-weights path) |
 | H10 | Startup registration details wrong (company country, funding stage) | L | M | Both registered on Startup (26 Oct). Check the form answers and correct them before the deadline. | Both |
+| H11 | **Late change of direction** (founders, 1 Nov, day 7): docs, demo, video and UI all move three days before submission | H | H | Engine, intake, templates and tests already moved on day 7 (PR `feat/founder-pivot`); one demo decision only (the contract); the re-plan in PLAN.md §3A protects the agents, avatars and video above new features | Both |
+| H12 | **The submission form lists only Sibusiso** as a team member (seen 1 Nov) | M | H | Add Lethabo, or Lethabo joins the team on CV, by Tue 3 Nov; check again before submitting | Both |
+| H13 | **Placeholder defaults on screen**: `shared/defaults/za.json` values are unsourced, and the demo's template figures (direct-cost share, equipment rent) come from it | H | M | Source the values the demo shows, or show "placeholder" beside them; never present them as research | Sibusiso |
 
 ## 2. Safety design
 
@@ -83,7 +86,7 @@ Product rules. Each one gets a test before submission.
 
 | Principle | MVP rule |
 |---|---|
-| Data minimisation | Ask only what the simulation needs: income and savings bands, obligations, skills, risk tolerance, city or province. Never an ID number, bank details, employer name, address or photo. |
+| Data minimisation | Ask only what the simulation needs: the decision, what the business does, monthly sales and costs, wages, the founder's own pay, debt repayments, cash in the business, risk comfort and priorities; optionally where it is based. Never an ID number, bank details, customer or staff names, an address or a photo. |
 | Where data lives (the one statement all docs follow) | No accounts and no database. Session data (inputs, transcripts, path cards, conversations, images, memory notes, the decision trace) is stored **only in the user's browser** (IndexedDB, ARCHITECTURE.md §13). Our server is stateless: it passes requests to Meta and keeps no user content. Voice audio is forwarded to Meta for transcription and never written to disk by us. *Proposal, not yet agreed:* the browser store clears itself 24 hours after the last activity unless the user chooses to keep the session. |
 | Delete button | "Delete everything" on every screen clears the browser store (inputs, transcripts, images, path cards, conversations, memory, trace) and cancels in-flight requests. There is no copy on our server to wipe. We cannot delete what Meta may retain under its standard-mode terms (unknown until we read the AI Developer Legal Center), and the consent notice must say so. |
 | No training | We never train or fine-tune on user data, and use only a non-training API tier (L3). |
@@ -96,13 +99,13 @@ Product rules. Each one gets a test before submission.
 
 ## 4. What Meta and the judges may care about
 
-The judging criteria are **now published** (Participant Guide, CONTEXT.md §5): Impact, Use of Meta AI Tooling, Technical Depth and Execution, and Demo, equally weighted, 0-10 each, after a pass/fail check that the project fits the theme and uses Meta's models. **Judges are still not named.** The table below keeps the earlier guesses (Startup track wording and one reported article), which still map onto Technical Depth and Demo; DEMO.md §1A maps the video to the four criteria.
+The judging criteria are **published and weighted** (Participant Guide, re-read 1 Nov 2026, CONTEXT.md §5): Impact 30%, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25%, 0-10 each, after a pass/fail check that the project fits the theme and uses Meta's models. **Judges are still not named.** The table below keeps the earlier guesses (Startup track wording and one reported article), which still map onto Technical Depth and Demo; DEMO.md §1A maps the video to the four criteria.
 
 | Likely interest | How the demo could show it |
 |---|---|
 | Reliability | Same inputs give the same figures; an API error degrades gracefully. |
 | Traceability | "Why?" on a figure shows its assumptions and sources. |
-| Faulty inputs | Type an impossible salary; Parallax politely asks the user to check it. |
+| Faulty inputs | Type monthly sales with an extra zero; Parallax asks "Did you mean R900 000?" |
 | Responsible AI | Framing line; an avatar declining to promise an outcome; a hard path told kindly; possibly the crisis card (section 6). |
 | Privacy | Press "Delete everything" live. |
 | Meta's models | Spark/Wonder, Image and Voice Transcribe each visibly doing a job. |

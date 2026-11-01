@@ -6,6 +6,8 @@ Confidence labels: **confirmed** = read on the organiser's own page (or, for the
 
 **Updated 26 Oct 2026 (kickoff day):** the official Participant Guide is now read and most earlier "unknown" items are resolved. The full facts are in [section 5](#5-official-participant-guide-read-26-oct-2026), cross-checked that evening against the kickoff slides (18:00 SAST); where an older line below disagrees with section 5, section 5 wins.
 
+**Updated Sun 1 Nov 2026 (day 7):** two changes. (1) **The direction changed to founders** ([section 3A](#3a-direction-change-sun-1-nov-2026), [FOUNDERS.md](FOUNDERS.md)). (2) The guide was re-read signed in to Cerebral Valley: **the judging rubric is now weighted** (Impact 30%, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25%), the final round judges the **video demos**, and the submission form's fields are now known ([section 5.1](#51-re-read-signed-in-sun-1-nov-2026)).
+
 ---
 
 ## 1. The event (confirmed, cerebralvalley.ai/e/meta-ai-developer-hackathon, read 18–19 Oct 2026)
@@ -97,13 +99,23 @@ The product owner's own framing: when each simulation finishes, the person can *
 
 Where the plan now differs from the application (because of §2.1): "by text or voice" means spoken **input** (Voice Transcribe); avatar replies are text, with browser speech as a stretch goal. "Long-term memory" is our own per-session memory store, not Muse Wonder's Active Memory, which developers cannot call yet. Muse Spark 1.3 does the reasoning; Muse Wonder (Preview) is optional behind a flag.
 
+### 3A. Direction change, Sun 1 Nov 2026
+
+The application answer above is kept as the record of what we applied with. On 1 Nov the two of us changed the problem and the user: as founders we brainstorm and decide constantly, and Parallax is now a tool for founders at every point of business decision-making. Research and reasons: [FOUNDERS.md](FOUNDERS.md); competitors: [COMPETITORS.md](COMPETITORS.md). The submission text will use this framing:
+
+> **The problem:** Founders make one high-stakes decision after another (take the contract, hire, raise prices) with no finance team, on gut feel and spreadsheets they do not trust. Cash, not profit, decides whether a business survives, and a deal can look profitable and still empty the account if the money arrives late.
+>
+> **The solution:** Parallax is a decision rehearsal for founders. Describe the decision in your own words; Parallax proposes three genuinely different paths, plays each forward for 36 months of cash in a bad, likely and good case, stress-tests it against the setbacks that sink small businesses, and lets you question the founder you would become on each path. Muse Spark runs the agents (intake, paths, one founder agent per path, each checked so no invented figure reaches you); Muse Image draws the founder on each path; Muse Voice Transcribe takes spoken input. Every figure is computed in code and traceable. A reflection aid, not financial advice.
+
+What carries over unchanged: the engine, the three cases, figures from code, the figure guard, per-path agents, "Ask this on another path", avatars, the comfort check and summary, the safety and privacy design.
+
 ## 4. Team
 
 - **Sibusiso Khumalo** (GitHub Sibusiso-K, Johannesburg). Electrical engineer, full-stack and AI developer, medical background. Agent work: BobSwarm (5-specialist multi-agent audit swarm on IBM Bob 2.0, 3rd place, team lead, React/TypeScript/Vite/Node/WebSocket), Swarm_Corp (7-role coding-agent swarm), StokUp (LangGraph WhatsApp ordering agent), CivicLens (Stats SA assistant where no model writes figures), VUKA (safety app with ledger-anchored records).
 - **Lethabo Hoaeane** (GitHub LethaboMH14, collaborator on the repo).
 - **Roles, agreed 26 Oct** ([ROLES.md](ROLES.md)): Sibusiso leads UI and UX, the back end (including the simulation engine) and API integrations; Lethabo leads avatars, API integrations, feature integration (including the figure guard and traceability) and security.
 - Team rule from SONAR: no more than two overlapping builds at once; every entry must leave a reusable artifact.
-- Location gives us a real "Build for Your World" story: South Africa, where many people make high-stakes money decisions with little safety net.
+- Our "Build for Your World" story (since 1 Nov): we are founders, building the decision tool we need, in South Africa, where about three million small businesses make high-stakes cash decisions with little room for error (FOUNDERS.md §2).
 
 ## 5. Official Participant Guide (read 26 Oct 2026)
 
@@ -148,12 +160,12 @@ Source: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (the pag
 ### Judging
 
 - **Stage 1 (pass/fail):** reasonably fits the theme and reasonably uses the Meta Model API and/or open-weight models.
-- **Stage 2:** four equally weighted criteria, 0-10 each:
-  1. **Impact:** real-world potential, who benefits, could people use it, fits a problem statement.
-  2. **Use of Meta AI Tooling:** how creatively; beyond a basic integration; surfaces capabilities that surprise Meta.
-  3. **Technical Depth and Execution:** sound, refined engineering, real craft.
-  4. **Demo:** working, impressive, holds up live; the video is genuinely cool to watch.
-- **Stage 3:** the top 5 per track go to a live final round using the same rubric: judges watch the demos live on 9 Nov and rank them *(slides)*.
+- **Stage 2:** four criteria, 0-10 each. **Weighted** (guide re-read 1 Nov 2026; the 26 Oct reading recorded them as equal):
+  1. **Impact (30%):** "What's the real-world potential here? Who benefits, and how much does it matter? Could this actually become something people use? Does it fit into one of the problem statements?"
+  2. **Use of Meta AI Tooling (25%):** how creatively; beyond a basic integration; "surface capabilities that surprised even us".
+  3. **Technical Depth and Execution (20%):** sound, thoughtfully refined engineering, real craft.
+  4. **Demo (25%):** working, impressive, holds up live; the video is genuinely cool to watch.
+- **Stage 3:** the top 5 per track go to a final round where "final round Judges will watch the video demos live and rank them using the same rubric" (guide, 1 Nov). The video is what the final is judged on.
 - Judges are still not named.
 
 ### Prizes (USD)
@@ -179,3 +191,19 @@ Join: https://cv.inc/e/meta-ai-developer-hackathon/discord *(slides)*. Channels:
 ### Our repository
 
 The Parallax GitHub repo was made **public** on 26 Oct 2026, as the rules require, after checking that its history holds only docs and no secrets. Everything pushed from now on is public: keys and account, team or project IDs never go in the repo ([AGENTS_AND_APIS.md](AGENTS_AND_APIS.md) §5).
+
+## 5.1 Re-read signed in, Sun 1 Nov 2026
+
+The details page now needs a Cerebral Valley sign-in. Read in Sibusiso's signed-in browser on 1 Nov 2026; label **confirmed**. Only the differences from §5 are listed.
+
+| Item | What the guide says now | Was |
+|---|---|---|
+| Rubric weights | Impact 30%, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25% | Recorded as equally weighted |
+| Stage 3 | "Final round Judges will watch the video demos live and rank them using the same rubric" | "Watch the demos live" (slides) |
+| New-work rule | "Startups may build on existing products or codebases, but you must clearly identify what was newly developed during the Hackathon" | Same meaning, now in the guide |
+| Most Viral | Engagement "up until November 8 EOD" | 8 Nov 11:59 PM ET (slides) |
+| Fireworks credits | "Request $100 in Fireworks credits" for a shortlist of select teams | USD 25 for select participants |
+| Anti-projects (guide) | Medical advice, basic RAG, simple image analysers, simple "AI for Education" chatbots, AI job-application screeners, AI nutrition coaches, personality analysers, sports analysers or coaches, anything political or involving war. The slides' Streamlit apps and dashboards as the main feature still apply | Same, plus the slides' two items |
+| Public event page | Judging "Nov 4 – Nov 8"; the guide still says Thu 5 – Sun 8 Nov. Treat 5 – 8 Nov as the judging period and keep the app up from 4 Nov | — |
+
+**Submission form fields** (seen on the submit page on 1 Nov; nothing was filled in or sent): Team Name\*; Team Members (it listed **only Sibusiso Khumalo** on 1 Nov, so Lethabo must be added or must join); Which track\* (Indie Developer / Startups); Which problem statement\* (Build for Your World / Push the Frontier); X post link for Most Viral; Project Description\*; Public GitHub Repository\*; 3-Minute Demo Video\*; Describe your use of Meta products to build the submitted project\*; Why are Meta's models important to your solution?\*; feedback on partner technologies; two survey questions about the Meta Model API\*; terms. There is no field for bonus-prize opt-ins other than the X link. Drafts: [SUBMISSION.md](SUBMISSION.md) §6.
