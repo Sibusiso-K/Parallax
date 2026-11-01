@@ -1,0 +1,13 @@
+{
+  "name": "parallax-mockup-control-room-v2",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Builds Mockup 5 v2 (founder version) of the Parallax Control Room from engine.json.",
+  "scripts": {
+    "build": "node build2.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.43.1"
+  }
+}

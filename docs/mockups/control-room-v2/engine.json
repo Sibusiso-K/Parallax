@@ -1,0 +1,2657 @@
+{
+ "extraction": {
+  "decision": {
+   "value": "Take on a 12-month corporate lunch contract",
+   "quote": "Should I take the contract?"
+  },
+  "business": {
+   "value": "Meal-prep and catering",
+   "quote": "meal-prep and catering business"
+  },
+  "location": {
+   "value": "Johannesburg",
+   "quote": "Johannesburg"
+  },
+  "revenue": {
+   "low": 75000,
+   "base": 90000,
+   "high": 105000,
+   "quote": "about R90,000 a month, anywhere from R75k to R105k"
+  },
+  "directCosts": {
+   "low": 36000,
+   "high": 36000,
+   "quote": "Ingredients and packaging cost R36,000 a month"
+  },
+  "overheads": {
+   "low": 16000,
+   "high": 16000,
+   "quote": "Rent, power, fuel and software come to R16,000"
+  },
+  "founderPay": {
+   "low": 12000,
+   "high": 12000,
+   "quote": "I pay myself R12,000"
+  },
+  "debtRepayments": {
+   "low": 3500,
+   "high": 3500,
+   "quote": "We repay R3,500 a month on the delivery van"
+  },
+  "cash": {
+   "low": 120000,
+   "high": 120000,
+   "quote": "R120,000 in the business account"
+  },
+  "riskComfort": {
+   "value": "low",
+   "quote": "I'm careful with risk"
+  },
+  "goals": {
+   "value": [
+    "cash safety",
+    "growth"
+   ],
+   "quote": "cash safety and growth"
+  },
+  "offerRevenue": {
+   "low": 60000,
+   "high": 60000,
+   "quote": "worth R60,000 a month"
+  },
+  "paymentDays": {
+   "value": 60,
+   "quote": "they pay 60 days after each invoice"
+  },
+  "hireCost": {
+   "low": 8500,
+   "high": 8500,
+   "quote": "another cook at R8,500 a month"
+  },
+  "upfrontCost": {
+   "low": 25000,
+   "high": 25000,
+   "quote": "a second fridge for R25,000"
+  },
+  "payroll": {
+   "low": 21000,
+   "high": 21000,
+   "quote": "21k"
+  }
+ },
+ "profile": {
+  "decision": "Take on a 12-month corporate lunch contract",
+  "decisionType": "contract",
+  "business": "Meal-prep and catering",
+  "location": "Johannesburg",
+  "riskComfort": "low",
+  "goals": [
+   "cash safety",
+   "growth"
+  ],
+  "money": {
+   "revenue": {
+    "low": 75000,
+    "high": 105000,
+    "base": 90000,
+    "source": "you"
+   },
+   "directCosts": {
+    "low": 36000,
+    "high": 36000,
+    "base": 36000,
+    "source": "you"
+   },
+   "overheads": {
+    "low": 16000,
+    "high": 16000,
+    "base": 16000,
+    "source": "you"
+   },
+   "payroll": {
+    "low": 21000,
+    "high": 21000,
+    "base": 21000,
+    "source": "you"
+   },
+   "founderPay": {
+    "low": 12000,
+    "high": 12000,
+    "base": 12000,
+    "source": "you"
+   },
+   "debtRepayments": {
+    "low": 3500,
+    "high": 3500,
+    "base": 3500,
+    "source": "you"
+   },
+   "cash": {
+    "low": 120000,
+    "high": 120000,
+    "base": 120000,
+    "source": "you"
+   },
+   "offerRevenue": {
+    "low": 60000,
+    "high": 60000,
+    "base": 60000,
+    "source": "you"
+   },
+   "hireCost": {
+    "low": 8500,
+    "high": 8500,
+    "base": 8500,
+    "source": "you"
+   },
+   "upfrontCost": {
+    "low": 25000,
+    "high": 25000,
+    "base": 25000,
+    "source": "you"
+   }
+  },
+  "paymentDays": {
+   "value": 60,
+   "source": "you"
+  },
+  "priceRisePercent": {
+   "value": 10,
+   "source": "default"
+  }
+ },
+ "margin": 0.6,
+ "paths": [
+  {
+   "letter": "A",
+   "name": "Stay lean",
+   "summary": "Turn the contract down and keep running the business as it is.",
+   "startingCash": 120000,
+   "setbackIds": [
+    "lost-client",
+    "slow-season"
+   ],
+   "assumptions": [
+    {
+     "label": "Gross profit from current sales",
+     "kind": "income",
+     "role": "sales",
+     "low": 45000,
+     "base": 54000,
+     "high": 63000,
+     "source": "you",
+     "id": "A1"
+    },
+    {
+     "label": "Rent and running costs",
+     "kind": "cost",
+     "role": "overhead",
+     "low": 16000,
+     "base": 16000,
+     "high": 16000,
+     "source": "you",
+     "id": "A2"
+    },
+    {
+     "label": "Staff wages",
+     "kind": "cost",
+     "role": "payroll",
+     "low": 21000,
+     "base": 21000,
+     "high": 21000,
+     "source": "you",
+     "id": "A3"
+    },
+    {
+     "label": "Your own pay",
+     "kind": "cost",
+     "role": "founder",
+     "low": 12000,
+     "base": 12000,
+     "high": 12000,
+     "source": "you",
+     "id": "A4"
+    },
+    {
+     "label": "Debt repayments",
+     "kind": "cost",
+     "role": "debt",
+     "low": 3500,
+     "base": 3500,
+     "high": 3500,
+     "source": "you",
+     "id": "A5"
+    }
+   ],
+   "rows": {
+    "bad": [
+     {
+      "cash": 112500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 105000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 97500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 90000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 82500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 75000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 67500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 60000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 52500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 45000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 37500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 30000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 22500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 15000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 7500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 0,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -7500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -15000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -22500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -30000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -37500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -45000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -52500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -60000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -67500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -75000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -82500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -90000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -97500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -105000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -112500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -120000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -127500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -135000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -142500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": -150000,
+      "income": 45000,
+      "costs": 52500
+     }
+    ],
+    "likely": [
+     {
+      "cash": 121500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 123000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 124500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 126000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 127500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 129000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 130500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 132000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 133500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 135000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 136500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 138000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 139500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 141000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 142500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 144000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 145500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 147000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 148500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 150000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 151500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 153000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 154500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 156000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 157500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 159000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 160500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 162000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 163500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 165000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 166500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 168000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 169500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 171000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 172500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 174000,
+      "income": 54000,
+      "costs": 52500
+     }
+    ],
+    "good": [
+     {
+      "cash": 130500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 141000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 151500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 162000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 172500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 183000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 193500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 204000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 214500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 225000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 235500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 246000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 256500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 267000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 277500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 288000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 298500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 309000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 319500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 330000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 340500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 351000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 361500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 372000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 382500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 393000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 403500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 414000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 424500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 435000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 445500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 456000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 466500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 477000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 487500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 498000,
+      "income": 63000,
+      "costs": 52500
+     }
+    ]
+   },
+   "lowest": {
+    "bad": {
+     "cash": -150000,
+     "month": 36
+    },
+    "likely": {
+     "cash": 121500,
+     "month": 1
+    },
+    "good": {
+     "cash": 130500,
+     "month": 1
+    }
+   },
+   "runsOut": {
+    "bad": 17,
+    "likely": null,
+    "good": null
+   },
+   "milestones": {
+    "bad": {
+     "cash-buffer-3-months": null,
+     "cash-runs-out": 17,
+     "back-to-start": null,
+     "debt-cleared": null
+    },
+    "likely": {
+     "cash-buffer-3-months": 25,
+     "cash-runs-out": null,
+     "back-to-start": null,
+     "debt-cleared": null
+    },
+    "good": {
+     "cash-buffer-3-months": 4,
+     "cash-runs-out": null,
+     "back-to-start": null,
+     "debt-cleared": null
+    }
+   },
+   "runway": 2,
+   "drivers": [
+    {
+     "id": "A1",
+     "label": "Gross profit from current sales",
+     "swing": 648000
+    }
+   ],
+   "setbacks": [
+    {
+     "id": "late-payment",
+     "label": "Late payment: a big client pays 2 months late, then catches up",
+     "month": 6,
+     "lowest": {
+      "cash": 98100,
+      "month": 7
+     },
+     "runsOut": null,
+     "end": 0
+    },
+    {
+     "id": "lost-client",
+     "label": "Lost client: your biggest customer stops buying for 3 months",
+     "month": 6,
+     "lowest": {
+      "cash": 83400,
+      "month": 8
+     },
+     "runsOut": null,
+     "end": -48600
+    },
+    {
+     "id": "slow-season",
+     "label": "Slow season: gross profit drops 33% for 2 months",
+     "month": 6,
+     "lowest": {
+      "cash": 94860,
+      "month": 7
+     },
+     "runsOut": null,
+     "end": -35640
+    },
+    {
+     "id": "equipment-breakdown",
+     "label": "Equipment breakdown: one repair bill",
+     "month": 6,
+     "lowest": {
+      "cash": 114000,
+      "month": 6
+     },
+     "runsOut": null,
+     "end": -15000
+    },
+    {
+     "id": "cost-rise",
+     "label": "Cost rise: rent and running costs go up 10% from then on",
+     "month": 6,
+     "lowest": {
+      "cash": 121500,
+      "month": 1
+     },
+     "runsOut": null,
+     "end": -49600
+    }
+   ],
+   "lateLikely": [
+    121500,
+    123000,
+    124500,
+    126000,
+    127500,
+    112800,
+    98100,
+    115800,
+    133500,
+    135000,
+    136500,
+    138000,
+    139500,
+    141000,
+    142500,
+    144000,
+    145500,
+    147000,
+    148500,
+    150000,
+    151500,
+    153000,
+    154500,
+    156000,
+    157500,
+    159000,
+    160500,
+    162000,
+    163500,
+    165000,
+    166500,
+    168000,
+    169500,
+    171000,
+    172500,
+    174000
+   ],
+   "lateBad": [
+    112500,
+    105000,
+    97500,
+    90000,
+    82500,
+    58800,
+    35100,
+    43800,
+    52500,
+    45000,
+    37500,
+    30000,
+    22500,
+    15000,
+    7500,
+    0,
+    -7500,
+    -15000,
+    -22500,
+    -30000,
+    -37500,
+    -45000,
+    -52500,
+    -60000,
+    -67500,
+    -75000,
+    -82500,
+    -90000,
+    -97500,
+    -105000,
+    -112500,
+    -120000,
+    -127500,
+    -135000,
+    -142500,
+    -150000
+   ],
+   "lateLowest": {
+    "cash": 98100,
+    "month": 7
+   },
+   "lateRunsOut": null
+  },
+  {
+   "letter": "B",
+   "name": "Take it as offered",
+   "summary": "Take the 12-month contract now, paid 60 days after each invoice.",
+   "startingCash": 120000,
+   "setbackIds": [
+    "late-payment",
+    "equipment-breakdown"
+   ],
+   "assumptions": [
+    {
+     "label": "Gross profit from current sales",
+     "kind": "income",
+     "role": "sales",
+     "low": 45000,
+     "base": 54000,
+     "high": 63000,
+     "source": "you",
+     "id": "B1"
+    },
+    {
+     "label": "Rent and running costs",
+     "kind": "cost",
+     "role": "overhead",
+     "low": 16000,
+     "base": 16000,
+     "high": 16000,
+     "source": "you",
+     "id": "B2"
+    },
+    {
+     "label": "Staff wages",
+     "kind": "cost",
+     "role": "payroll",
+     "low": 21000,
+     "base": 21000,
+     "high": 21000,
+     "source": "you",
+     "id": "B3"
+    },
+    {
+     "label": "Your own pay",
+     "kind": "cost",
+     "role": "founder",
+     "low": 12000,
+     "base": 12000,
+     "high": 12000,
+     "source": "you",
+     "id": "B4"
+    },
+    {
+     "label": "Debt repayments",
+     "kind": "cost",
+     "role": "debt",
+     "low": 3500,
+     "base": 3500,
+     "high": 3500,
+     "source": "you",
+     "id": "B5"
+    },
+    {
+     "label": "Contract income, paid 60 days after each invoice",
+     "kind": "income",
+     "role": "contract",
+     "low": 60000,
+     "base": 60000,
+     "high": 60000,
+     "source": "you",
+     "fromMonth": 3,
+     "toMonth": 14,
+     "id": "B6"
+    },
+    {
+     "label": "Direct costs of the contract work",
+     "kind": "cost",
+     "role": "direct",
+     "low": 21000,
+     "base": 24000,
+     "high": 30000,
+     "source": "template",
+     "fromMonth": 1,
+     "toMonth": 12,
+     "id": "B7"
+    },
+    {
+     "label": "Extra staff for the contract",
+     "kind": "cost",
+     "role": "payroll",
+     "low": 8500,
+     "base": 8500,
+     "high": 8500,
+     "source": "you",
+     "fromMonth": 1,
+     "toMonth": 12,
+     "id": "B8"
+    },
+    {
+     "label": "Equipment for the contract, bought up front",
+     "kind": "cost",
+     "role": "equipment",
+     "low": 25000,
+     "base": 25000,
+     "high": 25000,
+     "source": "you",
+     "fromMonth": 1,
+     "toMonth": 1,
+     "id": "B9"
+    }
+   ],
+   "rows": {
+    "bad": [
+     {
+      "cash": 49000,
+      "income": 45000,
+      "costs": 116000
+     },
+     {
+      "cash": 3000,
+      "income": 45000,
+      "costs": 91000
+     },
+     {
+      "cash": 17000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 31000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 45000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 59000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 73000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 87000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 101000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 115000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 129000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 143000,
+      "income": 105000,
+      "costs": 91000
+     },
+     {
+      "cash": 195500,
+      "income": 105000,
+      "costs": 52500
+     },
+     {
+      "cash": 248000,
+      "income": 105000,
+      "costs": 52500
+     },
+     {
+      "cash": 240500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 233000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 225500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 218000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 210500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 203000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 195500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 188000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 180500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 173000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 165500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 158000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 150500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 143000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 135500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 128000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 120500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 113000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 105500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 98000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 90500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 83000,
+      "income": 45000,
+      "costs": 52500
+     }
+    ],
+    "likely": [
+     {
+      "cash": 64000,
+      "income": 54000,
+      "costs": 110000
+     },
+     {
+      "cash": 33000,
+      "income": 54000,
+      "costs": 85000
+     },
+     {
+      "cash": 62000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 91000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 120000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 149000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 178000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 207000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 236000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 265000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 294000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 323000,
+      "income": 114000,
+      "costs": 85000
+     },
+     {
+      "cash": 384500,
+      "income": 114000,
+      "costs": 52500
+     },
+     {
+      "cash": 446000,
+      "income": 114000,
+      "costs": 52500
+     },
+     {
+      "cash": 447500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 449000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 450500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 452000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 453500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 455000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 456500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 458000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 459500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 461000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 462500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 464000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 465500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 467000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 468500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 470000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 471500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 473000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 474500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 476000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 477500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 479000,
+      "income": 54000,
+      "costs": 52500
+     }
+    ],
+    "good": [
+     {
+      "cash": 76000,
+      "income": 63000,
+      "costs": 107000
+     },
+     {
+      "cash": 57000,
+      "income": 63000,
+      "costs": 82000
+     },
+     {
+      "cash": 98000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 139000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 180000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 221000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 262000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 303000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 344000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 385000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 426000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 467000,
+      "income": 123000,
+      "costs": 82000
+     },
+     {
+      "cash": 537500,
+      "income": 123000,
+      "costs": 52500
+     },
+     {
+      "cash": 608000,
+      "income": 123000,
+      "costs": 52500
+     },
+     {
+      "cash": 618500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 629000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 639500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 650000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 660500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 671000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 681500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 692000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 702500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 713000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 723500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 734000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 744500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 755000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 765500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 776000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 786500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 797000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 807500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 818000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 828500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 839000,
+      "income": 63000,
+      "costs": 52500
+     }
+    ]
+   },
+   "lowest": {
+    "bad": {
+     "cash": 3000,
+     "month": 2
+    },
+    "likely": {
+     "cash": 33000,
+     "month": 2
+    },
+    "good": {
+     "cash": 57000,
+     "month": 2
+    }
+   },
+   "runsOut": {
+    "bad": null,
+    "likely": null,
+    "good": null
+   },
+   "milestones": {
+    "bad": {
+     "cash-buffer-3-months": 13,
+     "cash-runs-out": null,
+     "back-to-start": 11,
+     "debt-cleared": null
+    },
+    "likely": {
+     "cash-buffer-3-months": 8,
+     "cash-runs-out": null,
+     "back-to-start": 5,
+     "debt-cleared": null
+    },
+    "good": {
+     "cash-buffer-3-months": 6,
+     "cash-runs-out": null,
+     "back-to-start": 4,
+     "debt-cleared": null
+    }
+   },
+   "runway": 1,
+   "drivers": [
+    {
+     "id": "B1",
+     "label": "Gross profit from current sales",
+     "swing": 648000
+    },
+    {
+     "id": "B7",
+     "label": "Direct costs of the contract work",
+     "swing": 108000
+    }
+   ],
+   "setbacks": [
+    {
+     "id": "late-payment",
+     "label": "Late payment: a big client pays 2 months late, then catches up",
+     "month": 3,
+     "lowest": {
+      "cash": -29000,
+      "month": 4
+     },
+     "runsOut": 4,
+     "end": 0
+    },
+    {
+     "id": "lost-client",
+     "label": "Lost client: your biggest customer stops buying for 3 months",
+     "month": 6,
+     "lowest": {
+      "cash": 33000,
+      "month": 2
+     },
+     "runsOut": null,
+     "end": -48600
+    },
+    {
+     "id": "slow-season",
+     "label": "Slow season: gross profit drops 33% for 2 months",
+     "month": 6,
+     "lowest": {
+      "cash": 33000,
+      "month": 2
+     },
+     "runsOut": null,
+     "end": -35640
+    },
+    {
+     "id": "equipment-breakdown",
+     "label": "Equipment breakdown: one repair bill",
+     "month": 6,
+     "lowest": {
+      "cash": 33000,
+      "month": 2
+     },
+     "runsOut": null,
+     "end": -15000
+    },
+    {
+     "id": "cost-rise",
+     "label": "Cost rise: rent and running costs go up 10% from then on",
+     "month": 6,
+     "lowest": {
+      "cash": 33000,
+      "month": 2
+     },
+     "runsOut": null,
+     "end": -49600
+    }
+   ],
+   "lateLikely": [
+    64000,
+    33000,
+    2000,
+    -29000,
+    60000,
+    149000,
+    178000,
+    207000,
+    236000,
+    265000,
+    294000,
+    323000,
+    384500,
+    446000,
+    447500,
+    449000,
+    450500,
+    452000,
+    453500,
+    455000,
+    456500,
+    458000,
+    459500,
+    461000,
+    462500,
+    464000,
+    465500,
+    467000,
+    468500,
+    470000,
+    471500,
+    473000,
+    474500,
+    476000,
+    477500,
+    479000
+   ],
+   "lateBad": [
+    49000,
+    3000,
+    -43000,
+    -89000,
+    -15000,
+    59000,
+    73000,
+    87000,
+    101000,
+    115000,
+    129000,
+    143000,
+    195500,
+    248000,
+    240500,
+    233000,
+    225500,
+    218000,
+    210500,
+    203000,
+    195500,
+    188000,
+    180500,
+    173000,
+    165500,
+    158000,
+    150500,
+    143000,
+    135500,
+    128000,
+    120500,
+    113000,
+    105500,
+    98000,
+    90500,
+    83000
+   ],
+   "lateLowest": {
+    "cash": -29000,
+    "month": 4
+   },
+   "lateRunsOut": 4
+  },
+  {
+   "letter": "C",
+   "name": "Take it on safer terms",
+   "summary": "Take it only if the client pays within 30 days, and rent the equipment instead of buying it.",
+   "startingCash": 120000,
+   "setbackIds": [
+    "late-payment",
+    "cost-rise"
+   ],
+   "assumptions": [
+    {
+     "label": "Gross profit from current sales",
+     "kind": "income",
+     "role": "sales",
+     "low": 45000,
+     "base": 54000,
+     "high": 63000,
+     "source": "you",
+     "id": "C1"
+    },
+    {
+     "label": "Rent and running costs",
+     "kind": "cost",
+     "role": "overhead",
+     "low": 16000,
+     "base": 16000,
+     "high": 16000,
+     "source": "you",
+     "id": "C2"
+    },
+    {
+     "label": "Staff wages",
+     "kind": "cost",
+     "role": "payroll",
+     "low": 21000,
+     "base": 21000,
+     "high": 21000,
+     "source": "you",
+     "id": "C3"
+    },
+    {
+     "label": "Your own pay",
+     "kind": "cost",
+     "role": "founder",
+     "low": 12000,
+     "base": 12000,
+     "high": 12000,
+     "source": "you",
+     "id": "C4"
+    },
+    {
+     "label": "Debt repayments",
+     "kind": "cost",
+     "role": "debt",
+     "low": 3500,
+     "base": 3500,
+     "high": 3500,
+     "source": "you",
+     "id": "C5"
+    },
+    {
+     "label": "Contract income, paid 30 days after each invoice",
+     "kind": "income",
+     "role": "contract",
+     "low": 60000,
+     "base": 60000,
+     "high": 60000,
+     "source": "you",
+     "fromMonth": 2,
+     "toMonth": 13,
+     "id": "C6"
+    },
+    {
+     "label": "Direct costs of the contract work",
+     "kind": "cost",
+     "role": "direct",
+     "low": 21000,
+     "base": 24000,
+     "high": 30000,
+     "source": "template",
+     "fromMonth": 1,
+     "toMonth": 12,
+     "id": "C7"
+    },
+    {
+     "label": "Extra staff for the contract",
+     "kind": "cost",
+     "role": "payroll",
+     "low": 8500,
+     "base": 8500,
+     "high": 8500,
+     "source": "you",
+     "fromMonth": 1,
+     "toMonth": 12,
+     "id": "C8"
+    },
+    {
+     "label": "Equipment for the contract, rented",
+     "kind": "cost",
+     "role": "equipment",
+     "low": 1250,
+     "base": 1250,
+     "high": 1250,
+     "source": "template",
+     "fromMonth": 1,
+     "toMonth": 12,
+     "id": "C9"
+    }
+   ],
+   "rows": {
+    "bad": [
+     {
+      "cash": 72750,
+      "income": 45000,
+      "costs": 92250
+     },
+     {
+      "cash": 85500,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 98250,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 111000,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 123750,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 136500,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 149250,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 162000,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 174750,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 187500,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 200250,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 213000,
+      "income": 105000,
+      "costs": 92250
+     },
+     {
+      "cash": 265500,
+      "income": 105000,
+      "costs": 52500
+     },
+     {
+      "cash": 258000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 250500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 243000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 235500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 228000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 220500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 213000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 205500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 198000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 190500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 183000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 175500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 168000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 160500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 153000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 145500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 138000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 130500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 123000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 115500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 108000,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 100500,
+      "income": 45000,
+      "costs": 52500
+     },
+     {
+      "cash": 93000,
+      "income": 45000,
+      "costs": 52500
+     }
+    ],
+    "likely": [
+     {
+      "cash": 87750,
+      "income": 54000,
+      "costs": 86250
+     },
+     {
+      "cash": 115500,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 143250,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 171000,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 198750,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 226500,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 254250,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 282000,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 309750,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 337500,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 365250,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 393000,
+      "income": 114000,
+      "costs": 86250
+     },
+     {
+      "cash": 454500,
+      "income": 114000,
+      "costs": 52500
+     },
+     {
+      "cash": 456000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 457500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 459000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 460500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 462000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 463500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 465000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 466500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 468000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 469500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 471000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 472500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 474000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 475500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 477000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 478500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 480000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 481500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 483000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 484500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 486000,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 487500,
+      "income": 54000,
+      "costs": 52500
+     },
+     {
+      "cash": 489000,
+      "income": 54000,
+      "costs": 52500
+     }
+    ],
+    "good": [
+     {
+      "cash": 99750,
+      "income": 63000,
+      "costs": 83250
+     },
+     {
+      "cash": 139500,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 179250,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 219000,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 258750,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 298500,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 338250,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 378000,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 417750,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 457500,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 497250,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 537000,
+      "income": 123000,
+      "costs": 83250
+     },
+     {
+      "cash": 607500,
+      "income": 123000,
+      "costs": 52500
+     },
+     {
+      "cash": 618000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 628500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 639000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 649500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 660000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 670500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 681000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 691500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 702000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 712500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 723000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 733500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 744000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 754500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 765000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 775500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 786000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 796500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 807000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 817500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 828000,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 838500,
+      "income": 63000,
+      "costs": 52500
+     },
+     {
+      "cash": 849000,
+      "income": 63000,
+      "costs": 52500
+     }
+    ]
+   },
+   "lowest": {
+    "bad": {
+     "cash": 72750,
+     "month": 1
+    },
+    "likely": {
+     "cash": 87750,
+     "month": 1
+    },
+    "good": {
+     "cash": 99750,
+     "month": 1
+    }
+   },
+   "runsOut": {
+    "bad": null,
+    "likely": null,
+    "good": null
+   },
+   "milestones": {
+    "bad": {
+     "cash-buffer-3-months": 10,
+     "cash-runs-out": null,
+     "back-to-start": 5,
+     "debt-cleared": null
+    },
+    "likely": {
+     "cash-buffer-3-months": 5,
+     "cash-runs-out": null,
+     "back-to-start": 3,
+     "debt-cleared": null
+    },
+    "good": {
+     "cash-buffer-3-months": 4,
+     "cash-runs-out": null,
+     "back-to-start": 2,
+     "debt-cleared": null
+    }
+   },
+   "runway": 1,
+   "drivers": [
+    {
+     "id": "C1",
+     "label": "Gross profit from current sales",
+     "swing": 648000
+    },
+    {
+     "id": "C7",
+     "label": "Direct costs of the contract work",
+     "swing": 108000
+    }
+   ],
+   "setbacks": [
+    {
+     "id": "late-payment",
+     "label": "Late payment: a big client pays 2 months late, then catches up",
+     "month": 2,
+     "lowest": {
+      "cash": 23250,
+      "month": 3
+     },
+     "runsOut": null,
+     "end": 0
+    },
+    {
+     "id": "lost-client",
+     "label": "Lost client: your biggest customer stops buying for 3 months",
+     "month": 6,
+     "lowest": {
+      "cash": 87750,
+      "month": 1
+     },
+     "runsOut": null,
+     "end": -48600
+    },
+    {
+     "id": "slow-season",
+     "label": "Slow season: gross profit drops 33% for 2 months",
+     "month": 6,
+     "lowest": {
+      "cash": 87750,
+      "month": 1
+     },
+     "runsOut": null,
+     "end": -35640
+    },
+    {
+     "id": "equipment-breakdown",
+     "label": "Equipment breakdown: one repair bill",
+     "month": 6,
+     "lowest": {
+      "cash": 87750,
+      "month": 1
+     },
+     "runsOut": null,
+     "end": -15000
+    },
+    {
+     "id": "cost-rise",
+     "label": "Cost rise: rent and running costs go up 10% from then on",
+     "month": 6,
+     "lowest": {
+      "cash": 87750,
+      "month": 1
+     },
+     "runsOut": null,
+     "end": -49600
+    }
+   ],
+   "lateLikely": [
+    87750,
+    55500,
+    23250,
+    111000,
+    198750,
+    226500,
+    254250,
+    282000,
+    309750,
+    337500,
+    365250,
+    393000,
+    454500,
+    456000,
+    457500,
+    459000,
+    460500,
+    462000,
+    463500,
+    465000,
+    466500,
+    468000,
+    469500,
+    471000,
+    472500,
+    474000,
+    475500,
+    477000,
+    478500,
+    480000,
+    481500,
+    483000,
+    484500,
+    486000,
+    487500,
+    489000
+   ],
+   "lateBad": [
+    72750,
+    25500,
+    -21750,
+    51000,
+    123750,
+    136500,
+    149250,
+    162000,
+    174750,
+    187500,
+    200250,
+    213000,
+    265500,
+    258000,
+    250500,
+    243000,
+    235500,
+    228000,
+    220500,
+    213000,
+    205500,
+    198000,
+    190500,
+    183000,
+    175500,
+    168000,
+    160500,
+    153000,
+    145500,
+    138000,
+    130500,
+    123000,
+    115500,
+    108000,
+    100500,
+    93000
+   ],
+   "lateLowest": {
+    "cash": 23250,
+    "month": 3
+   },
+   "lateRunsOut": null
+  }
+ ]
+}
