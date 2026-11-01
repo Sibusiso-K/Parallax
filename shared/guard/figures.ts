@@ -7,8 +7,13 @@
 export type FigureTable = Record<string, number>;
 
 export interface GuardContext {
-  /** The one path this reply belongs to. Keys of any other path are refused (path isolation, F13). */
+  /** The path this reply belongs to. Keys of any other path are refused (path isolation, F13). */
   pathId: string;
+  /**
+   * Extra paths whose keys may be quoted, for the advisor only (a server-built allowlist). Default: just `pathId`.
+   * The table must already contain only those paths' figures.
+   */
+  allowedPathIds?: readonly string[];
   /** figureTable(path) for that path. */
   table: FigureTable;
   /** Numbers the person typed themselves (income, savings...). These may be repeated back. */
@@ -47,7 +52,8 @@ const PERCENT = /\d+(?:\.\d+)?\s?(?:%|percent\b|per cent\b)/gi;
 const SUFFIXED = /\b\d+(?:\.\d+)?\s?(?:k|m)\b/gi;
 const BIG_NUMBER = /\b\d{1,3}(?:[ ,]\d{3})+\b|\b\d{4,}\b/g;
 
-const MONTH_KEY = /\.(?:worstMonth|milestone\.[^.]+|runway)(?:\.|$)/;
+// Keys whose value is a month number, not rand: PR #8 names them lowestMonth, milestone.<id>.<case>, setback.<id>.runsOut.
+const MONTH_KEY = /\.(?:worstMonth|lowestMonth|milestone\.[^.]+|runway)(?:\.|$)|\.setback\.[^.]+\.runsOut$/;
 
 const groupThousands = (n: number): string => Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -73,12 +79,13 @@ function guardInner(raw: string, ctx: GuardContext): GuardResult {
   let clean = true;
   const user = new Set((ctx.userNumbers ?? []).map(n => Math.abs(n)));
   const ids = new Set(ctx.allowedIds ?? []);
+  const allowed = ctx.allowedPathIds ?? [ctx.pathId];
 
   // 1. Swap placeholders for sentinels so their values are not treated as stray numbers in step 2.
   const resolved: string[] = [];
   let text = raw.replace(PLACEHOLDER, (_m, key: string) => {
     let out = SEE_CHART;
-    if (!key.startsWith(`${ctx.pathId}.`)) {
+    if (!allowed.some(p => key.startsWith(`${p}.`))) {
       checks.push({ type: 'wrong_path', detail: key });
       clean = false;
     } else if (!Object.prototype.hasOwnProperty.call(ctx.table, key)) {
