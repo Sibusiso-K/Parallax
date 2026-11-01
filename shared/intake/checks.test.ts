@@ -74,4 +74,15 @@ describe('faulty-input script (SCOPE section 5)', () => {
     const [issue] = checkIntake('We have 900000000 in the bank and want to hire', { cash: money(900000000) });
     expect(issue?.message).not.toContain('a month');
   });
+
+  it('blocks a split of equity between founders, which is not a cash decision', () => {
+    expect(checkIntake('Should we split the equity 50/50 with my cofounder?', none).map((i) => i.kind)).toEqual(['out-of-scope']);
+    expect(checkIntake('Should we give a shareholding to our new partner?', none).map((i) => i.kind)).toEqual(['out-of-scope']);
+    expect(checkIntake('Should we give our partner a bigger discount on the next order?', none).map((i) => i.kind)).toEqual([]);
+  });
+
+  it('flags advice about putting the business cash into something risky, in business words', () => {
+    expect(checkIntake('Should I put the business cash into crypto before we hire?', none).map((i) => i.kind)).toEqual(['advice']);
+    expect(checkIntake('Should we put our cash into bitcoin for growth?', none).map((i) => i.kind)).toEqual(['advice']);
+  });
 });

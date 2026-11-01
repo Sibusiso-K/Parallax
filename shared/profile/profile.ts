@@ -31,7 +31,8 @@ export interface Setting {
 
 export interface Profile {
   decision: string;
-  decisionType: DecisionType;
+  /** Null until the kind of decision is known: the intake asks for it rather than guessing (see templatePaths). */
+  decisionType: DecisionType | null;
   business: string | null;
   location: string | null;
   riskComfort: 'low' | 'medium' | 'high' | null;
@@ -76,7 +77,7 @@ export function buildProfile(ex: Extraction): Profile {
   const decision = ex.decision?.value ?? 'My business decision';
   return {
     decision,
-    decisionType: ex.decisionType?.value ?? detectDecision(decision)?.value ?? 'contract',
+    decisionType: ex.decisionType?.value ?? detectDecision(decision)?.value ?? null,
     business: ex.business?.value ?? null,
     location: ex.location?.value ?? null,
     riskComfort: ex.riskComfort?.value ?? null,

@@ -152,6 +152,7 @@ let lastDecision: DecisionType = "contract";
 
 async function paths(profile: Profile): Promise<PathCard[]> {
   const built = buildProfile(toExtraction(profile));
+  if (built.decisionType === null) throw new Error("Choose a kind of decision first");
   lastDecision = built.decisionType;
   const cards = templatePaths(built);
   for (const c of cards) lastPaths.set(c.id, c);

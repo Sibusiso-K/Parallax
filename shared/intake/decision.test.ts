@@ -6,6 +6,8 @@ describe('detectDecision', () => {
     expect(detectDecision('Should I take the contract?')).toEqual({ value: 'contract', quote: 'contract' });
     expect(detectDecision('A corporate client wants weekly orders')).toMatchObject({ value: 'contract' });
     expect(detectDecision('We won a tender for school meals')).toMatchObject({ value: 'contract' });
+    // "new client" alone is not a contract: the hire is the decision here.
+    expect(detectDecision('Should we hire someone since we got a new client?')).toMatchObject({ value: 'hire' });
     expect(detectDecision('Is it time to hire a second cook?')).toMatchObject({ value: 'hire' });
     expect(detectDecision('Should I take on someone to do deliveries?')).toMatchObject({ value: 'hire' });
     expect(detectDecision('Should we raise our prices by 10%?')).toMatchObject({ value: 'pricing', quote: 'raise our prices' });

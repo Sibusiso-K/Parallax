@@ -155,6 +155,7 @@ function pricingPaths(p: Profile): PathCard[] {
 }
 
 export function templatePaths(p: Profile): PathCard[] {
+  if (p.decisionType === null) throw new Error('Choose a kind of decision first: a big contract, a hire or a price rise.');
   switch (p.decisionType) {
     case 'contract':
       return contractPaths(p);

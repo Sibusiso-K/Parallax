@@ -4,7 +4,7 @@ import type { DecisionType } from './schema.js';
 // same text and the quote check (verify.ts) still applies: the matched words are the quote.
 // Order matters: "Should I hire a cook to take the contract?" is a contract decision, with the hire inside its paths.
 const PATTERNS: [DecisionType, RegExp][] = [
-  ['contract', /\b(contract|tender|big (?:order|client|customer|job)|corporate client|new client|purchase order)\b/i],
+  ['contract', /\b(contract|tender|big (?:order|client|customer|job)|corporate client|purchase order)\b/i],
   [
     'pricing',
     /\b(rais(?:e|ing) (?:my |our |the )?prices?|price (?:rise|increase|hike)|put (?:my |our )?prices up|charg(?:e|ing) more|increas(?:e|ing) (?:my |our |the )?prices?)\b/i,

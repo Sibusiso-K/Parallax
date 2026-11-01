@@ -33,12 +33,16 @@ const OUT_OF_SCOPE: [RegExp, string][] = [
   [/\b(break ?up|divorce|get married|marry my|wedding)\b/i, 'Relationship decisions are outside what Parallax covers.'],
   [/\b(sue|lawsuit|court case|criminal case|arrested|custody|lawyer|attorney)\b/i, 'Legal decisions are outside what Parallax covers. A lawyer can help.'],
   [/\b(emigrat\w*|immigrat\w*|move abroad|move overseas|leave the country)\b/i, 'Emigration is outside what Parallax covers.'],
+  [
+    /\b(cofounder|co-founder|split (?:the |our )?(?:equity|shares)|equity split|shareholding)\b/i,
+    'Splitting equity between founders is outside what Parallax covers: it is not a cash decision. A lawyer or an accountant can help.',
+  ],
 ];
 
 const COVERED = 'Parallax covers big contracts, hires and price rises for now.';
 const NOT_SUPPORTED: [RegExp, string][] = [
   [
-    /\b(loans?|borrow\w*|overdraft|investors?|raise (?:money|capital|funding|a round)|funding round|equity|venture capital|angel invest\w*)\b/i,
+    /\b(loans?|borrow\w*|overdraft|investors?|raise (?:money|capital|funding|a round)|funding round|venture capital|angel invest\w*)\b/i,
     `Funding decisions (loans and investors) are not supported yet. ${COVERED}`,
   ],
   [
@@ -51,7 +55,7 @@ const NOT_SUPPORTED: [RegExp, string][] = [
   ],
 ];
 
-const ADVICE = /\b(crypto\w*|bitcoin|etf|stock market|invest (in|my savings)|put my savings (in|into))\b/i;
+const ADVICE = /\b(crypto\w*|bitcoin|etf|stock market|invest (in|my savings|the cash)|put (my|our|the|the business'?s?) (savings|cash) (in|into))\b/i;
 
 // "I'm 27", "aged 16", "I'm 27 years old". Not "I'm 3 years into this" or "I'm 2 jobs".
 const AGE = /\b(?:I[’']?m|I am|aged?)\s+(\d{1,3})(?:\s+years?\s+old)?\b(?!\s*(?:%|k\b|years?\b|jobs?|kids?|children|people|staff|employees|months?))/i;

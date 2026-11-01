@@ -22,7 +22,8 @@ describe('buildProfile', () => {
 
   it('reads the kind of decision from the decision itself when no field gives it', () => {
     expect(profile.decisionType).toBe('contract');
-    expect(buildProfile({}).decisionType).toBe('contract');
+    expect(buildProfile({}).decisionType).toBeNull();
+    expect(() => templatePaths(buildProfile({}))).toThrow('kind of decision');
   });
 
   it('sizes a contract the founder did not price from today\'s sales, and marks it assumed', () => {
