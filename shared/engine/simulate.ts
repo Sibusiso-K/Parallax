@@ -4,6 +4,9 @@
 
 export type Kind = 'income' | 'cost';
 
+// Where a value came from (FEATURES.md F8): the person, a default, the path template or the model.
+export type Source = 'you' | 'default' | 'template' | 'ai';
+
 export interface Assumption {
   id: string; // stable ID such as "A7", cited by the future-self agents
   label: string;
@@ -12,6 +15,10 @@ export interface Assumption {
   low: number;
   base: number;
   high: number;
+  source?: Source;
+  /** First and last month (1-based, inclusive) the amount applies. Default: the whole run. */
+  fromMonth?: number;
+  toMonth?: number;
 }
 
 export interface PathInput {
@@ -46,6 +53,9 @@ export function validateAssumption(a: Assumption): string | null {
     if (v < 0) return `${a.id}: values cannot be negative`;
   }
   if (!(a.low <= a.base && a.base <= a.high)) return `${a.id}: needs low <= base <= high`;
+  if (a.fromMonth !== undefined && a.toMonth !== undefined && a.fromMonth > a.toMonth) {
+    return `${a.id}: fromMonth is after toMonth`;
+  }
   return null;
 }
 
@@ -57,19 +67,22 @@ function valueFor(a: Assumption, c: Case): number {
   return c === 'bad' ? unfavourable : favourable;
 }
 
-function runCase(path: PathInput, c: Case, months: number): CaseResult {
-  let income = 0;
-  let costs = 0;
-  for (const a of path.assumptions) {
-    const v = valueFor(a, c);
-    if (a.kind === 'income') income += v;
-    else costs += v;
-  }
+const activeIn = (a: Assumption, month: number) =>
+  month >= (a.fromMonth ?? 1) && month <= (a.toMonth ?? Number.POSITIVE_INFINITY);
 
+function runCase(path: PathInput, c: Case, months: number): CaseResult {
   const rows: MonthRow[] = [];
   const shortfallMonths: number[] = [];
   let savings = path.startingSavings;
   for (let month = 1; month <= months; month++) {
+    let income = 0;
+    let costs = 0;
+    for (const a of path.assumptions) {
+      if (!activeIn(a, month)) continue;
+      const v = valueFor(a, c);
+      if (a.kind === 'income') income += v;
+      else costs += v;
+    }
     const net = income - costs;
     savings += net;
     rows.push({ month, income, costs, net, savings });

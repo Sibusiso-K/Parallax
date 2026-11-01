@@ -1,12 +1,21 @@
-import { useState } from 'react';
-import type { Extraction } from '../../shared/intake/schema';
+import { useMemo, useState } from 'react';
+import type { Extraction, FieldKey } from '../../shared/intake/schema';
+import { templatePaths } from '../../shared/paths/templates';
+import { buildProfile } from '../../shared/profile/profile';
 import { Intake } from './screens/Intake';
+import { Paths } from './screens/Paths';
+import { Profile } from './screens/Profile';
+
+type Step = 'intake' | 'profile' | 'paths';
 
 // F1 start and consent. Intake stays locked until the person confirms they are 18 or older.
 export function App() {
   const [adult, setAdult] = useState(false);
   const [started, setStarted] = useState(false);
-  const [profile, setProfile] = useState<Extraction | null>(null);
+  const [step, setStep] = useState<Step>('intake');
+  const [answers, setAnswers] = useState<{ fields: Extraction; skipped: FieldKey[] } | null>(null);
+  const profile = useMemo(() => (answers ? buildProfile(answers.fields) : null), [answers]);
+  const paths = useMemo(() => (profile ? templatePaths(profile) : []), [profile]);
 
   return (
     <div className="app">
@@ -19,10 +28,18 @@ export function App() {
           </>
         )}
 
-        {profile ? (
-          <p role="status">Got it. Your "You, today" profile comes next.</p>
+        {started && step === 'paths' && profile ? (
+          <Paths paths={paths} fromTemplates />
+        ) : started && step === 'profile' && profile ? (
+          <Profile profile={profile} onEdit={() => setStep('intake')} onContinue={() => setStep('paths')} />
         ) : started ? (
-          <Intake onDone={(fields) => setProfile(fields)} />
+          <Intake
+            initial={answers ?? undefined}
+            onDone={(fields, skipped) => {
+              setAnswers({ fields, skipped });
+              setStep('profile');
+            }}
+          />
         ) : (
           <>
             <ul className="notice">

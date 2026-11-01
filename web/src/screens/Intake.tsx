@@ -17,14 +17,20 @@ const MAX_FOLLOW_UPS = 3;
 
 type Phase = 'write' | 'loading' | 'review';
 
-export function Intake({ onDone }: { onDone: (fields: Extraction, skipped: FieldKey[]) => void }) {
-  const [phase, setPhase] = useState<Phase>('write');
+type Props = {
+  onDone: (fields: Extraction, skipped: FieldKey[]) => void;
+  /** Reopen "Here is what I heard" with these answers, e.g. from the profile's Edit. */
+  initial?: { fields: Extraction; skipped: FieldKey[] };
+};
+
+export function Intake({ onDone, initial }: Props) {
+  const [phase, setPhase] = useState<Phase>(initial ? 'review' : 'write');
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ mode: string; notice?: string } | null>(null);
-  const [fields, setFields] = useState<Extraction>({});
-  const [skipped, setSkipped] = useState<FieldKey[]>([]);
-  const [asked, setAsked] = useState(0);
+  const [fields, setFields] = useState<Extraction>(initial?.fields ?? {});
+  const [skipped, setSkipped] = useState<FieldKey[]>(initial?.skipped ?? []);
+  const [asked, setAsked] = useState(initial ? MAX_FOLLOW_UPS : 0);
   const [editing, setEditing] = useState<FieldKey | null>(null);
 
   async function submit(e: React.FormEvent) {
@@ -135,7 +141,7 @@ export function Intake({ onDone }: { onDone: (fields: Extraction, skipped: Field
       )}
 
       <dl className="heard">
-        {requiredFields.map((key) => (
+        {[...requiredFields, 'sideIncome' as const].map((key) => (
           <div className="heard-row" key={key}>
             <dt>{fieldLabels[key]}</dt>
             <dd>

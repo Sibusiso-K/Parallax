@@ -1,0 +1,26 @@
+{
+  "_note": "PLACEHOLDERS, NOT YET SOURCED. Every value here must be replaced with a sourced South African figure (FEATURES.md F4) before the demo. Used only when the person says 'I don't know'; shown in the UI as 'assumed' with a wider range.",
+  "currency": "ZAR",
+  "monthly": {
+    "essentialExpenses": { "low": 8000, "base": 11000, "high": 15000, "source": "placeholder" },
+    "familySupportMonthly": { "low": 0, "base": 1000, "high": 3000, "source": "placeholder" },
+    "debtRepayments": { "low": 0, "base": 500, "high": 2000, "source": "placeholder" },
+    "takeHome": { "low": 8000, "base": 15000, "high": 25000, "source": "placeholder" },
+    "sideIncome": { "low": 0, "base": 0, "high": 0, "source": "placeholder" }
+  },
+  "savings": { "low": 0, "base": 5000, "high": 15000, "source": "placeholder" },
+  "templates": {
+    "goFullTime": {
+      "resignMonth": 3,
+      "_why": "Full-time business profit as a multiple of today's side profit: more hours, but new costs and a slow start. Template guess, editable.",
+      "profitMultiple": { "low": 1.2, "base": 1.8, "high": 2.4 }
+    },
+    "qualifyUp": {
+      "studyMonths": 18,
+      "courseCostMonthly": { "low": 1200, "base": 1500, "high": 2200 },
+      "_why": "Raise on take-home pay after qualifying, as a fraction. Template guess, editable.",
+      "raiseAfter": { "low": 0.1, "base": 0.2, "high": 0.35 },
+      "sideIncomeWhileStudying": { "low": 0.3, "base": 0.5, "high": 0.7 }
+    }
+  }
+}

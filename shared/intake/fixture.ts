@@ -23,6 +23,7 @@ export const NALEDI_EXTRACTION: Extraction = {
   savings: { low: 30000, high: 40000, quote: 'between R30,000 and R40,000 saved' },
   riskComfort: { value: 'low', quote: "I don't like big risks" },
   goals: { value: ['security', 'family time'], quote: 'security and family time' },
+  sideIncome: { low: 2500, base: 6000, high: 11000, quote: 'anywhere from 2.5k to 11k' },
   // essentialExpenses is left out on purpose: Parallax asks for it as a follow-up.
 };
 

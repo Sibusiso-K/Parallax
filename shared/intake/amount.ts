@@ -45,7 +45,9 @@ export function parseAmount(input: string): Parsed {
 }
 
 export function formatRand(n: number): string {
-  return 'R' + Math.round(n).toLocaleString('en-ZA').replace(/ /g, ' ');
+  const r = Math.round(n);
+  const digits = Math.abs(r).toLocaleString('en-ZA').replace(/ /g, ' ');
+  return (r < 0 ? '−R' : 'R') + digits;
 }
 
 export function formatRange(low: number, high: number): string {

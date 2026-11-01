@@ -6,6 +6,8 @@ import { z } from 'zod';
 export const moneyField = z.object({
   low: z.number().nonnegative(),
   high: z.number().nonnegative(),
+  /** The person's own "usually" figure inside the range, if they gave one. */
+  base: z.number().nonnegative().optional(),
   quote: z.string().min(1),
 });
 
@@ -28,6 +30,8 @@ export const extraction = z.object({
   goals: z
     .object({ value: z.array(z.enum(goalOptions)).min(1).max(3), quote: z.string().min(1) })
     .optional(),
+  // Template field for decision 1 (side business); optional, never asked as a follow-up.
+  sideIncome: moneyField.optional(),
 });
 
 export type Extraction = z.infer<typeof extraction>;
@@ -48,6 +52,7 @@ export const requiredFields: FieldKey[] = [
 ];
 
 export const moneyKeys = [
+  'sideIncome',
   'takeHome',
   'essentialExpenses',
   'familySupportMonthly',
@@ -66,6 +71,7 @@ export const fieldLabels: Record<FieldKey, string> = {
   savings: 'Savings',
   riskComfort: 'Comfort with risk',
   goals: 'Top priorities',
+  sideIncome: 'Side business profit each month',
 };
 
 // One follow-up at a time, in this order (F2: at most three are asked before the form).
@@ -80,6 +86,7 @@ export const followUps: Record<FieldKey, string> = {
   savings: 'How much do you have saved?',
   riskComfort: 'How comfortable are you with risk: low, medium or high?',
   goals: 'What matters most to you right now? Pick up to three.',
+  sideIncome: 'Do you make money on the side? Roughly how much a month?',
 };
 
 export const intakeRequest = z.object({
