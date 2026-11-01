@@ -1,44 +1,67 @@
 {
-  "_note": "PLACEHOLDERS, NOT YET SOURCED. Every value here must be replaced with a sourced South African figure (FEATURES.md F4) before the demo. Used only when the person says 'I don't know'; shown in the UI as 'assumed' with a wider range.",
+  "_note": "PLACEHOLDERS, NOT YET SOURCED. Every value here must be replaced with a sourced South African figure (FEATURES.md F4) before the demo. Used only when the founder says 'I don't know' or a template needs a starting point; shown in the UI as 'assumed' or 'template' with a range.",
   "currency": "ZAR",
   "monthly": {
-    "essentialExpenses": { "low": 8000, "base": 11000, "high": 15000, "source": "placeholder" },
-    "familySupportMonthly": { "low": 0, "base": 1000, "high": 3000, "source": "placeholder" },
-    "debtRepayments": { "low": 0, "base": 500, "high": 2000, "source": "placeholder" },
-    "takeHome": { "low": 8000, "base": 15000, "high": 25000, "source": "placeholder" },
-    "sideIncome": { "low": 0, "base": 0, "high": 0, "source": "placeholder" }
+    "revenue": { "low": 30000, "base": 60000, "high": 90000, "source": "placeholder" },
+    "directCosts": { "low": 12000, "base": 24000, "high": 36000, "source": "placeholder" },
+    "overheads": { "low": 8000, "base": 12000, "high": 18000, "source": "placeholder" },
+    "payroll": { "low": 0, "base": 15000, "high": 30000, "source": "placeholder" },
+    "founderPay": { "low": 0, "base": 8000, "high": 15000, "source": "placeholder" },
+    "debtRepayments": { "low": 0, "base": 1500, "high": 4000, "source": "placeholder" }
   },
-  "savings": { "low": 0, "base": 5000, "high": 15000, "source": "placeholder" },
+  "cash": { "low": 10000, "base": 50000, "high": 120000, "source": "placeholder" },
   "caps": {
-    "_note": "PLACEHOLDER monthly caps. A figure above its cap is questioned and the person confirms it (F4); a value is never changed silently.",
-    "takeHome": 60000,
-    "sideIncome": 60000,
-    "essentialExpenses": 40000,
-    "familySupportMonthly": 30000,
-    "debtRepayments": 30000,
-    "savings": 2000000
+    "_note": "PLACEHOLDER caps for a small, owner-led business. A figure above its cap is questioned and the founder confirms it (F4); a value is never changed silently. All are per month except cash and upfrontCost.",
+    "revenue": 2000000,
+    "directCosts": 1500000,
+    "overheads": 500000,
+    "payroll": 1000000,
+    "founderPay": 200000,
+    "debtRepayments": 300000,
+    "cash": 20000000,
+    "offerRevenue": 2000000,
+    "hireCost": 100000,
+    "upfrontCost": 2000000
   },
   "setbacks": {
-    "_note": "PLACEHOLDER amounts for the fixed setback library (SCOPE.md §3), applied as stress tests from defaultMonth.",
+    "_note": "PLACEHOLDER sizes for the fixed setback library (SCOPE.md §3), applied as stress tests from defaultMonth. Late payment starts at the first contract payment when a path has one.",
     "defaultMonth": 6,
+    "latePaymentMonths": 2,
+    "bigClientShare": 0.3,
     "lostClientMonths": 3,
-    "incomeGapMonths": 2,
-    "carBreakdown": 4000,
-    "familyEmergency": 3000,
-    "rentIncreasePercent": 0.1
+    "slowSeasonShare": 0.33,
+    "slowSeasonMonths": 2,
+    "equipmentRepair": 15000,
+    "costRisePercent": 0.1
   },
   "templates": {
-    "goFullTime": {
-      "resignMonth": 3,
-      "_why": "Full-time business profit as a multiple of today's side profit: more hours, but new costs and a slow start. Template guess, editable.",
-      "profitMultiple": { "low": 1.2, "base": 1.8, "high": 2.4 }
+    "contract": {
+      "lengthMonths": 12,
+      "_paymentDays": "Used when the founder does not say when the client pays. Safer terms ask for payment within saferPaymentDays.",
+      "paymentDays": 30,
+      "saferPaymentDays": 30,
+      "_offerShareOfSales": "Contract value as a share of today's monthly sales, used only when the founder does not give it.",
+      "offerShareOfSales": { "low": 0.3, "base": 0.5, "high": 0.7 },
+      "_directShare": "Direct costs of the contract work (food, stock, materials) as a share of its value.",
+      "directShare": { "low": 0.35, "base": 0.4, "high": 0.5 },
+      "upfrontCost": { "low": 10000, "base": 20000, "high": 30000 },
+      "_equipmentRentShare": "Monthly rent for the same equipment, as a share of its price, while the contract runs.",
+      "equipmentRentShare": 0.05
     },
-    "qualifyUp": {
-      "studyMonths": 18,
-      "courseCostMonthly": { "low": 1200, "base": 1500, "high": 2200 },
-      "_why": "Raise on take-home pay after qualifying, as a fraction. Template guess, editable.",
-      "raiseAfter": { "low": 0.1, "base": 0.2, "high": 0.35 },
-      "sideIncomeWhileStudying": { "low": 0.3, "base": 0.5, "high": 0.7 }
+    "hire": {
+      "cost": { "low": 7000, "base": 9000, "high": 12000 },
+      "_rampMonths": "Months before a new person brings in extra sales.",
+      "rampMonths": 3,
+      "_upliftMultiple": "Extra gross profit the new person brings in, as a multiple of what they cost.",
+      "upliftMultiple": { "low": 0.3, "base": 1.2, "high": 2.0 },
+      "partTimeShare": 0.5,
+      "partTimeMonths": 6
+    },
+    "pricing": {
+      "risePercent": 10,
+      "_churn": "Share of sales lost to customers who leave after the rise; smallChurn is for half the rise.",
+      "churn": { "low": 0, "base": 0.05, "high": 0.15 },
+      "smallChurn": { "low": 0, "base": 0.02, "high": 0.06 }
     }
   }
 }

@@ -1,14 +1,26 @@
-// Simulation engine, first slice (ARCHITECTURE.md §7). Pure: same inputs, same figures.
+// Simulation engine (ARCHITECTURE.md §7): a business's cash, month by month. Pure: same inputs, same figures.
 // Not decided yet (REVIEW.md §4): the shortfall rule (M1), tax set-aside (M2) and rounding (L2).
-// Until then savings may go negative and are flagged, and figures are not rounded here.
+// Until then cash may go negative and is flagged, and figures are not rounded here.
 
 export type Kind = 'income' | 'cost';
 
-// Where a value came from (FEATURES.md F8): the person, a default, the path template or the model.
+// Where a value came from (FEATURES.md F8): the founder, a default, the path template or the model.
 export type Source = 'you' | 'default' | 'template' | 'ai';
 
-// What a line is for, so analysis.ts can find the salary, the business, the essentials and so on.
-export type Role = 'salary' | 'business' | 'essential' | 'support' | 'debt' | 'setback' | 'other';
+// What a line is for, so analysis.ts can find the sales, the contract, the fixed costs and so on.
+// sales: gross profit from customers (sales minus direct costs); contract: money from a new contract when it is paid;
+// direct: direct costs of new work; overhead, payroll, founder (the founder's own pay) and debt are the fixed costs.
+export type Role =
+  | 'sales'
+  | 'contract'
+  | 'direct'
+  | 'overhead'
+  | 'payroll'
+  | 'founder'
+  | 'debt'
+  | 'equipment'
+  | 'setback'
+  | 'other';
 
 export interface Assumption {
   id: string; // stable ID such as "A7", cited by the future-self agents
@@ -27,7 +39,8 @@ export interface Assumption {
 
 export interface PathInput {
   id: string;
-  startingSavings: number;
+  /** Cash in the business at the start, in rand. */
+  startingCash: number;
   assumptions: Assumption[];
   months?: number;
 }
@@ -39,7 +52,8 @@ export interface MonthRow {
   income: number;
   costs: number;
   net: number;
-  savings: number;
+  /** Cash in the business at the end of the month. */
+  cash: number;
 }
 
 export interface CaseResult {
@@ -78,7 +92,7 @@ export const activeIn = (a: Assumption, month: number) =>
 function runCase(path: PathInput, c: Case, months: number): CaseResult {
   const rows: MonthRow[] = [];
   const shortfallMonths: number[] = [];
-  let savings = path.startingSavings;
+  let cash = path.startingCash;
   for (let month = 1; month <= months; month++) {
     let income = 0;
     let costs = 0;
@@ -89,9 +103,9 @@ function runCase(path: PathInput, c: Case, months: number): CaseResult {
       else costs += v;
     }
     const net = income - costs;
-    savings += net;
-    rows.push({ month, income, costs, net, savings });
-    if (savings < 0) shortfallMonths.push(month);
+    cash += net;
+    rows.push({ month, income, costs, net, cash });
+    if (cash < 0) shortfallMonths.push(month);
   }
   return { rows, shortfallMonths };
 }
@@ -118,7 +132,7 @@ export function simulate(path: PathInput): Simulation {
     const problem = validateAssumption(a);
     if (problem) throw new Error(problem);
   }
-  if (!Number.isFinite(path.startingSavings)) throw new Error('startingSavings must be a number');
+  if (!Number.isFinite(path.startingCash)) throw new Error('startingCash must be a number');
   const months = path.months ?? DEFAULT_MONTHS;
   if (!Number.isInteger(months) || months < 1 || months > MAX_MONTHS) {
     throw new Error(`months must be a whole number from 1 to ${MAX_MONTHS}`);

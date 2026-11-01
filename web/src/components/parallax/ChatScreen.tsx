@@ -3,7 +3,7 @@ import { LETTERS, isLite, useParallax, withTransition, type Letter, type Msg } f
 import { cn } from "@/lib/utils";
 import { Avatar, Button, Drawer, LetterBadge } from "./shared";
 
-const PROMPTS = ["What does a bad month look like?", "How is Mama doing?", "What would you warn me about?"];
+const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
 
 export function ChatScreen() {
   const { active, chats, pathOf, send, set, go, announce } = useParallax();
@@ -90,7 +90,7 @@ export function ChatScreen() {
       <header className="mt-4 flex items-center gap-4">
         <Avatar letter={active} src={path.avatarUrl} size={64} vtName="pm-avatar" />
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">Naledi in 2029</p>
+          <p className="text-sm text-muted-foreground">You, as the founder, 36 months on</p>
           <h1 className="flex items-center gap-2 text-2xl font-semibold"><LetterBadge letter={active} /> {path.name}</h1>
         </div>
       </header>
@@ -105,7 +105,7 @@ export function ChatScreen() {
       <div ref={list} className={cn("mt-4 min-h-64 space-y-4", phase === "back" && "layer-back", phase === "forward" && "layer-forward")}>
         {msgs.length === 0 && (
           <div className="surface p-5 msg-in">
-            <p>Ask the version of you who chose <strong>{path.name}</strong> anything.</p>
+            <p>Ask the founder who chose <strong>{path.name}</strong> anything.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {PROMPTS.map((q) => <Button key={q} variant="outline" size="sm" onClick={() => send(active, q)}>{q}</Button>)}
             </div>

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { NALEDI_EXTRACTION, NALEDI_TEXT } from '../shared/intake/fixture.js';
+import { DEMO_EXTRACTION, DEMO_TEXT } from '../shared/intake/fixture.js';
 import { GET } from './health.js';
 import { POST } from './intake.js';
 
@@ -26,9 +26,9 @@ const turnOnModel = () => {
 
 describe('POST /api/intake, fixture mode', () => {
   it('fills the demo story with no model configured, and finds no issues in it', async () => {
-    const res = await POST(req({ text: NALEDI_TEXT }));
+    const res = await POST(req({ text: DEMO_TEXT }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ ok: true, mode: 'fixture', missing: ['essentialExpenses'], issues: [] });
+    expect(await res.json()).toMatchObject({ ok: true, mode: 'fixture', missing: ['payroll'], issues: [] });
   });
 
   it('answers 400 for bad JSON, empty text and the wrong type', async () => {
@@ -45,9 +45,9 @@ describe('POST /api/intake, fixture mode', () => {
 describe('POST /api/intake, model mode', () => {
   it('stays in fixture mode while the model switch is off, even with a key set', async () => {
     process.env.META_API_KEY = KEY;
-    const fetchStub = vi.fn(async () => reply(NALEDI_EXTRACTION));
+    const fetchStub = vi.fn(async () => reply(DEMO_EXTRACTION));
     vi.stubGlobal('fetch', fetchStub);
-    expect(await (await POST(req({ text: NALEDI_TEXT }))).json()).toMatchObject({ mode: 'fixture' });
+    expect(await (await POST(req({ text: DEMO_TEXT }))).json()).toMatchObject({ mode: 'fixture' });
     expect(fetchStub).not.toHaveBeenCalled();
   });
 
@@ -56,21 +56,21 @@ describe('POST /api/intake, model mode', () => {
     const seen: { url: string; auth: string | undefined }[] = [];
     vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
       seen.push({ url, auth: (init.headers as Record<string, string>).authorization });
-      return reply(NALEDI_EXTRACTION);
+      return reply(DEMO_EXTRACTION);
     });
-    const data = await (await POST(req({ text: NALEDI_TEXT }))).json();
-    expect(data).toMatchObject({ mode: 'model', fields: { savings: { low: 30000, high: 40000 } } });
+    const data = await (await POST(req({ text: DEMO_TEXT }))).json();
+    expect(data).toMatchObject({ mode: 'model', fields: { cash: { low: 120000, high: 120000 } } });
     expect(seen).toEqual([{ url: 'https://api.meta.ai/v1/chat/completions', auth: `Bearer ${KEY}` }]);
   });
 
   it('falls back to the fixture when billing refuses the call, and keeps the text', async () => {
     turnOnModel();
     vi.stubGlobal('fetch', async () => new Response('{}', { status: 402 }));
-    const res = await POST(req({ text: NALEDI_TEXT }));
+    const res = await POST(req({ text: DEMO_TEXT }));
     const data = await res.json();
     expect(res.status).toBe(200);
     expect(data).toMatchObject({ mode: 'fixture', notice: expect.any(String) });
-    expect(data.fields.takeHome).toBeDefined();
+    expect(data.fields.revenue).toBeDefined();
   });
 });
 

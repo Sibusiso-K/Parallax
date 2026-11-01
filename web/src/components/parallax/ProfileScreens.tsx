@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FIELD_LABELS, mockApi } from "@/lib/parallax-api";
+import { DECISION_LABELS, FIELD_LABELS, mockApi } from "@/lib/parallax-api";
 import { LETTERS, useParallax } from "@/lib/parallax-store";
 import { formatField } from "@/lib/format";
 import type { FieldKey } from "@/lib/types";
@@ -7,14 +7,20 @@ import { Button, ScreenTitle } from "./shared";
 import { cn } from "@/lib/utils";
 
 const FACTS: FieldKey[] = [
-  "ageBand",
-  "province",
-  "takeHome",
-  "sideIncome",
-  "essentialExpenses",
-  "familySupportMonthly",
+  "business",
+  "location",
+  "revenue",
+  "directCosts",
+  "overheads",
+  "payroll",
+  "founderPay",
   "debtRepayments",
-  "savings",
+  "cash",
+  "offerRevenue",
+  "paymentDays",
+  "hireCost",
+  "upfrontCost",
+  "priceRisePercent",
   "riskComfort",
 ];
 
@@ -28,7 +34,12 @@ export function YouTodayCard({ compact }: { compact?: boolean }) {
     <article className="surface relative p-5 sm:p-6" style={{ viewTransitionName: "you-today" }}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">You, today</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            Your business, today
+            {typeof fields.decisionType === "string" && fields.decisionType in DECISION_LABELS
+              ? ` · ${DECISION_LABELS[fields.decisionType as keyof typeof DECISION_LABELS]}`
+              : ""}
+          </p>
           <h2 className="mt-1 text-2xl font-semibold">{String(fields.decision ?? "Your decision")}</h2>
         </div>
         {!compact && (
@@ -64,7 +75,7 @@ export function YouTodayCard({ compact }: { compact?: boolean }) {
   );
 }
 
-const STEPS = ["Reading your situation", "Computing ranges in code", "Drawing your future self"];
+const STEPS = ["Reading your business", "Computing 36 months of cash in code", "Drawing the founder you could become"];
 
 export function GeneratingScreen() {
   const { profile, set, go } = useParallax();
@@ -174,7 +185,7 @@ export function ProfileScreen() {
   const { go } = useParallax();
   return (
     <section className="mx-auto max-w-2xl screen-in">
-      <ScreenTitle eyebrow="Your starting point" title="This is you, today">
+      <ScreenTitle eyebrow="Your starting point" title="This is your business, today">
         Every future starts here. Anything marked “assumed” is a default you can change.
       </ScreenTitle>
       <YouTodayCard />

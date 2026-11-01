@@ -4,7 +4,7 @@ import { describeAssumption, formatMoney, parseAmount } from "@/lib/format";
 import type { Assumption } from "@/lib/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Avatar, Button, Drawer, LetterBadge, SavingsBand, ScreenTitle, SourceChip, inputCls } from "./shared";
+import { Avatar, Button, CashBand, Drawer, LetterBadge, ScreenTitle, SourceChip, inputCls } from "./shared";
 
 export function PathsScreen() {
   const { paths, active, set, go, sims, panel } = useParallax();
@@ -72,7 +72,7 @@ export function PathsScreen() {
                   <p className="mt-1 text-muted-foreground">{p.summary}</p>
                 </div>
               </div>
-              <div className="mt-4">{sims[p.letter] && <SavingsBand sim={sims[p.letter]} letter={p.letter} />}</div>
+              <div className="mt-4">{sims[p.letter] && <CashBand sim={sims[p.letter]} letter={p.letter} />}</div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button variant="outline" aria-expanded={panel?.letter === p.letter} onClick={() => set({ panel: { letter: p.letter } })}>
                   Show assumptions
@@ -93,7 +93,7 @@ export function PathsScreen() {
         })}
       </div>
       <div className="mt-6">
-        <Button variant="ghost" onClick={() => go("profile")}>Back to you, today</Button>
+        <Button variant="ghost" onClick={() => go("profile")}>Back to your business today</Button>
       </div>
     </section>
   );
@@ -166,8 +166,8 @@ export function AssumptionsPanel() {
     <Drawer open={!!panel} onClose={() => set({ panel: null })} title={p ? `Assumptions · ${p.letter}: ${p.name}` : "Assumptions"}>
       {p && (
         <div data-path={p.letter}>
-          <SavingsBand sim={sims[p.letter]} letter={p.letter} />
-          <p className="mt-3 text-sm text-muted-foreground">Starting savings: {formatMoney(p.startingSavings)}. Bad case uses low income and high costs; good case the reverse.</p>
+          <CashBand sim={sims[p.letter]} letter={p.letter} />
+          <p className="mt-3 text-sm text-muted-foreground">Cash in the business at the start: {formatMoney(p.startingCash)}. The bad case uses low income and high costs; the good case the reverse.</p>
           <ul className="mt-4 space-y-1">
             {p.assumptions.map((a) => (
               <Row key={a.id} a={a} letter={p.letter} highlight={panel?.rowId === a.id} />

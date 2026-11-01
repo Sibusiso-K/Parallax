@@ -155,7 +155,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
               model: "fixture (stand-in for muse-spark-1.3)",
               latencyMs,
               checks: [
-                { name: "Speaks in first person, from 2029", ok: true },
+                { name: "Speaks in first person, 36 months on", ok: true },
                 { name: "Figures come from code, not the model", ok: true },
                 { name: "Cites at least one assumption", ok: m.citations.length > 0 },
                 { name: "Names a downside", ok: true },

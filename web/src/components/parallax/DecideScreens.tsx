@@ -6,25 +6,28 @@ import { cn } from "@/lib/utils";
 import { Avatar, Button, LetterBadge, ScreenTitle, at, inputCls } from "./shared";
 
 const range = (s: Simulation, m: number) => `${formatMoney(at(s, "bad", m))} to ${formatMoney(at(s, "good", m))} (likely ${formatMoney(at(s, "likely", m))})`;
-function worst(s: Simulation) {
-  const r = s.bad.rows.reduce((a, b) => (b.savings < a.savings ? b : a));
-  return `${formatMoney(r.savings)} in month ${r.month} (bad case)`;
+function lowest(s: Simulation, kase: "bad" | "likely") {
+  const r = s[kase].rows.reduce((a, b) => (b.cash < a.cash ? b : a));
+  return `${formatMoney(r.cash)} in month ${r.month}`;
 }
-function milestone(s: Simulation) {
-  const out: string[] = [];
-  const hit = s.likely.rows.find((r) => r.savings >= 100000);
-  if (hit) out.push(`Likely passes R100 000 in month ${hit.month}`);
-  if (s.bad.shortfallMonths[0]) out.push(`Bad case runs out in month ${s.bad.shortfallMonths[0]}`);
-  return out.join(". ") || "No big milestone in 36 months";
+function worst(s: Simulation) {
+  return `${lowest(s, "bad")} (bad case)`;
+}
+function runsOut(s: Simulation) {
+  const likely = s.likely.shortfallMonths[0];
+  const bad = s.bad.shortfallMonths[0];
+  if (likely) return `Month ${likely} in the likely case, month ${bad} in the bad case`;
+  if (bad) return `Only in the bad case, in month ${bad}`;
+  return "Not in any case";
 }
 
 export function CompareScreen() {
   const { paths, sims, comfort, pinned, go } = useParallax();
   const rows: [string, (l: (typeof LETTERS)[number]) => string][] = [
-    ["Savings at month 12", (l) => range(sims[l], 12)],
-    ["Savings at month 36", (l) => range(sims[l], 36)],
-    ["Worst month", (l) => worst(sims[l])],
-    ["Milestones", (l) => milestone(sims[l])],
+    ["Cash at month 12", (l) => range(sims[l], 12)],
+    ["Cash at month 36", (l) => range(sims[l], 36)],
+    ["Lowest cash", (l) => `${lowest(sims[l], "likely")} (likely); ${worst(sims[l])}`],
+    ["Cash runs out", (l) => runsOut(sims[l])],
     ["Your comfort", (l) => (comfort[l].length ? `${comfort[l].at(-1)} of 5` : "Not rated yet")],
     ["Pinned quote", (l) => (pinned[l] ? `“${pinned[l]}”` : "None pinned")],
   ];
@@ -98,7 +101,7 @@ export function SummaryScreen() {
   const p = chosen ? pathOf(chosen) : undefined;
   const setback = p
     ? sims[p.letter].bad.shortfallMonths[0]
-      ? `In the bad case, savings run out in month ${sims[p.letter].bad.shortfallMonths[0]}.`
+      ? `In the bad case, cash runs out in month ${sims[p.letter].bad.shortfallMonths[0]}.`
       : `Lowest point in the bad case: ${worst(sims[p.letter])}.`
     : "";
   return (

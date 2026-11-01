@@ -115,11 +115,11 @@ export function SourceChip({ source }: { source?: Source }) {
 }
 
 export function at(sim: Simulation, kase: "bad" | "likely" | "good", month: number) {
-  return sim[kase].rows[month - 1]?.savings ?? 0;
+  return sim[kase].rows[month - 1]?.cash ?? 0;
 }
 
-/** Soft bad→good bar with a marker for likely. Figures are real text. */
-export function SavingsBand({ sim, letter, month = 36 }: { sim: Simulation; letter: Letter; month?: number }) {
+/** Soft bad→good bar with a marker for likely: cash in the business at one month. Figures are real text. */
+export function CashBand({ sim, letter, month = 36 }: { sim: Simulation; letter: Letter; month?: number }) {
   const bad = at(sim, "bad", month);
   const likely = at(sim, "likely", month);
   const good = at(sim, "good", month);
@@ -128,7 +128,7 @@ export function SavingsBand({ sim, letter, month = 36 }: { sim: Simulation; lett
   const runOut = sim.bad.shortfallMonths[0];
   return (
     <div data-path={letter} className="rounded-xl bg-muted/60 p-4">
-      <p className="text-sm font-medium text-muted-foreground">Savings at month {month}</p>
+      <p className="text-sm font-medium text-muted-foreground">Cash in the business at month {month}</p>
       <div className="relative mt-3 h-3" aria-hidden="true">
         <div
           className="absolute inset-0 rounded-full transition-[background] duration-[600ms]"
@@ -154,7 +154,7 @@ export function SavingsBand({ sim, letter, month = 36 }: { sim: Simulation; lett
         <span className="text-muted-foreground"> · </span>
         <span className="text-muted-foreground">Good</span> {formatMoney(good)}
       </p>
-      {runOut && <p className="mt-1 text-sm text-foreground">In the bad case, savings run out in month {runOut}.</p>}
+      {runOut && <p className="mt-1 text-sm text-foreground">In the bad case, cash runs out in month {runOut}.</p>}
     </div>
   );
 }

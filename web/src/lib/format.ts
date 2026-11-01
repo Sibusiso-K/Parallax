@@ -60,7 +60,11 @@ export function formatField(v: unknown): string {
   return String(v);
 }
 
+/** A cost that applies in a single month, such as equipment bought up front. */
+const oneOff = (a: Assumption) => a.fromMonth !== undefined && a.fromMonth === a.toMonth;
+
 export function monthWindow(a: Assumption): string {
+  if (oneOff(a)) return `in month ${a.fromMonth}`;
   if (a.fromMonth && a.toMonth) return `months ${a.fromMonth}–${a.toMonth}`;
   if (a.fromMonth) return `from month ${a.fromMonth}`;
   if (a.toMonth) return `until month ${a.toMonth}`;
@@ -68,7 +72,7 @@ export function monthWindow(a: Assumption): string {
 }
 
 export function describeAssumption(a: Assumption): string {
-  const kind = a.kind === "income" ? "Income a month" : "Cost a month";
+  const kind = oneOff(a) ? (a.kind === "income" ? "Income, once" : "Cost, once") : a.kind === "income" ? "Income a month" : "Cost a month";
   const w = monthWindow(a);
   const range =
     a.low === a.high

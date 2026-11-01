@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, mockApi } from "@/lib/parallax-api";
+import {
+  DECISION_LABELS,
+  DECISION_TYPES,
+  DEMO_STORY,
+  FIELD_DEFAULTS,
+  FIELD_LABELS,
+  FIELD_QUESTIONS,
+  MONEY_FIELDS,
+  NUMBER_FIELDS,
+  mockApi,
+  parseDecisionAnswer,
+} from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
 import { formatField, isMoneyField, parseAmount } from "@/lib/format";
 import type { FieldKey } from "@/lib/types";
@@ -10,8 +21,12 @@ export function StartScreen() {
   return (
     <section className="mx-auto flex max-w-xl flex-col pt-8 sm:pt-20 stagger">
       <ParallaxMark size={56} />
-      <p className="mt-6 text-sm font-semibold tracking-wide text-muted-foreground">PARALLAX</p>
-      <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Talk to each possible future before you choose one</h1>
+      <p className="mt-6 text-sm font-semibold tracking-wide text-muted-foreground">PARALLAX · FOR FOUNDERS</p>
+      <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Rehearse the decision before you bet the business</h1>
+      <p className="mt-4 text-lg text-muted-foreground">
+        Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the
+        founder you would become.
+      </p>
       <ul className="mt-8 space-y-2 border-l-2 border-border pl-4 text-foreground">
         <li>A reflection aid, not financial advice.</li>
         <li>What you type stays in this browser and can be deleted.</li>
@@ -47,8 +62,8 @@ export function IntakeScreen() {
   return (
     <section className="mx-auto max-w-2xl screen-in">
       <ScreenTitle eyebrow="Step 1 of 3" title="What are you deciding?">
-        Write it the way you'd tell a friend: your work, money coming in and going out, who depends on you, and what
-        matters most.
+        Write it the way you'd tell a cofounder: what the business does, what it sells and spends each month, the cash in
+        the bank, the decision on the table, and what matters most.
       </ScreenTitle>
       <label htmlFor="story" className="sr-only">
         What are you deciding?
@@ -59,11 +74,11 @@ export function IntakeScreen() {
         value={story}
         onChange={(e) => set({ story: e.target.value })}
         className={`${inputCls} min-h-56 resize-y leading-relaxed`}
-        placeholder="I'm thinking about leaving my job to…"
+        placeholder="A client has offered us a contract, but…"
       />
       <div className="mt-4 flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => set({ story: DEMO_STORY })}>
-          Use the demo story (Naledi, fictional)
+          Use the demo story (fictional founder)
         </Button>
         <Button onClick={next} disabled={!story.trim() || busy} className="sm:ml-auto">
           {busy ? "Reading…" : "Continue"}
@@ -83,7 +98,23 @@ function readValue(key: FieldKey, raw: string): { ok: true; value: unknown } | {
     if (!p) return { ok: false, msg: "Try an amount like 8000, 8k, about 8k, or 8k to 12k." };
     return { ok: true, value: { ...p, quote: raw.trim() } };
   }
+  if (NUMBER_FIELDS.includes(key)) {
+    const n = Number(raw.trim().replace(/\s*(days?|%)$/i, ""));
+    if (!Number.isFinite(n) || n < 0) return { ok: false, msg: "Use a whole number, like 30." };
+    return { ok: true, value: n };
+  }
+  if (key === "decisionType") {
+    const type = parseDecisionAnswer(raw);
+    if (!type) return { ok: false, msg: "Type contract, hire or prices." };
+    return { ok: true, value: type };
+  }
   return { ok: true, value: raw.trim() };
+}
+
+/** How a field reads on screen: the kind of decision in words, everything else as typed. */
+function shown(k: FieldKey, value: unknown): string {
+  if (k === "decisionType" && typeof value === "string" && value in DECISION_LABELS) return DECISION_LABELS[value as keyof typeof DECISION_LABELS];
+  return formatField(value);
 }
 
 function FieldRow({ k, value, assumed }: { k: FieldKey; value: unknown; assumed: boolean }) {
@@ -104,7 +135,7 @@ function FieldRow({ k, value, assumed }: { k: FieldKey; value: unknown; assumed:
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">{FIELD_LABELS[k]}</p>
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-lg">
-            <span className="tabular-nums">{formatField(value)}</span>
+            <span className="tabular-nums">{shown(k, value)}</span>
             {range && <span className="chip">range</span>}
             {assumed && <span className="chip border border-dashed border-input bg-card">assumed</span>}
           </p>
@@ -196,30 +227,47 @@ export function HeardScreen() {
           <p className="text-sm font-medium text-muted-foreground">
             One more thing{missing.length > 1 ? ` · ${missing.length} left` : ""}
           </p>
-          <label htmlFor="followup" className="mt-1 block text-xl font-medium">
-            {FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]}
-          </label>
-          <input
-            id="followup"
-            autoFocus
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            className={`${inputCls} mt-3`}
-            placeholder={MONEY_FIELDS.includes(current) ? "e.g. 8k, or 8k to 12k" : ""}
-            aria-invalid={!!err}
-            aria-describedby={err ? "followup-err" : undefined}
-          />
-          {err && (
-            <p id="followup-err" className="mt-2 text-sm text-destructive">
-              {err}
-            </p>
+          {current === "decisionType" ? (
+            <>
+              <p id="followup-q" className="mt-1 text-xl font-medium">
+                {FIELD_QUESTIONS[current]}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3" role="group" aria-labelledby="followup-q">
+                {DECISION_TYPES.map((t) => (
+                  <Button key={t} variant="outline" onClick={() => resolve(t, false)}>
+                    {DECISION_LABELS[t]}
+                  </Button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <label htmlFor="followup" className="mt-1 block text-xl font-medium">
+                {FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]}
+              </label>
+              <input
+                id="followup"
+                autoFocus
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                className={`${inputCls} mt-3`}
+                placeholder={MONEY_FIELDS.includes(current) ? "e.g. 8k, or 8k to 12k" : NUMBER_FIELDS.includes(current) ? "e.g. 30" : ""}
+                aria-invalid={!!err}
+                aria-describedby={err ? "followup-err" : undefined}
+              />
+              {err && (
+                <p id="followup-err" className="mt-2 text-sm text-destructive">
+                  {err}
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Button type="submit">Add</Button>
+                <Button variant="outline" onClick={() => resolve(FIELD_DEFAULTS[current] ?? "Not sure", true)}>
+                  I don't know
+                </Button>
+              </div>
+            </>
           )}
-          <div className="mt-3 flex flex-wrap gap-3">
-            <Button type="submit">Add</Button>
-            <Button variant="outline" onClick={() => resolve(FIELD_DEFAULTS[current] ?? "Not sure", true)}>
-              I don't know
-            </Button>
-          </div>
         </form>
       )}
 

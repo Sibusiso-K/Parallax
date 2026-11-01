@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CASES, drivers, figureTable, milestones, runwayMonths, worstSetback } from './analysis.js';
-import { editAssumption, simulate, type Assumption, type PathInput } from './simulate.js';
-import { NALEDI_EXTRACTION } from '../intake/fixture.js';
+import { CASES, SETBACK_IDS, drivers, figureTable, milestones, runwayMonths, setbackImpact, worstSetback } from './analysis.js';
+import { editAssumption, simulate, type Assumption, type PathInput, type Role } from './simulate.js';
+import { DEMO_EXTRACTION } from '../intake/fixture.js';
 import { templatePaths } from '../paths/templates.js';
 import { buildProfile } from '../profile/profile.js';
 import { int, pick, rng } from '../testing/random.js';
@@ -10,6 +10,8 @@ import { int, pick, rng } from '../testing/random.js';
 // soak set STRESS_RUNS, for example: STRESS_RUNS=20000 npm run stress
 const RUNS = Number(process.env.STRESS_RUNS ?? 400);
 const SCALES = [0, 1, 50, 5_000, 200_000, 5_000_000];
+// Roles let the setback library size itself from the path (late payment from the contract, a lost client from sales).
+const ROLES: Role[] = ['sales', 'contract', 'direct', 'overhead', 'payroll', 'founder', 'debt', 'equipment', 'other'];
 
 function randomPath(r: () => number): PathInput {
   const assumptions: Assumption[] = [];
@@ -20,26 +22,27 @@ function randomPath(r: () => number): PathInput {
     const base = int(r, low, scale);
     const high = int(r, base, scale);
     const a: Assumption = { id: `P${i + 1}`, label: `line ${i + 1}`, kind: r() < 0.5 ? 'income' : 'cost', low, base, high };
+    if (r() < 0.6) a.role = pick(r, ROLES);
     if (r() < 0.3) a.fromMonth = int(r, 1, 40);
     if (r() < 0.3) a.toMonth = int(r, 1, 40);
     if (a.fromMonth !== undefined && a.toMonth !== undefined && a.fromMonth > a.toMonth) delete a.toMonth;
     assumptions.push(a);
   }
-  return { id: 'R', startingSavings: int(r, 0, 1_000_000), assumptions, months: r() < 0.5 ? undefined : int(r, 1, 60) };
+  return { id: 'R', startingCash: int(r, 0, 1_000_000), assumptions, months: r() < 0.5 ? undefined : int(r, 1, 60) };
 }
 
 describe('simulate on random paths', () => {
-  it('keeps the books: each month, savings are the start plus the running net', () => {
+  it('keeps the books: each month, cash is the start plus the running net', () => {
     const r = rng(1);
     for (let k = 0; k < RUNS; k++) {
       const path = randomPath(r);
       const sim = simulate(path);
       for (const c of CASES) {
-        let savings = path.startingSavings;
+        let cash = path.startingCash;
         for (const row of sim[c].rows) {
-          savings += row.net;
+          cash += row.net;
           expect(row.net).toBe(row.income - row.costs);
-          expect(row.savings).toBe(savings);
+          expect(row.cash).toBe(cash);
         }
       }
     }
@@ -50,18 +53,18 @@ describe('simulate on random paths', () => {
     for (let k = 0; k < RUNS; k++) {
       const sim = simulate(randomPath(r));
       sim.bad.rows.forEach((row, i) => {
-        expect(row.savings).toBeLessThanOrEqual(sim.likely.rows[i]!.savings);
-        expect(sim.likely.rows[i]!.savings).toBeLessThanOrEqual(sim.good.rows[i]!.savings);
+        expect(row.cash).toBeLessThanOrEqual(sim.likely.rows[i]!.cash);
+        expect(sim.likely.rows[i]!.cash).toBeLessThanOrEqual(sim.good.rows[i]!.cash);
       });
     }
   });
 
-  it('flags exactly the months where savings are negative', () => {
+  it('flags exactly the months where cash is negative', () => {
     const r = rng(3);
     for (let k = 0; k < RUNS; k++) {
       const sim = simulate(randomPath(r));
       for (const c of CASES) {
-        const negative = sim[c].rows.filter((row) => row.savings < 0).map((row) => row.month);
+        const negative = sim[c].rows.filter((row) => row.cash < 0).map((row) => row.month);
         expect(sim[c].shortfallMonths).toEqual(negative);
       }
     }
@@ -73,7 +76,7 @@ describe('simulate on random paths', () => {
       const path = randomPath(r);
       const first = simulate(path);
       expect(simulate(path)).toEqual(first);
-      for (const c of CASES) for (const row of first[c].rows) expect(Number.isFinite(row.savings)).toBe(true);
+      for (const c of CASES) for (const row of first[c].rows) expect(Number.isFinite(row.cash)).toBe(true);
     }
   });
 
@@ -103,10 +106,16 @@ describe('simulate on random paths', () => {
     }
   });
 
-  it('never has a setback help: the one to watch costs zero or more', () => {
+  it('never has a setback help: every one lowers cash or leaves it, at its lowest point and at the end', () => {
     const r = rng(7);
     for (let k = 0; k < RUNS / 4; k++) {
-      expect(worstSetback(randomPath(r)).exposure).toBeLessThanOrEqual(0);
+      const path = randomPath(r);
+      for (const id of SETBACK_IDS) {
+        const impact = setbackImpact(path, id);
+        expect(impact.lowest, id).toBeLessThanOrEqual(0);
+        expect(impact.end, id).toBeLessThanOrEqual(0);
+      }
+      expect(worstSetback(path).lowest).toBeLessThanOrEqual(0);
     }
   });
 
@@ -130,17 +139,17 @@ describe('simulate on random paths', () => {
     for (const a of broken) expect(() => simulate({ ...base, assumptions: [a] })).toThrow();
     expect(() => simulate({ ...base, months: 0 })).toThrow('months');
     expect(() => simulate({ ...base, months: 1.5 })).toThrow('months');
-    expect(() => simulate({ ...base, startingSavings: Number.NaN })).toThrow('startingSavings');
+    expect(() => simulate({ ...base, startingCash: Number.NaN })).toThrow('startingCash');
   });
 
   it('applies an edit only when it is valid, and never touches the original path', () => {
     const r = rng(10);
-    const path = templatePaths(buildProfile(NALEDI_EXTRACTION))[0]!;
+    const path = templatePaths(buildProfile(DEMO_EXTRACTION))[0]!;
     const before = JSON.stringify(path);
     for (let k = 0; k < RUNS; k++) {
       const values = { low: int(r, -5, 20000), base: int(r, -5, 20000), high: int(r, -5, 20000) };
       const valid = values.low >= 0 && values.low <= values.base && values.base <= values.high;
-      const res = editAssumption(path, 'A2', values);
+      const res = editAssumption(path, 'A1', values);
       expect(res.ok).toBe(valid);
       if (res.ok) expect(() => simulate(res.path)).not.toThrow();
       expect(JSON.stringify(path)).toBe(before);
@@ -148,7 +157,7 @@ describe('simulate on random paths', () => {
   });
 
   it('builds a full figure table fast enough for instant what-ifs', () => {
-    const paths = templatePaths(buildProfile(NALEDI_EXTRACTION));
+    const paths = templatePaths(buildProfile(DEMO_EXTRACTION));
     const started = performance.now();
     for (let k = 0; k < 20; k++) for (const p of paths) figureTable(p);
     const perTable = (performance.now() - started) / (20 * paths.length);
