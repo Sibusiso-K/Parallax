@@ -14,7 +14,8 @@ function toNumber(raw: string): number | null {
   if (!m) return null;
   const n = Number(m[1]);
   const scale = m[2] === 'k' ? 1_000 : m[2] === 'm' ? 1_000_000 : 1;
-  return n * scale;
+  const value = n * scale;
+  return Number.isFinite(value) ? value : null;
 }
 
 export function parseAmount(input: string): Parsed {

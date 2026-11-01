@@ -1,4 +1,5 @@
 import za from '../defaults/za.json' with { type: 'json' };
+import type { SetbackId } from '../engine/analysis.js';
 import type { Assumption, PathInput } from '../engine/simulate.js';
 import type { Profile } from '../profile/profile.js';
 
@@ -10,6 +11,8 @@ export interface PathCard extends PathInput {
   letter: 'A' | 'B' | 'C';
   name: string;
   summary: string;
+  /** One or two setbacks from the fixed library that stress this path (SCOPE §3). */
+  setbacks: SetbackId[];
 }
 
 type Common = Omit<Assumption, 'id'>;
@@ -17,9 +20,9 @@ type Common = Omit<Assumption, 'id'>;
 function common(p: Profile): Common[] {
   const m = p.money;
   return [
-    { label: 'Essential expenses', kind: 'cost', ...pick(m.essentialExpenses), source: m.essentialExpenses.source },
-    { label: 'Support to family (never cut without you)', kind: 'cost', ...pick(m.familySupportMonthly), source: m.familySupportMonthly.source },
-    { label: 'Debt repayments', kind: 'cost', ...pick(m.debtRepayments), source: m.debtRepayments.source },
+    { label: 'Essential expenses', kind: 'cost', role: 'essential', ...pick(m.essentialExpenses), source: m.essentialExpenses.source },
+    { label: 'Support to family (never cut without you)', kind: 'cost', role: 'support', ...pick(m.familySupportMonthly), source: m.familySupportMonthly.source },
+    { label: 'Debt repayments', kind: 'cost', role: 'debt', ...pick(m.debtRepayments), source: m.debtRepayments.source },
   ];
 }
 
@@ -36,8 +39,8 @@ function withIds(letter: string, list: Common[]): Assumption[] {
 
 export function templatePaths(p: Profile): PathCard[] {
   const m = p.money;
-  const salary: Common = { label: 'Take-home salary', kind: 'income', ...pick(m.takeHome), source: m.takeHome.source };
-  const side: Common = { label: 'Side business profit', kind: 'income', ...pick(m.sideIncome), source: m.sideIncome.source };
+  const salary: Common = { label: 'Take-home salary', kind: 'income', role: 'salary', ...pick(m.takeHome), source: m.takeHome.source };
+  const side: Common = { label: 'Side business profit', kind: 'income', role: 'business', ...pick(m.sideIncome), source: m.sideIncome.source };
   const ft = za.templates.goFullTime;
   const q = za.templates.qualifyUp;
   const savings = m.savings.base;
@@ -49,6 +52,7 @@ export function templatePaths(p: Profile): PathCard[] {
     summary: 'Keep the job and keep the side business going on weekends.',
     startingSavings: savings,
     assumptions: withIds('A', [salary, side, ...common(p)]),
+    setbacks: ['income-gap', 'car-breakdown'],
   };
 
   const fullTime: PathCard = {
@@ -63,12 +67,14 @@ export function templatePaths(p: Profile): PathCard[] {
       {
         label: 'Full-time business profit',
         kind: 'income',
+        role: 'business',
         ...scale(m.sideIncome, ft.profitMultiple),
         source: 'template',
         fromMonth: ft.resignMonth + 1,
       },
       ...common(p),
     ]),
+    setbacks: ['lost-client', 'family-emergency'],
   };
 
   const qualify: PathCard = {
@@ -81,10 +87,11 @@ export function templatePaths(p: Profile): PathCard[] {
       salary,
       { ...side, ...scale(m.sideIncome, q.sideIncomeWhileStudying), source: 'template', toMonth: q.studyMonths, label: 'Side business profit while studying' },
       { ...side, fromMonth: q.studyMonths + 1 },
-      { label: 'Course fees', kind: 'cost', ...q.courseCostMonthly, source: 'template', toMonth: q.studyMonths },
-      { label: 'Raise after qualifying', kind: 'income', ...scale(m.takeHome, q.raiseAfter), source: 'template', fromMonth: q.studyMonths + 1 },
+      { label: 'Course fees', kind: 'cost', role: 'other', ...q.courseCostMonthly, source: 'template', toMonth: q.studyMonths },
+      { label: 'Raise after qualifying', kind: 'income', role: 'salary', ...scale(m.takeHome, q.raiseAfter), source: 'template', fromMonth: q.studyMonths + 1 },
       ...common(p),
     ]),
+    setbacks: ['rent-increase'],
   };
 
   return [stay, fullTime, qualify];

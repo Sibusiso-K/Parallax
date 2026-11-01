@@ -9,6 +9,24 @@
     "sideIncome": { "low": 0, "base": 0, "high": 0, "source": "placeholder" }
   },
   "savings": { "low": 0, "base": 5000, "high": 15000, "source": "placeholder" },
+  "caps": {
+    "_note": "PLACEHOLDER monthly caps. A figure above its cap is questioned and the person confirms it (F4); a value is never changed silently.",
+    "takeHome": 60000,
+    "sideIncome": 60000,
+    "essentialExpenses": 40000,
+    "familySupportMonthly": 30000,
+    "debtRepayments": 30000,
+    "savings": 2000000
+  },
+  "setbacks": {
+    "_note": "PLACEHOLDER amounts for the fixed setback library (SCOPE.md §3), applied as stress tests from defaultMonth.",
+    "defaultMonth": 6,
+    "lostClientMonths": 3,
+    "incomeGapMonths": 2,
+    "carBreakdown": 4000,
+    "familyEmergency": 3000,
+    "rentIncreasePercent": 0.1
+  },
   "templates": {
     "goFullTime": {
       "resignMonth": 3,
