@@ -93,7 +93,7 @@ From the evidence above and the jobs a finance chief does for a bigger company. 
 
 ## 6. Business and technical feasibility
 
-**Technical.** The engine, the intake, the faulty-input checks and the three decision templates were built during the event and are covered by 105 offline tests (stress tests included). A business is modelled as monthly cash lines with timing, which covers contracts, hires, prices, equipment and late payment without new engine work. Model calls are bounded: one structured intake call, one call per chat turn, one image per path; figures never come from the model. Meta's published prices (CONTEXT.md §2.1) keep a session to cents.
+**Technical.** The engine, the intake, the faulty-input checks and the three decision templates were built during the event and are covered by 107 offline tests (stress tests included). A business is modelled as monthly cash lines with timing, which covers contracts, hires, prices, equipment and late payment without new engine work. Model calls are bounded: one structured intake call, one call per chat turn, one image per path; figures never come from the model. Meta's published prices (CONTEXT.md §2.1) keep a session to cents.
 
 **Business-model hypotheses** (replacing the personal-decision hypotheses in DEMO.md §4):
 

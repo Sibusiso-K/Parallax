@@ -33,7 +33,7 @@ Both tracks can build toward either theme. We enter **Build for Your World**: br
 | For (guide) | Individual builders and students | Teams and founders building a real product |
 | Judged on (guide) | Creativity, technical ambition, whether it works | Technical execution, whether it holds up in production |
 | Prizes, USD | 150K / 100K / 75K / 50K / 25K (400K) | 250K / 150K / 75K / 50K / 25K (550K) |
-| Our fit | A team of two, not students entering alone | A real product for founders, built by founders, hardened for production (timeouts, failover, fixture mode, traceability, 105 tests) |
+| Our fit | A team of two, not students entering alone | A real product for founders, built by founders, hardened for production (timeouts, failover, fixture mode, traceability, 107 tests) |
 | Status | Not entered | **Both of us registered here (confirmed 26 Oct)** |
 
 The guide adds: "Startups may build on existing products or codebases, but you must clearly identify what was newly developed." We bring none, so everything is new; BUILD_LOG.md and the README say so.

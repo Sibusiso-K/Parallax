@@ -71,7 +71,7 @@ The official deadline (4 Nov 21:00 ET = 5 Nov 04:00 SAST; late submissions are n
 
 ### 3A. Re-plan after the founder pivot (Sun 1 Nov)
 
-On day 7 we changed direction to founders ([FOUNDERS.md](FOUNDERS.md)) and chose Mockup 5, Control Room, as the UI ([DESIGN.md](DESIGN.md) §0). The feature freeze planned for Sat 31 Oct is replaced by this plan. Built on day 7: the founder intake, engine, three decision templates and screens (PR `feat/founder-pivot`, 105 tests) and the founder docs (PR `docs/founder-pivot`). The rubric now weights Impact at 30%, so the plan protects the demo founder story and one real founder's reaction above everything else.
+On day 7 we changed direction to founders ([FOUNDERS.md](FOUNDERS.md)) and chose Mockup 5, Control Room, as the UI ([DESIGN.md](DESIGN.md) §0). The feature freeze planned for Sat 31 Oct is replaced by this plan. Built on day 7: the founder intake, engine, three decision templates and screens (PR `feat/founder-pivot`, 107 tests) and the founder docs (PR `docs/founder-pivot`). The rubric now weights Impact at 30%, so the plan protects the demo founder story and one real founder's reaction above everything else.
 
 | Day | Date | Sibusiso | Lethabo | Definition of done |
 |---|---|---|---|---|

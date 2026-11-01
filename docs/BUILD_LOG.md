@@ -128,7 +128,7 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 **Product code written today:** yes.
 
 **Built** (with branches; PR links once opened)
-- **Founder direction in the product** (branch `feat/founder-pivot`, on top of `feat/backend-engines`): founder intake fields (sales, direct costs, running costs, wages, the founder's own pay, debt repayments, cash); the kind of decision read in code from the founder's own words; the engine tracks the business's cash; a founder setback library (late payment, lost client, slow season, equipment breakdown, cost rise) judged by how far each pushes the lowest cash point; three decision templates with three paths each (big contract, hire, raise prices); scope checks judged on the decision itself; founder copy, fields, demo story and mock replies on every screen; a `web-offline` preview that forces live model calls off. 105 offline tests, the typecheck and the build pass; the full flow was checked in the preview with model calls off.
+- **Founder direction in the product** (branch `feat/founder-pivot`, on top of `feat/backend-engines`): founder intake fields (sales, direct costs, running costs, wages, the founder's own pay, debt repayments, cash); the kind of decision read in code from the founder's own words; the engine tracks the business's cash; a founder setback library (late payment, lost client, slow season, equipment breakdown, cost rise) judged by how far each pushes the lowest cash point; three decision templates with three paths each (big contract, hire, raise prices); scope checks judged on the decision itself; founder copy, fields, demo story and mock replies on every screen; a `web-offline` preview that forces live model calls off. 107 offline tests, the typecheck and the build pass; the full flow was checked in the preview with model calls off.
 - **Founder docs** (branch `docs/founder-pivot`, on top of `plan/hackathon-build-plan`): FOUNDERS.md (evidence, decisions, beachhead, what founders need), COMPETITORS.md (landscape, feature comparison, positioning), and SCOPE, FEATURES (user stories replaced), DEMO (new fictional founder and scripts), RESEARCH (weighted rubric, where we can win), CONTEXT, SUBMISSION, PLAN, RISKS, DESIGN and ARCHITECTURE brought in line.
 - Re-read the Participant Guide signed in (CONTEXT.md §5.1): the rubric is weighted (Impact 30%, Use of Meta AI Tooling 25%, Technical Depth 20%, Demo 25%); finalists are judged on the video demos; the submission form's fields are known.
 
@@ -149,3 +149,26 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 **Next**
 - Lethabo reviews the two founder PRs, then #1, #6 and #7, in the merge order in PLAN.md §3A.
 - F10 and F9 by Mon 2 Nov evening; the Control Room layout for the path and chat screens.
+
+## Day 7 · Sun 1 Nov 2026, later: the engines caught up to the pivot
+
+**Product code written today:** yes (small: guards and tests in `feat/founder-pivot`).
+
+**Built**
+- Checked the engines and intake against the founder docs. No personal-decision terms remain in the code. The planned timeline wording in ARCHITECTURE §10 now says cash, not savings.
+- Equity splits between cofounders are out of scope, as the docs say; the funding check no longer catches every mention of equity.
+- Advice checks also read business cash ("put the business cash into…").
+- "New client" alone no longer makes a decision a contract.
+- The kind of decision is never guessed: an unreadable decision stays empty, path-building refuses to run, and the intake asks first.
+- 107 offline tests pass; the stress suite passes at 20,000 runs. One run of the 3,000-run stress suite failed once and passed on five re-runs; we have not reproduced it.
+
+**Decisions**
+- Failing closed on the decision type, rather than defaulting to contract, so a bad read cannot produce the wrong paths.
+
+**Blockers and risks**
+- The one intermittent stress failure is unexplained; watch it in CI.
+
+**Credits spent today (USD):** none on the engine work.
+
+**Next**
+- Figure guard (F11) and the agents (F10) are the next engine pieces.
