@@ -1,4 +1,4 @@
-import { requiredFields, type Extraction, type FieldKey } from './schema';
+import { requiredFields, type Extraction, type FieldKey } from './schema.js';
 
 const normalise = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
 

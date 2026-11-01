@@ -1,6 +1,6 @@
-import { extraction, intakeRequest, type Extraction, type FieldKey } from './schema';
-import { fixtureExtract } from './fixture';
-import { keepQuoted, missingFields } from './verify';
+import { extraction, intakeRequest, type Extraction, type FieldKey } from './schema.js';
+import { fixtureExtract } from './fixture.js';
+import { keepQuoted, missingFields } from './verify.js';
 
 export type Extractor = (text: string) => Promise<unknown>;
 

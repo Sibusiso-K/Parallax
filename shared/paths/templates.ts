@@ -1,6 +1,6 @@
-import za from '../defaults/za.json';
-import type { Assumption, PathInput } from '../engine/simulate';
-import type { Profile } from '../profile/profile';
+import za from '../defaults/za.json' with { type: 'json' };
+import type { Assumption, PathInput } from '../engine/simulate.js';
+import type { Profile } from '../profile/profile.js';
 
 // Template paths for decision 1 (FEATURES.md F6): A Stay and grow, B Go full-time, C Qualify up.
 // These load when the path-planner agent is not available, and are the fallback when it fails.

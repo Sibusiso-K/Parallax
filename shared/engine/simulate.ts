@@ -91,6 +91,23 @@ function runCase(path: PathInput, c: Case, months: number): CaseResult {
   return { rows, shortfallMonths };
 }
 
+export type Edit = Pick<Assumption, 'low' | 'base' | 'high'>;
+
+// F8: change one assumption's values. A valid edit becomes the person's own ("you");
+// an invalid one is refused and the path is left as it was.
+export function editAssumption<P extends PathInput>(
+  path: P,
+  id: string,
+  values: Edit,
+): { ok: true; path: P } | { ok: false; error: string } {
+  const current = path.assumptions.find((a) => a.id === id);
+  if (!current) return { ok: false, error: `${id}: no such assumption` };
+  const next: Assumption = { ...current, ...values, source: 'you' };
+  const problem = validateAssumption(next);
+  if (problem) return { ok: false, error: problem.replace(`${id}: `, '') };
+  return { ok: true, path: { ...path, assumptions: path.assumptions.map((a) => (a.id === id ? next : a)) } };
+}
+
 export function simulate(path: PathInput): Simulation {
   for (const a of path.assumptions) {
     const problem = validateAssumption(a);

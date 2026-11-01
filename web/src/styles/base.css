@@ -392,3 +392,77 @@ textarea {
     flex-direction: column;
   }
 }
+
+.toggle {
+  margin-top: 0.75rem;
+  min-height: 40px;
+  font-size: 0.875rem;
+}
+
+.assumptions {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assumption {
+  padding: 0.5rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--text-muted) 25%, transparent);
+}
+
+.assumption-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+}
+
+.assumption-label {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.assumption-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.id-chip {
+  padding: 0 0.375rem;
+  border-radius: 4px;
+  background: var(--path);
+  color: #fff;
+  font: 600 0.75rem/1.5 ui-monospace, monospace;
+}
+
+.assumptions .chip {
+  margin-left: 0;
+}
+
+.chip.source-you {
+  background: color-mix(in srgb, var(--path-a) 20%, transparent);
+}
+
+.chip.source-default {
+  background: color-mix(in srgb, var(--path-b) 22%, transparent);
+}
+
+.chip.source-template,
+.chip.source-ai {
+  background: color-mix(in srgb, var(--path-c) 20%, transparent);
+}
+
+.triple {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.triple label {
+  display: grid;
+  gap: 0.125rem;
+}
