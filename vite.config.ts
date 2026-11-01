@@ -60,6 +60,8 @@ export default defineConfig({
     root: '.',
     include: ['shared/**/*.test.ts', 'web/**/*.test.ts', 'api/**/*.test.ts'],
     setupFiles: ['shared/testing/offline.ts'],
-    testTimeout: 60_000, // stress runs are slow by design; a test that hangs still fails within a minute
+    // A normal test that hangs fails within a minute. A deliberate stress run (STRESS_RUNS set) scales with its run count:
+    // 50,000 engine runs take about a minute on their own, and longer under load.
+    testTimeout: process.env.STRESS_RUNS ? 900_000 : 60_000,
   },
 });
