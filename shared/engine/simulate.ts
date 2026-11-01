@@ -7,6 +7,9 @@ export type Kind = 'income' | 'cost';
 // Where a value came from (FEATURES.md F8): the person, a default, the path template or the model.
 export type Source = 'you' | 'default' | 'template' | 'ai';
 
+// What a line is for, so analysis.ts can find the salary, the business, the essentials and so on.
+export type Role = 'salary' | 'business' | 'essential' | 'support' | 'debt' | 'setback' | 'other';
+
 export interface Assumption {
   id: string; // stable ID such as "A7", cited by the future-self agents
   label: string;
@@ -16,6 +19,7 @@ export interface Assumption {
   base: number;
   high: number;
   source?: Source;
+  role?: Role;
   /** First and last month (1-based, inclusive) the amount applies. Default: the whole run. */
   fromMonth?: number;
   toMonth?: number;
@@ -46,6 +50,7 @@ export interface CaseResult {
 export type Simulation = Record<Case, CaseResult>;
 
 export const DEFAULT_MONTHS = 36;
+const MAX_MONTHS = 600;
 
 export function validateAssumption(a: Assumption): string | null {
   for (const v of [a.low, a.base, a.high]) {
@@ -60,14 +65,14 @@ export function validateAssumption(a: Assumption): string | null {
 }
 
 // Bad case takes every assumption at its unfavourable end (low income, high cost); good case the reverse.
-function valueFor(a: Assumption, c: Case): number {
+export function valueFor(a: Assumption, c: Case): number {
   if (c === 'likely') return a.base;
   const unfavourable = a.kind === 'income' ? a.low : a.high;
   const favourable = a.kind === 'income' ? a.high : a.low;
   return c === 'bad' ? unfavourable : favourable;
 }
 
-const activeIn = (a: Assumption, month: number) =>
+export const activeIn = (a: Assumption, month: number) =>
   month >= (a.fromMonth ?? 1) && month <= (a.toMonth ?? Number.POSITIVE_INFINITY);
 
 function runCase(path: PathInput, c: Case, months: number): CaseResult {
@@ -115,6 +120,9 @@ export function simulate(path: PathInput): Simulation {
   }
   if (!Number.isFinite(path.startingSavings)) throw new Error('startingSavings must be a number');
   const months = path.months ?? DEFAULT_MONTHS;
+  if (!Number.isInteger(months) || months < 1 || months > MAX_MONTHS) {
+    throw new Error(`months must be a whole number from 1 to ${MAX_MONTHS}`);
+  }
   return {
     bad: runCase(path, 'bad', months),
     likely: runCase(path, 'likely', months),
