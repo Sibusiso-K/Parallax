@@ -41,7 +41,7 @@ export function buildReplay(session: Session, now: () => Date = () => new Date()
       line: 'Baseline: the lowest cash on this path.', claimRefs: [{ snapshotKey: b0.key, scenario: 'baseline', metric: 'lowest_cash' }] },
     { id: 'b-late', title: 'B: the client pays late', durationMs: 3000, pathId: 'B', stressed: true, month: first ?? b1.active.lowest.month, station: 'marker', snapshotKey: b1.key,
       line: `${b1.terms.stressRule ?? ''} Cash first runs out in:`, claimRefs: [{ snapshotKey: b1.key, scenario: 'active', metric: 'first_shortfall' }] },
-    { id: 'c-late', title: 'C: same rule, safer terms', durationMs: 3000, pathId: 'C', stressed: true, month: c1.active.lowest.month, station: 'bridge', snapshotKey: c1.key,
+    { id: 'c-late', title: 'C: the same rule on path C', durationMs: 3000, pathId: 'C', stressed: true, month: c1.active.lowest.month, station: 'bridge', snapshotKey: c1.key,
       line: 'The same late-payment rule on path C. The lowest cash is:', claimRefs: [{ snapshotKey: c1.key, scenario: 'active', metric: 'lowest_cash' }, { snapshotKey: c1.key, scenario: 'active', metric: 'first_shortfall' }] },
     { id: 'decision', title: 'Your call', durationMs: 2000, pathId: 'C', stressed: false, month: 1, station: 'memo', snapshotKey: session.snapshotFor('C', false).key,
       line: 'Which would you choose? Write it in your own words. One possible future, not a prediction.', claimRefs: [] },
@@ -62,6 +62,11 @@ export function resolveShot(session: Session, shot: Shot): ResolvedClaim[] {
     if (r.ok) out.push(r.claim);
   }
   return out;
+}
+
+/** True when the frozen snapshot or any of the shot's claims can no longer be resolved: the shot must fail closed. */
+export function shotUnavailable(session: Session, shot: Shot): boolean {
+  return !session.registry.has(shot.snapshotKey) || resolveShot(session, shot).length !== shot.claimRefs.length;
 }
 
 export function isOutdated(replay: Replay, session: Session): boolean {

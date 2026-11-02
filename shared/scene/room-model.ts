@@ -54,6 +54,8 @@ export interface RoomSnapshot {
   readonly terms: Terms;
   /** The assumptions the active run used, including any stress lines. */
   readonly assumptions: readonly Readonly<Assumption>[];
+  /** The assumptions of the unstressed baseline run. Baseline evidence must cite these, never the stress lines. */
+  readonly baselineAssumptions: readonly Readonly<Assumption>[];
 }
 
 export interface SnapshotInput {
@@ -168,6 +170,7 @@ export function buildSnapshot(input: SnapshotInput): RoomSnapshot {
     active,
     terms,
     assumptions: activePath.assumptions.map((a) => ({ ...a })),
+    baselineAssumptions: input.path.assumptions.map((a) => ({ ...a })),
   });
 }
 

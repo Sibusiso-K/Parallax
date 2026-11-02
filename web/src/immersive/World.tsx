@@ -6,8 +6,8 @@ import { Component, Suspense, lazy, useCallback, useEffect, useMemo, useRef, use
 import { resolveClaim, type ClaimRef, type ResolvedClaim } from '../../../shared/scene/claims';
 import { RequestGate, type PathLetter, type RoomSnapshot } from '../../../shared/scene/room-model';
 import { FIXTURE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorAnswer } from './advisor-fixture';
-import { CHOICE_LABEL, EMPTY_MEMO, MEMO_FOOTER, evidenceAppendix, type Choice, type Memo } from './memo';
-import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, type Replay } from './replay';
+import { EMPTY_MEMO, MEMO_FOOTER, choiceLabel, evidenceAppendix, type Choice, type Memo } from './memo';
+import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type Replay } from './replay';
 import { createSession, SYNTHETIC_WAGES_NOTE } from './session';
 
 const Scene = lazy(() => import('./Scene'));
@@ -24,6 +24,7 @@ function hasWebGL(): boolean {
   }
 }
 
+const noop = () => {};
 const mq = (q: string) => (typeof matchMedia === 'function' ? matchMedia(q).matches : false);
 
 class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -79,6 +80,10 @@ function World() {
   const snapshot: RoomSnapshot =
     inReplay && shot ? (session.registry.get(shot.snapshotKey) ?? session.snapshotFor(shot.pathId, shot.stressed)) : session.snapshotFor(pathId, stressed[pathId]);
   const shownMonth = inReplay && shot ? shot.month : month;
+  const [viewed, setViewed] = useState<string[]>([]);
+  useEffect(() => {
+    setViewed((v) => (v[v.length - 1] === snapshot.key ? v : [...v, snapshot.key].slice(-24)));
+  }, [snapshot.key]);
   const currentKey = useRef(snapshot.key);
   currentKey.current = snapshot.key;
 
@@ -132,14 +137,14 @@ function World() {
 
   const carry = useCallback(
     (a: AdvisorAnswer, target: PathLetter) => {
-      const stress = stressed[a.pathId];
+      const stress = session.registry.get(a.snapshotKey)?.ref.setback != null;
       setPathId(target);
       setStressed((s) => ({ ...s, [target]: stress }));
       setMonth(a.month);
       say(`Carried the question and the ${stress ? 'late-payment stress' : 'baseline'} to path ${target}.`);
       void runAnswer(target, stress, a.month, a.question);
     },
-    [runAnswer, say, stressed],
+    [runAnswer, say, session],
   );
 
   const switchPath = (p: PathLetter) => {
@@ -187,17 +192,19 @@ function World() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (e.key === 'Escape') {
+        setEvidence(null);
+        setSheet(null);
+        return;
+      }
+      if (replay) return;
       if (e.key === 'ArrowRight') select(month + 1);
       else if (e.key === 'ArrowLeft') select(month - 1);
       else if (e.key.toLowerCase() === 'l') toggleLever();
-      else if (e.key === 'Escape') {
-        setEvidence(null);
-        setSheet(null);
-      }
     };
     addEventListener('keydown', onKey);
     return () => removeEventListener('keydown', onKey);
-  }, [month, select, toggleLever]);
+  }, [month, replay, select, toggleLever]);
 
   const claim = (ref: ClaimRef): ResolvedClaim | null => {
     const r = resolveClaim(session.registry, ref);
@@ -220,6 +227,7 @@ function World() {
   const stage = shot?.station ?? 'bridge';
   const replayOutdated = replay ? isOutdated(replay, session) : false;
   const shotClaims = replay && shot ? resolveShot(session, shot) : [];
+  const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
 
   return (
     <div className="world" data-lite={lowTier ? '' : undefined}>
@@ -237,9 +245,9 @@ function World() {
               contractText={`Corporate lunch contract · 12 months · paid ${(snapshot.terms.paymentLagMonths ?? 0) * 30 || 60} days after each invoice`}
               fridgeText={fridge ? `${fridge.label}: R${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} (${fridge.source})` : 'Equipment (path A has none)'}
               leverLabel={leverLabel}
-              onSelectMonth={select}
-              onHoverMonth={setHover}
-              onLever={toggleLever}
+              onSelectMonth={inReplay ? noop : select}
+              onHoverMonth={inReplay ? noop : setHover}
+              onLever={inReplay ? noop : toggleLever}
               onOpenContract={() => setSheet('contract')}
               onOpenFridge={() => setSheet('fridge')}
               onContextLost={() => setWebgl(false)}
@@ -291,6 +299,10 @@ function World() {
           {isStress ? snapshot.terms.stressRule : 'Baseline. The lever applies the engine’s late-payment rule: receipts due in two months are held back, then paid two months later.'}
           {snapshot.terms.firstReceiptMonth ? ` First contract payment lands in month ${snapshot.terms.firstReceiptMonth}.` : ' This path has no contract.'}
         </p>
+        <div className="objects" role="group" aria-label="Objects in the room">
+          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('contract')}>Contract terms</button>
+          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('fridge')}>Fridge details</button>
+        </div>
         <p className="keys">Keys: ← → month · L lever · Esc close</p>
       </section>
 
@@ -377,7 +389,7 @@ function World() {
             <input type="range" min={0} max={replay.totalMs - 1} value={Math.round(replayT)} onChange={(e) => { setPlaying(false); setReplayT(Number(e.target.value)); }} aria-label="Replay position" aria-valuetext={`${shot.title}, ${(replayT / 1000).toFixed(1)} of ${(replay.totalMs / 1000).toFixed(0)} seconds`} />
             <span className="mono">{(replayT / 1000).toFixed(1)} / {(replay.totalMs / 1000).toFixed(0)} s</span>
           </div>
-          <p className="replay__cap"><b>{shot.title}.</b> {shot.line} {shotClaims.map((c, i) => <button key={i} className="figure" onClick={() => setEvidence(c)}>{c.text}</button>)}</p>
+          <p className="replay__cap"><b>{shot.title}.</b> {shotBroken ? 'This frozen snapshot is no longer available, so this shot is not shown as evidence. Close the replay and play it again.' : shot.line} {!shotBroken && shotClaims.map((c, i) => <button key={i} className="figure" onClick={() => setEvidence(c)}>{c.text}</button>)}</p>
           <p className="muted small">In-browser playback of frozen snapshots, not an exported video.{replayOutdated ? ' This replay is historical: the inputs changed after it was made.' : ''}</p>
         </div>
       )}
@@ -385,11 +397,29 @@ function World() {
       {evidence && <EvidenceDrawer claim={evidence} session={session} onClose={() => setEvidence(null)} />}
       {sheet === 'contract' && <InfoSheet title="The contract" onClose={() => setSheet(null)}><p>12 months, worth R{snapshot.assumptions.find((a) => a.role === 'contract')?.base.toLocaleString('en-ZA').replace(/ /g, ',') ?? '0'} a month on path {snapshot.ref.pathId}. {snapshot.terms.firstReceiptMonth ? `The first payment lands in month ${snapshot.terms.firstReceiptMonth} (${snapshot.terms.paymentLagMonths} months after work starts).` : 'This path declines it.'}</p><p className="muted">From the founder's own words: “they pay 60 days after each invoice”. Changes to terms need a reviewed edit; they are not made by clicking the contract.</p></InfoSheet>}
       {sheet === 'fridge' && <InfoSheet title="The second fridge" onClose={() => setSheet(null)}><p>{fridge ? `${fridge.label}. Base ${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} rand (${fridge.source}; range ${fridge.low.toLocaleString('en-ZA').replace(/ /g, ',')} to ${fridge.high.toLocaleString('en-ZA').replace(/ /g, ',')}).` : 'Path A does not buy equipment.'}</p><p className="muted">Rent-versus-buy is the difference between paths B and C. Compare them by switching path; nothing is applied by clicking the fridge.</p></InfoSheet>}
-      {sheet === 'memo' && <MemoSheet session={session} replay={replay} memo={memo} setMemo={setMemo} onClose={() => setSheet(null)} />}
+      {sheet === 'memo' && <MemoSheet session={session} viewed={viewed} memo={memo} setMemo={setMemo} onClose={() => setSheet(null)} />}
 
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
     </div>
   );
+}
+
+/** Moves focus into a dialog on open and restores it on close; the full-screen memo also makes the rest of the page inert. */
+function useModal(trap: boolean, focusFirst: boolean, target?: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const before = document.activeElement as HTMLElement | null;
+    const others = trap ? [...document.querySelectorAll<HTMLElement>('.world > *:not(.memo-wrap)')] : [];
+    others.forEach((el) => el.setAttribute('inert', ''));
+    const t = window.setTimeout(() => {
+      const node = target?.current ?? document.querySelector<HTMLElement>(focusFirst ? '.memo-wrap select, .memo-wrap input' : '.sheet button');
+      node?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(t);
+      others.forEach((el) => el.removeAttribute('inert'));
+      before?.focus?.();
+    };
+  }, [trap, focusFirst, target]);
 }
 
 function cellText(n: number) {
@@ -454,7 +484,7 @@ function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; ses
   const outcome = snap ? (claim.ref.scenario === 'baseline' ? snap.baseline : snap.active) : null;
   const row = outcome && claim.month ? outcome.rows[claim.month - 1] : null;
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => ref.current?.focus(), []);
+  useModal(false, false, ref);
   return (
     <div className="drawer glass" role="dialog" aria-modal="false" aria-label="Evidence" tabIndex={-1} ref={ref}>
       <div className="drawer__head"><b>Evidence</b><button className="btn btn--round" onClick={onClose} aria-label="Close evidence">×</button></div>
@@ -470,10 +500,10 @@ function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; ses
       <p className="muted small">“Matched” means consistent with this simulation, not that the assumptions are true or the reasoning is financial advice. Template values are placeholders. {SYNTHETIC_WAGES_NOTE}</p>
       {snap && (
         <details>
-          <summary>Assumptions this run used ({snap.assumptions.length})</summary>
+          <summary>Assumptions this run used ({(claim.ref.scenario === 'baseline' ? snap.baselineAssumptions : snap.assumptions).length})</summary>
           <table className="assump">
             <tbody>
-              {snap.assumptions.map((a) => (
+              {(claim.ref.scenario === 'baseline' ? snap.baselineAssumptions : snap.assumptions).map((a) => (
                 <tr key={a.id} className={a.role === 'setback' ? 'is-stress' : ''}>
                   <td className="mono">{a.id}</td><td>{a.label}</td><td className="mono">{cellText(a.low)}–{cellText(a.high)}</td><td>{a.source ?? ''}</td>
                 </tr>
@@ -487,6 +517,7 @@ function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; ses
 }
 
 function InfoSheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
+  useModal(false, false);
   return (
     <div className="sheet glass" role="dialog" aria-label={title}>
       <div className="drawer__head"><b>{title}</b><button className="btn btn--round" onClick={onClose} aria-label="Close">×</button></div>
@@ -495,8 +526,9 @@ function InfoSheet({ title, children, onClose }: { title: string; children: Reac
   );
 }
 
-function MemoSheet({ session, replay, memo, setMemo, onClose }: { session: ReturnType<typeof createSession>; replay: Replay | null; memo: Memo; setMemo: (m: Memo) => void; onClose: () => void }) {
-  const lines = useMemo(() => evidenceAppendix(session, replay), [session, replay]);
+function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: ReturnType<typeof createSession>; viewed: string[]; memo: Memo; setMemo: (m: Memo) => void; onClose: () => void }) {
+  const lines = useMemo(() => evidenceAppendix(session, viewed), [session, viewed]);
+  useModal(true, true);
   const set = (p: Partial<Memo>) => setMemo({ ...memo, ...p });
   return (
     <div className="memo-wrap">
@@ -507,7 +539,7 @@ function MemoSheet({ session, replay, memo, setMemo, onClose }: { session: Retur
           <span>What I would choose</span>
           <select value={memo.choice} onChange={(e) => set({ choice: e.target.value as Choice })}>
             <option value="">Choose, or leave empty (Parallax does not choose for you)</option>
-            {(Object.keys(CHOICE_LABEL) as Exclude<Choice, ''>[]).map((c) => <option key={c} value={c}>{CHOICE_LABEL[c]}</option>)}
+            {(['A', 'B', 'C', 'not_ready'] as Exclude<Choice, ''>[]).map((c) => <option key={c} value={c}>{choiceLabel(session, c)}</option>)}
           </select>
         </label>
         {[0, 1, 2].map((i) => (
@@ -518,7 +550,7 @@ function MemoSheet({ session, replay, memo, setMemo, onClose }: { session: Retur
         ))}
         <label className="field"><span>Conditions I would insist on</span><textarea rows={2} value={memo.conditions} onChange={(e) => set({ conditions: e.target.value })} /></label>
         <label className="field"><span>The setback to watch</span><textarea rows={2} value={memo.watch} onChange={(e) => set({ watch: e.target.value })} /></label>
-        <h3 className="memo__sub">Evidence appendix (from the simulation, code-generated)</h3>
+        <h3 className="memo__sub">Evidence appendix: the {viewed.length === 0 ? 'snapshots you looked at (none yet)' : `${new Set(viewed).size} snapshot(s) you looked at`}, code-generated</h3>
         <table className="assump">
           <thead><tr><th>Path</th><th>Figure</th><th>Scenario</th><th>Value</th><th>Snapshot</th></tr></thead>
           <tbody>

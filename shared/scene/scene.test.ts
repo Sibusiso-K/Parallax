@@ -55,6 +55,12 @@ describe('room snapshot', () => {
     expect(canonicalJson({ b: 1, a: [2, { d: 1, c: 2 }] })).toBe('{"a":[2,{"c":2,"d":1}],"b":1}');
   });
 
+  it('keeps baseline assumptions free of stress lines', () => {
+    const st = snap('B', { id: 'late-payment' });
+    expect(st.baselineAssumptions.some((x) => x.role === 'setback')).toBe(false);
+    expect(st.assumptions.some((x) => x.role === 'setback')).toBe(true);
+  });
+
   it('does not stack a stress on a stressed path, and rejects a bad start month', () => {
     const once = snap('B', { id: 'late-payment' });
     expect(once.assumptions.filter((x) => x.role === 'setback').length).toBe(2);

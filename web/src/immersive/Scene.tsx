@@ -9,6 +9,9 @@ import type { CameraStation } from './replay';
 // The 3D room. Geometry and labels read ONE snapshot; nothing here does money maths. Motion (camera, lever, bobbing) is
 // cosmetic and never touches a figure. Every object that matters also has a DOM equivalent in overlay.tsx.
 
+/** Set by Scene on every render from the founder's preference; read inside animation frames. */
+let REDUCED = false;
+
 export const TILE_LEN = 1.5;
 export const TILE_W = 3.4;
 const STEP = TILE_LEN + 0.07;
@@ -93,6 +96,7 @@ function Bridge({ snapshot, selectedMonth, onSelect, onHover, showGhost }: Bridg
   const tiles = useRef<THREE.InstancedMesh>(null);
   const hatch = useRef<THREE.InstancedMesh>(null);
   const hatchTex = useMemo(hatchTexture, []);
+  useEffect(() => () => hatchTex.dispose(), [hatchTex]);
   const negative = useMemo(() => rows.filter((r) => r.cash < 0).map((r) => r.month), [rows]);
   const ghost = useMemo(() => {
     const pts: number[] = [];
@@ -276,6 +280,7 @@ function softTexture(inner: string, outer: string): THREE.CanvasTexture {
 function Atmosphere({ low }: { low: boolean }) {
   const cloud = useMemo(() => softTexture('rgba(255,255,255,0.95)', 'rgba(255,255,255,0)'), []);
   const sun = useMemo(() => softTexture('rgba(255,244,214,1)', 'rgba(255,214,170,0)'), []);
+  useEffect(() => () => { cloud.dispose(); sun.dispose(); }, [cloud, sun]);
   const clouds = useMemo(
     () => Array.from({ length: low ? 40 : 90 }, (_, i) => ({ x: ((i * 53) % 80) - 40, y: -3.2 + ((i * 7) % 5) * 0.55, z: 8 - ((i * 31) % 100), s: 7 + ((i * 11) % 9) })),
     [low],
@@ -335,15 +340,11 @@ function Islands() {
 
 function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => void; label: string }) {
   const handle = useRef<THREE.Group>(null);
-  const reduced = useRef(false);
-  useEffect(() => {
-    reduced.current = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
   useFrame((_, dt) => {
     const g = handle.current;
     if (!g) return;
     const target = pulled ? 0.95 : -0.65;
-    g.rotation.x = reduced.current ? target : THREE.MathUtils.damp(g.rotation.x, target, 7, dt);
+    g.rotation.x = REDUCED ? target : THREE.MathUtils.damp(g.rotation.x, target, 7, dt);
   });
   const [hot, setHot] = useState(false);
   return (
@@ -380,7 +381,7 @@ function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => v
 function Contract({ onOpen, text }: { onOpen: () => void; text: string }) {
   const ref = useRef<THREE.Mesh>(null);
   useFrame(({ clock }) => {
-    if (ref.current && !matchMedia('(prefers-reduced-motion: reduce)').matches) ref.current.position.y = 2.6 + Math.sin(clock.elapsedTime * 0.9) * 0.08;
+    if (ref.current && !REDUCED) ref.current.position.y = 2.6 + Math.sin(clock.elapsedTime * 0.9) * 0.08;
   });
   return (
     <group position={[-3.6, 0, -4.5]}>
@@ -438,14 +439,14 @@ function Person({ anchor, glass, pointAt, speaking }: { anchor: THREE.Vector3; g
     const b = body.current;
     const r = root.current;
     if (!a || !b || !r) return;
-    const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const calm = REDUCED;
     if (calm) r.position.copy(anchor);
     else {
       r.position.x = THREE.MathUtils.damp(r.position.x, anchor.x, 3, dt);
       r.position.y = THREE.MathUtils.damp(r.position.y, anchor.y, 3, dt);
       r.position.z = THREE.MathUtils.damp(r.position.z, anchor.z, 3, dt);
     }
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = REDUCED;
     target.copy(pointAt);
     const local = b.worldToLocal(target.clone());
     const yaw = Math.atan2(local.x, -local.z);
@@ -504,12 +505,15 @@ function Person({ anchor, glass, pointAt, speaking }: { anchor: THREE.Vector3; g
 function Pearls({ count }: { count: number }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   const seeds = useMemo(() => Array.from({ length: count }, (_, i) => ({ x: ((i * 37) % 50) - 25, y: 2 + ((i * 13) % 9), z: -((i * 23) % 60), s: 0.08 + ((i * 7) % 5) * 0.03, p: i })), [count]);
+  const drawn = useRef(false);
   useFrame(({ clock }) => {
     const m = ref.current;
     if (!m) return;
+    if (REDUCED && drawn.current) return;
+    drawn.current = true;
     const d = new THREE.Object3D();
     seeds.forEach((s, i) => {
-      d.position.set(s.x, s.y + Math.sin(clock.elapsedTime * 0.5 + s.p) * 0.25, s.z);
+      d.position.set(s.x, s.y + (REDUCED ? 0 : Math.sin(clock.elapsedTime * 0.5 + s.p) * 0.25), s.z);
       d.scale.setScalar(s.s);
       d.updateMatrix();
       m.setMatrixAt(i, d.matrix);
@@ -576,6 +580,7 @@ export interface SceneProps {
 }
 
 export default function Scene(p: SceneProps) {
+  REDUCED = p.reduced;
   const n = p.snapshot.active.rows.length;
   const pose = tilePose(Math.min(Math.max(p.selectedMonth, 1), n) - 1, n);
   const point = useMemo(() => new THREE.Vector3(pose.x, pose.y + 0.1, pose.z), [pose.x, pose.y, pose.z]);

@@ -33,12 +33,12 @@
 .small { font-size: 12.5px; } .mono, .figure span { font-family: 'Geist Mono Variable', 'Geist Mono', monospace; font-variant-numeric: tabular-nums; }
 .month { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; margin: 14px 0; }
 .month__label { display: grid; gap: 4px; font-size: 14px; }
-.month input[type='range'], .replay input[type='range'] { width: 100%; accent-color: var(--ink); min-height: 28px; }
+.month input[type='range'], .replay input[type='range'] { width: 100%; accent-color: var(--ink); min-height: 44px; }
 .btn { min-height: 44px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btn--ghost { background: rgba(255, 255, 255, 0.7); color: var(--ink); }
 .btn--round { width: 44px; padding: 0; font-size: 20px; }
-.btn--sm { min-height: 36px; font-size: 13px; padding: 4px 12px; }
+.btn--sm { min-height: 44px; font-size: 13px; padding: 4px 12px; }
 .btn--lever { width: 100%; background: linear-gradient(#fff, #f6efe0); color: var(--ink); border: 2px solid var(--gold); display: flex; gap: 10px; align-items: center; justify-content: center; }
 .btn--lever.is-on { background: linear-gradient(#fff6d6, #ffe9a8); }
 .lever-ico { font-size: 18px; }
@@ -56,20 +56,21 @@
 .figure span { font-size: 17px; font-weight: 600; line-height: 1.2; }
 .figure--text span { font-size: 13px; font-family: 'Geist Variable', sans-serif; }
 .figure--stress { border-color: var(--gold); background: #fff9e8; }
-.figure--inline { display: inline-grid; min-height: 28px; padding: 0 8px; vertical-align: baseline; }
+.figure--inline { display: inline-grid; min-height: 44px; min-width: 44px; padding: 2px 10px; margin: 2px 0; vertical-align: middle; }
 .figure--inline span { font-size: 15px; }
 .qual { font-size: 12.5px; background: #fff4d6; border-radius: 10px; padding: 8px 10px; margin: 8px 0 0; }
 .chip { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(18, 24, 38, 0.15); }
 .chip--btn { cursor: pointer; font: inherit; font-size: 13px; padding: 8px 12px; min-height: 40px; color: var(--ink); }
-.table summary, .trace summary, .dock details summary { cursor: pointer; margin-top: 8px; font-size: 13px; color: var(--mute); }
-.table table { width: 100%; font-size: 12.5px; border-collapse: collapse; max-height: 220px; display: block; overflow: auto; }
+.table summary, .trace summary, .dock details summary, .drawer summary { cursor: pointer; margin-top: 8px; font-size: 13px; color: var(--mute); min-height: 44px; display: flex; align-items: center; }
+.table table { width: 100%; font-size: 12.5px; border-collapse: collapse; max-height: 260px; display: block; overflow: auto; }
+.objects { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 0; }
 .table td, .table th { padding: 3px 8px; text-align: right; } .table td:first-child, .table th:first-child { text-align: left; }
 .table .is-sel { background: rgba(231, 196, 107, 0.25); } .neg { color: #5a2ea6; font-weight: 600; }
-.linkish { background: none; border: 0; text-decoration: underline; cursor: pointer; font: inherit; min-width: 32px; min-height: 28px; }
+.linkish { background: none; border: 0; text-decoration: underline; cursor: pointer; font: inherit; min-width: 44px; min-height: 44px; }
 
 .dock { grid-column: 3; grid-row: 3; align-self: stretch; z-index: 6; padding: 14px; max-height: calc(100dvh - 200px); overflow: auto; display: flex; flex-direction: column; gap: 10px; }
 .dock.is-closed { align-self: start; padding: 8px; }
-.dock__toggle { align-self: flex-end; min-height: 36px; border-radius: 999px; border: 1px solid var(--ink); background: #fff; font: inherit; cursor: pointer; padding: 4px 14px; }
+.dock__toggle { align-self: flex-end; min-height: 44px; border-radius: 999px; border: 1px solid var(--ink); background: #fff; font: inherit; cursor: pointer; padding: 4px 14px; }
 .fixture { font-size: 12.5px; background: #ece6ff; border-radius: 10px; padding: 8px 10px; margin: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .ask { display: grid; grid-template-columns: 1fr auto; gap: 8px; }

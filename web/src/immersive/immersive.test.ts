@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { answerQuestion, classify, type AdvisorAnswer } from './advisor-fixture';
 import { evidenceAppendix } from './memo';
-import { buildReplay, isOutdated, resolveShot, shotAt, shotStart } from './replay';
+import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable } from './replay';
 import { createSession } from './session';
 
 const render = (a: AdvisorAnswer) =>
@@ -111,13 +111,28 @@ describe('replay', () => {
 });
 
 describe('memo evidence appendix', () => {
-  it('lists real figures with their scenario and snapshot fingerprint, and keeps the shortfall qualification', () => {
+  it('lists only the snapshots that were looked at, with real figures, fingerprints and the shortfall qualification', () => {
     const s = createSession('m');
-    const lines = evidenceAppendix(s, null);
-    expect(lines.length).toBe(6);
-    const run = lines.find((l) => l.path === 'B' && l.label === 'Cash first runs out')!;
+    expect(evidenceAppendix(s, [])).toEqual([]);
+    const b = s.snapshotFor('B', true);
+    const lines = evidenceAppendix(s, [b.key, b.key]);
+    expect(lines.length).toBe(3);
+    expect(lines.every((l) => l.path === 'B')).toBe(true);
+    const run = lines.find((l) => l.label === 'Cash first runs out')!;
     expect(run.value).toBe('month 4');
     expect(run.qualification).toMatch(/does not model/);
     expect(lines.every((l) => /^[0-9a-f]{8}$/.test(l.snapshot))).toBe(true);
+    const c = s.snapshotFor('C', false);
+    expect(evidenceAppendix(s, [c.key]).every((l) => l.scenario === 'Baseline' && l.path === 'C')).toBe(true);
+  });
+});
+
+describe('replay failing closed', () => {
+  it('reports a shot unavailable when its snapshot is not registered', () => {
+    const live = createSession('x');
+    const replay = buildReplay(live);
+    const fresh = createSession('y');
+    expect(shotUnavailable(live, replay.shots[2]!)).toBe(false);
+    expect(shotUnavailable(fresh, replay.shots[2]!)).toBe(true);
   });
 });
