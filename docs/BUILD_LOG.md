@@ -187,6 +187,7 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 **Decisions** (who decided)
 - Generate the four portraits, after the cost was explained (about USD 0.04): Sibusiso.
 - X post owners: Sibusiso posts, Lethabo reposts, as DEMO.md and FEATURES.md already said; PLAN.md now matches. For Sibusiso and Lethabo to confirm.
+- Track: switched to Indie. Discord confirmed on 2 Nov that a team of two may enter Indie; both registrations change at submission.
 
 **Blockers and risks**
 - Founder agents (F10), in-app avatars (F9) and the figure guard (F11) are not built; the app shows letter badges where the portraits will go.

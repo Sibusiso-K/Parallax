@@ -7,7 +7,7 @@ Confidence labels follow [CONTEXT.md](CONTEXT.md): **confirmed** (read on the or
 ## 1. Summary
 
 1. **The problem.** Founders make one high-stakes decision after another (take the contract, hire, raise prices, borrow, expand) with no finance team, on gut feel and spreadsheets they do not trust. Running out of cash is one of the most common ways a business dies, and a decision can look profitable and still empty the bank account.
-2. **Why we care.** We are two founders building on the Startup track. Brainstorming and deciding is most of our week, and it is the problem we know firsthand ("Build for Your World").
+2. **Why we care.** We are two founders building on the Indie track (a team of two; Discord confirmed it on 2 Nov). Brainstorming and deciding is most of our week, and it is the problem we know firsthand ("Build for Your World").
 3. **What Parallax becomes.** A decision rehearsal for founders. Describe the decision in your own words; Parallax proposes three genuinely different paths, plays each forward for 36 months of cash in a bad, likely and good case, stress-tests it against the setbacks that sink small businesses, and lets you question the founder you would become on each path. Every figure is computed in code and traceable to an assumption you can change.
 4. **Who first.** Owner-led food and hospitality businesses in South Africa (catering, meal prep, bakeries, food production, small restaurants), with 0 to 20 staff. Then other cash-hungry service businesses, then tech startups (§4).
 5. **Decisions in the MVP.** Take on a big contract or order, make a hire, raise prices: three templates with three paths each, built and tested on 1 Nov (§3). The rest of the founder journey is the roadmap.

@@ -107,7 +107,7 @@ Keep the video under three minutes; test the link in a private window. If the ap
 
 ---
 
-## 4. Pitch narrative (Startup track)
+## 4. Pitch narrative (Indie track)
 
 1. **Problem.** Founders make one high-stakes decision after another with no finance team. Cash, not profit, decides whether a business survives, and a deal can look profitable and still empty the account. About three million MSMEs (micro, small and medium enterprises) in South Africa face this with little room for error (FOUNDERS.md §2).
 2. **Demo.** The 2-minute flow inside the 3-minute video.

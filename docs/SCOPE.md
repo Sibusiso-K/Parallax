@@ -115,7 +115,7 @@ The screen always says: "One possible future, not a prediction."
 
 ## 5. Success criteria
 
-Track: **Startup**. Rubric: Impact 30%, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25% (CONTEXT.md §5).
+Track: **Indie** (from 2 Nov; Startup before). Indie is judged on creativity, technical ambition and whether it works (CONTEXT.md §5). The rubric weights recorded here are Impact 30%, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25%; REVIEW.md records equal weights, so check the guide for the Indie weights.
 
 | Lens | Our bar |
 |---|---|

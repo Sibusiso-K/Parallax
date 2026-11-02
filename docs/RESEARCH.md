@@ -5,7 +5,7 @@ Written 26 Oct 2026 from the Participant Guide ([CONTEXT.md](CONTEXT.md) §5) an
 ## 1. Summary
 
 1. **Theme:** *Build for Your World* fits better than before: we are founders, and deciding under uncertainty is the problem we live with. Stage 1 (pass/fail) is safe as long as each Meta model visibly does a job.
-2. **Track:** **Startup** (both registered, confirmed 26 Oct). The track is "for teams and founders building a real product"; Parallax is now a product *for* founders, built by founders.
+2. **Track:** **Indie**, switched from Startup on 2 Nov after Discord confirmed that a team of two may enter Indie. Indie is "individual builders and students", judged on creativity, technical ambition and whether it works. Parallax is a product *for* founders, built by two of them.
 3. **The rubric is weighted** (guide re-read 1 Nov): **Impact 30%**, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25%. Impact is the biggest lever, which is why the founder direction matters.
 4. **Biggest scoring levers:** the contract that looks profitable but runs out of cash in month 4 if the client pays late (Impact, Demo), and the grounded per-path founder agents (Meta tooling, Technical Depth).
 5. **Anti-projects:** the main risk is now "dashboards as the main feature", because the chosen design (Mockup 5, Control Room) is dense and data-heavy. The avatar and the conversation must lead (§5, DESIGN.md §0).
@@ -93,7 +93,7 @@ The earlier research on simulated future selves still holds as background: MIT M
 2. Get the founder agents (F10) and avatars (F9) live by Mon 2 Nov evening; everything else in the video depends on them.
 3. Get one real founder (outside the team, with consent) through a session by Tue 3 Nov and quote one line (Impact).
 4. Source the placeholder defaults in `shared/defaults/za.json` that the demo shows, or label them "placeholder" on screen.
-5. Add Lethabo as a team member on the submission form (it lists only Sibusiso today) and check the Startup registration answers (CONTEXT.md §5).
+5. Add Lethabo as a team member on the submission form (it lists only Sibusiso today) and check the registration answers on the Indie form (CONTEXT.md §5).
 6. Post the demo on X as soon as the video is final; reply to comments until 8 Nov (Most Viral).
 7. Decide open weights at the Mon 2 Nov sync, not later.
 8. Keep BUILD_LOG.md daily; days 3 to 6 still need entries.

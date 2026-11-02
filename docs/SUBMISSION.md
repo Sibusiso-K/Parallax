@@ -61,7 +61,7 @@ The rules disqualify anything not clearly identified as event work. The only pre
 |---|---|---|---|
 | Team Name\* | Parallax | — | Ready |
 | Team Members | Sibusiso Khumalo and Lethabo Hoaeane. **On 1 Nov the form listed only Sibusiso**: Lethabo must be added or must join the team on CV | Both | **To fix by Tue 3 Nov** |
-| Track\* | Startups (both registered, confirmed 26 Oct) | — | Ready |
+| Track\* | Indie. Discord confirmed 2 Nov that a team of two may enter; both registrations change from Startup at submission | Both | To change at submission |
 | Problem statement\* | Build for Your World | — | Ready |
 | X post link (Most Viral) | URL of the demo post | Sibusiso | Post before submitting |
 | Project Description\* | Draft A below | Sibusiso | Draft |
@@ -106,9 +106,19 @@ US clocks go back on Sun 1 Nov, so ET is 6 hours behind SAST until then and 7 ho
 | Mon 9 Nov, 19:00 | Closing ceremony and live final round |
 | Mon 16 Nov | Community Vote winner announced on Discord |
 
+## 7b. Indie judging
+
+The Indie track is judged on creativity, technical ambition, and whether it works ([CONTEXT.md](CONTEXT.md) §5). Where we stand on each:
+
+- **Creativity:** three genuinely different paths for one decision, each run for 36 months, with a future founder to question on each. Shown on the compare and path screens.
+- **Technical ambition:** a cash engine that runs bad, likely and good cases month by month, a setback library, and per-path future-self chat. The chat replies are fixtures until the founder agents (F10) land, and the figure guard (F11) is not built; the video and README must say so.
+- **Whether it works:** the live URL must open for a logged-out judge and accept their own story. Today the production site reads only the demo story (the model is off), and Vercel Authentication is on. Both need a decision before submitting.
+
+The rubric weights differ between [SCOPE.md](SCOPE.md) (Impact 30%, Meta tooling 25%, Technical 20%, Demo 25%) and [REVIEW.md](REVIEW.md) (equal weights). Check the guide for the Indie weights before relying on either.
+
 ## 8. Final pre-submit checklist
 
-- [ ] The submission shows the Startup track.
+- [ ] The submission shows the Indie track.
 - [ ] Theme statement is in the first lines of the description and README.
 - [ ] Repo, video and live URL all open in a logged-out window.
 - [ ] No secrets, keys or personal data in the repo, its history or the video.

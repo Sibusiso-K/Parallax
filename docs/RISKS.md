@@ -45,7 +45,7 @@ Owners follow the roles agreed on 26 Oct ([ROLES.md](ROLES.md); Sibusiso: UI and
 
 | ID | Risk | L | I | Mitigation | Owner |
 |---|---|---|---|---|---|
-| H1 | ~~Track eligibility unconfirmed~~ **Closed 26 Oct:** both of us registered on the Startup track. | — | — | Make sure the submission names the Startup track. | Both |
+| H1 | ~~Track eligibility unconfirmed~~ **Closed 2 Nov:** Discord confirmed that a team of two may enter Indie, so we switch from Startup (both registered on Startup on 26 Oct). | — | — | Make sure the submission names the Indie track, and both registrations match. | Both |
 | H2 | Schedule: ten days (26 Oct evening to 4 Nov), two people, weekdays shared with work or study | H | H | Agreed cut list (PLAN.md §5); a demoable build every evening; feature freeze at the end of day 6 (Sat 31 Oct). | Both |
 | H3 | Submission-day failure (API outage, upload fails, time-zone mix-up) | M | H | Internal deadline 4 Nov 22:00 SAST; demo video by day 9; cached "demo mode" persona; submit a draft early. | Both |
 | H4 | Power or internet outage, including load-shedding | M | M | Hosted deployment; either of us can submit; mobile data backup. | Both |
@@ -54,7 +54,7 @@ Owners follow the roles agreed on 26 Oct ([ROLES.md](ROLES.md); Sibusiso: UI and
 | H7 | **Submission mechanics:** one appointed Representative enters the project on the CV platform, listing everyone who worked on it, with an accessible repo and video link | M | H | Appoint the Representative on day 1 (proposal: Sibusiso); both confirm the submission fields on day 9; test the repo and video links in a private window; submit by 22:00 SAST on 4 Nov, never on the 04:00 deadline. | Sibusiso |
 | H8 | **Credits are per individual and need a credit card:** each person must claim their own USD 150 by 4 Nov 21:00 ET (request forms in Discord #resources from kickoff); a card must be on the account to make calls; nobody can claim for the other | M | H | Each person claims their own the day the link opens and attaches a card with a spend-limit notification; agree who holds the shared project API key; do not assume USD 300 until both have claimed; log spend daily (T2). | Both |
 | H9 | **Fireworks credits (USD 25) are only for select participants**, by email; the serverless Muse Spark Open also ends 29 Oct | H | L | Do not plan around Fireworks credits. Use Baseten (request USD 100 + 2M TPM, per individual, model `meta-models/muse-spark-open-1026`) and Modal (USD 100, first 1,000 participants) for open-weights work, and each of us requests them on day 1 (ROLES.md §5). | Both (each requests their own); Lethabo (open-weights path) |
-| H10 | Startup registration details wrong (company country, funding stage) | L | M | Both registered on Startup (26 Oct). Check the form answers and correct them before the deadline. | Both |
+| H10 | Registration details wrong (company country, funding stage on the Startup form; the Indie form may ask different questions) | L | M | Both registered on Startup (26 Oct). Check every answer on the Indie form before the deadline. | Both |
 | H11 | **Late change of direction** (founders, 1 Nov, day 7): docs, demo, video and UI all move three days before submission | H | H | Engine, intake, templates and tests already moved on day 7 (PR `feat/founder-pivot`); one demo decision only (the contract); the re-plan in PLAN.md §3A protects the agents, avatars and video above new features | Both |
 | H12 | **The submission form lists only Sibusiso** as a team member (seen 1 Nov) | M | H | Add Lethabo, or Lethabo joins the team on CV, by Tue 3 Nov; check again before submitting | Both |
 | H13 | **Placeholder defaults on screen**: `shared/defaults/za.json` values are unsourced, and the demo's template figures (direct-cost share, equipment rent) come from it | H | M | Source the values the demo shows, or show "placeholder" beside them; never present them as research | Sibusiso |
@@ -135,7 +135,7 @@ In the pitch, say "reflection aid", never "predicts your future".
 
 1. ~~Which areas do you want to own?~~ Answered 26 Oct ([ROLES.md](ROLES.md)): the owners above now follow it. Anything you would rather hand back?
 2. Are you comfortable testing the crisis rules with distressing test phrases? If not, we split them.
-3. ~~Is your registration on the Startup track?~~ Yes, confirmed 26 Oct.
+3. ~~Is your registration on the Startup track?~~ Yes, confirmed 26 Oct. Switched to Indie on 2 Nov.
 4. Do you have power and internet backup for 26 Oct – 4 Nov, and any days you are unavailable?
 5. Should the demo show the crisis card live, or only mention it?
 6. Do you know a lawyer, financial adviser or counsellor who could give 15 minutes of informal feedback?

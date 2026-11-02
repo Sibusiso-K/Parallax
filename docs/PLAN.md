@@ -29,7 +29,7 @@ Draft of 20 Oct 2026, updated 26 Oct 2026 after the official Participant Guide a
 | Task | Owner | Done when |
 |---|---|---|
 | Read the Participant Guide (published 26 Oct): pre-existing code, submission format, licences | Both; Sibusiso updated CONTEXT.md §5 | Done 26 Oct |
-| Confirm both registrations are on the Startup track | Both | Done 26 Oct: both on Startup |
+| Confirm both registrations are on the Startup track | Both | Done 26 Oct: both on Startup. Switched to Indie 2 Nov (CONTEXT.md) |
 | Accounts: Discord, Meta Model API, GitHub repo access, Vercel | Each their own | Both can log in; keys never in chat or the repo |
 | Credits: USD 150 Meta credits are confirmed but each person claims their own (forms in Discord #resources from kickoff); Baseten, Modal and Fireworks credits: see the first-day checklist below | Each person | Amounts and expiry dates noted |
 | Declare availability and other builds (SONAR rule) for 26 Oct – 4 Nov | Both | Shared in team chat |
@@ -41,7 +41,7 @@ Draft of 20 Oct 2026, updated 26 Oct 2026 after the official Participant Guide a
 ### First-day checklist (Mon 26 Oct, from 18:00 SAST)
 
 - [ ] Watch the kickoff (18:00 SAST; the recording goes to #resources) and join the Discord: https://cv.inc/e/meta-ai-developer-hackathon/discord
-- [ ] Introduce ourselves in **#intros**. (Track settled: both registered on Startup.)
+- [ ] Introduce ourselves in **#intros**. (Track: both registered on Startup on 26 Oct; switched to Indie on 2 Nov.)
 - [ ] **Each** of us claims our own USD 150 Meta credits from the form in **#resources**, adds a credit card, and sets a Spend Limit notification on the Billing page. Nobody can claim for the other. Agree who holds the project API key ([ROLES.md](ROLES.md) §5).
 - [ ] Request Baseten credits (USD 100 + 2M TPM; model `meta-models/muse-spark-open-1026`) and Modal credits (USD 100, first 1,000 participants), each as an individual, from the forms in #resources.
 - [x] Sibusiso turns on GitHub secret scanning and push protection for the public repo (AGENTS_AND_APIS.md §5). Checked 27 Oct: both enabled.
@@ -148,7 +148,7 @@ After day 6 nothing new goes in, unless both agree at the sync.
 1. ~~What are your strongest skills?~~ Answered 26 Oct: avatars, API integrations, feature integration, security (see [ROLES.md](ROLES.md)). Is anything there you would rather swap or add?
 2. How many hours can you give each day from 26 Oct to 4 Nov, especially weekdays?
 3. Are you on SAST, and does 08:30 suit the daily sync?
-4. Have credits or API access reached you? (Track settled: both on Startup.)
+4. Have credits or API access reached you? (Track: switched to Indie on 2 Nov.)
 5. Are you in another build during this window (SONAR's two-build rule)?
 6. Will you present in the demo video (on camera or voice-over), or should Sibusiso?
 7. Your Vercel username, for access? (GitHub: LethaboMH14, already a collaborator.)
