@@ -52,6 +52,14 @@ describe('fixture advisor', () => {
     expect(ac.claims.every((x) => x.pathId === 'C')).toBe(true);
   });
 
+  it('says "does not run out" instead of a broken sentence when there is no shortfall (path C)', () => {
+    const c = session.snapshotFor('C', true);
+    const a = answerQuestion(session, { pathId: 'C', snapshotKey: c.key, month: 4 }, 'Why did cash run out here?');
+    const text = render(a);
+    expect(text).toContain('Cash does not run out within the 36 months.');
+    expect(text).not.toContain('runs out in [no shortfall');
+  });
+
   it('declines out-of-scope questions without a trace of work that never happened', () => {
     const snap = session.snapshotFor('B', true);
     const a = answerQuestion(session, { pathId: 'B', snapshotKey: snap.key, month: 4 }, 'Should I take the contract?');

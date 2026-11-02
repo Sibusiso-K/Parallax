@@ -131,5 +131,27 @@ export function answerQuestion(session: Session, scope: AdvisorScope, question: 
     return x.ok ? x.claim : null;
   });
   if (claims.some((c) => c === null)) return withheld(intent);
-  return { ...base, intent, status: 'answered', segments, claims: claims as ResolvedClaim[], trace };
+  const resolved = claims as ResolvedClaim[];
+  return { ...base, intent, status: 'answered', segments: fixShortfallPhrase(segments, resolved), claims: resolved, trace };
+}
+
+const RUNS_OUT_LEAD = 'Cash first runs out in ';
+
+/** "Cash first runs out in no shortfall within 36 months" is not a sentence: say it plainly when there is no shortfall. */
+export function fixShortfallPhrase(segments: Segment[], claims: ResolvedClaim[]): Segment[] {
+  const out: Segment[] = [];
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]!;
+    const next = segments[i + 1];
+    if (seg.kind === 'text' && seg.text.endsWith(RUNS_OUT_LEAD) && next?.kind === 'claim') {
+      const c = claims[next.index];
+      if (c && c.ref.metric === 'first_shortfall' && c.value === null) {
+        out.push({ kind: 'text', text: `${seg.text.slice(0, -RUNS_OUT_LEAD.length)}Cash does not run out within the 36 months` });
+        i += 1;
+        continue;
+      }
+    }
+    out.push(seg);
+  }
+  return out;
 }

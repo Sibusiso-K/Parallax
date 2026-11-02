@@ -1,5 +1,5 @@
 // UI generated with Lovable on 30 Oct 2026, moved from its TanStack Start route to this plain Vite entry.
-import { StrictMode, useEffect } from "react";
+import { StrictMode, Suspense, lazy, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { isLite } from "./lite";
@@ -10,6 +10,10 @@ import { GeneratingScreen, ProfileScreen } from "@/components/parallax/ProfileSc
 import { AssumptionsPanel, PathsScreen } from "@/components/parallax/PathScreens";
 import { ChatScreen } from "@/components/parallax/ChatScreen";
 import { ComfortScreen, CompareScreen, SummaryScreen } from "@/components/parallax/DecideScreens";
+
+// The immersive 3D world loads only on ?world, as its own chunk, so the main app's first screen stays small.
+const World = lazy(() => import("./immersive/World"));
+const wantsWorld = new URLSearchParams(location.search).has("world");
 
 function useEnvironment() {
   useEffect(() => {
@@ -62,8 +66,14 @@ function Shell() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ParallaxProvider>
-      <Shell />
-    </ParallaxProvider>
+    {wantsWorld ? (
+      <Suspense fallback={null}>
+        <World />
+      </Suspense>
+    ) : (
+      <ParallaxProvider>
+        <Shell />
+      </ParallaxProvider>
+    )}
   </StrictMode>,
 );
