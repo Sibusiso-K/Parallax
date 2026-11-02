@@ -1,50 +1,35 @@
-import { useState } from "react";
-import {
-  DECISION_LABELS,
-  DECISION_TYPES,
-  DEMO_STORY,
-  FIELD_DEFAULTS,
-  FIELD_LABELS,
-  FIELD_QUESTIONS,
-  MONEY_FIELDS,
-  NUMBER_FIELDS,
-  mockApi,
-  parseDecisionAnswer,
-} from "@/lib/parallax-api";
+import { useState, type FormEvent } from "react";
+import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
-import { formatField, isMoneyField, parseAmount } from "@/lib/format";
-import type { FieldKey } from "@/lib/types";
-import { Button, ParallaxMark, ScreenTitle, inputCls } from "./shared";
+import { Button, ParallaxMark, Src } from "./shared";
+import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
 
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
   return (
-    <section className="mx-auto flex max-w-xl flex-col pt-8 sm:pt-20 stagger">
+    <section className="hero">
       <ParallaxMark size={56} />
-      <p className="mt-6 text-sm font-semibold tracking-wide text-muted-foreground">PARALLAX · FOR FOUNDERS</p>
-      <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Rehearse the decision before you bet the business</h1>
-      <p className="mt-4 text-lg text-muted-foreground">
-        Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the
-        founder you would become.
+      <div className="eyebrow">PARALLAX · FOR FOUNDERS</div>
+      <h1>Rehearse the decision before you bet the business</h1>
+      <p className="lead">
+        Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the founder
+        you would become.
       </p>
-      <ul className="mt-8 space-y-2 border-l-2 border-border pl-4 text-foreground">
+      <ul className="bullets">
         <li>A reflection aid, not financial advice.</li>
         <li>What you type stays in this browser and can be deleted.</li>
         <li>Your words are sent to Meta's AI to write replies.</li>
         <li>Every figure is computed in code from assumptions you can see and change.</li>
       </ul>
-      <label className="tap mt-8 flex cursor-pointer items-center gap-3 rounded-xl py-2">
-        <input
-          type="checkbox"
-          checked={agreed}
-          onChange={(e) => set({ agreed: e.target.checked })}
-          className="h-6 w-6 shrink-0 accent-[var(--foreground)]"
-        />
+      <label className="agree">
+        <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
         <span>I am 18 or older</span>
       </label>
-      <Button size="lg" className="mt-4 self-start" disabled={!agreed} onClick={() => go("intake")}>
-        Begin
-      </Button>
+      <div className="actions-row">
+        <Button variant="primary" size="lg" disabled={!agreed} onClick={() => go("intake")}>
+          Begin
+        </Button>
+      </div>
     </section>
   );
 }
@@ -55,146 +40,51 @@ export function IntakeScreen() {
   async function next() {
     setBusy(true);
     const res = await mockApi.intake(story);
-    set({ intake: res, fields: res.fields, missing: res.missing, assumed: [] });
+    set({ intake: res, fields: res.fields, quotes: res.quotes ?? {}, missing: res.missing, assumed: [], followed: [] });
     setBusy(false);
     go("heard");
   }
   return (
-    <section className="mx-auto max-w-2xl screen-in">
-      <ScreenTitle eyebrow="Step 1 of 3" title="What are you deciding?">
-        Write it the way you'd tell a cofounder: what the business does, what it sells and spends each month, the cash in
-        the bank, the decision on the table, and what matters most.
-      </ScreenTitle>
+    <section className="screen intake">
+      <div className="pagehead">
+        <div className="eyebrow">Step 1 of 3</div>
+        <h1>What are you deciding?</h1>
+        <div className="sub">
+          Write it the way you would tell a cofounder: what the business does, what it sells and spends each month, the cash in the
+          bank, the decision on the table, and what matters most.
+        </div>
+      </div>
       <label htmlFor="story" className="sr-only">
         What are you deciding?
       </label>
       <textarea
         id="story"
+        className="field-area"
         rows={9}
         value={story}
         onChange={(e) => set({ story: e.target.value })}
-        className={`${inputCls} min-h-56 resize-y leading-relaxed`}
         placeholder="A client has offered us a contract, but…"
       />
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="actions-row">
         <Button variant="outline" onClick={() => set({ story: DEMO_STORY })}>
           Use the demo story (fictional founder)
         </Button>
-        <Button onClick={next} disabled={!story.trim() || busy} className="sm:ml-auto">
+        <Button variant="primary" className="ml-auto" onClick={next} disabled={!story.trim() || busy}>
           {busy ? "Reading…" : "Continue"}
         </Button>
       </div>
-      <p className="mt-3 text-sm text-muted-foreground" aria-live="polite">
+      <p className="hint" aria-live="polite">
         {busy ? "Reading your situation" : ""}
       </p>
     </section>
   );
 }
 
-function readValue(key: FieldKey, raw: string): { ok: true; value: unknown } | { ok: false; msg: string } {
-  if (!raw.trim()) return { ok: false, msg: "Type something, or choose “I don't know”." };
-  if (MONEY_FIELDS.includes(key)) {
-    const p = parseAmount(raw);
-    if (!p) return { ok: false, msg: "Try an amount like 8000, 8k, about 8k, or 8k to 12k." };
-    return { ok: true, value: { ...p, quote: raw.trim() } };
-  }
-  if (NUMBER_FIELDS.includes(key)) {
-    const n = Number(raw.trim().replace(/\s*(days?|%)$/i, ""));
-    if (!Number.isFinite(n) || n < 0) return { ok: false, msg: "Use a whole number, like 30." };
-    return { ok: true, value: n };
-  }
-  if (key === "decisionType") {
-    const type = parseDecisionAnswer(raw);
-    if (!type) return { ok: false, msg: "Type contract, hire or prices." };
-    return { ok: true, value: type };
-  }
-  return { ok: true, value: raw.trim() };
-}
-
-/** How a field reads on screen: the kind of decision in words, everything else as typed. */
-function shown(k: FieldKey, value: unknown): string {
-  if (k === "decisionType" && typeof value === "string" && value in DECISION_LABELS) return DECISION_LABELS[value as keyof typeof DECISION_LABELS];
-  return formatField(value);
-}
-
-function FieldRow({ k, value, assumed }: { k: FieldKey; value: unknown; assumed: boolean }) {
-  const { set } = useParallax();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [err, setErr] = useState("");
-  const range = isMoneyField(value) && value.low !== value.high;
-  const save = () => {
-    const r = readValue(k, draft);
-    if (!r.ok) return setErr(r.msg);
-    set((s) => ({ fields: { ...s.fields, [k]: r.value }, assumed: s.assumed.filter((a) => a !== k) }));
-    setEditing(false);
-  };
-  return (
-    <li className="py-4">
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm text-muted-foreground">{FIELD_LABELS[k]}</p>
-          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-lg">
-            <span className="tabular-nums">{shown(k, value)}</span>
-            {range && <span className="chip">range</span>}
-            {assumed && <span className="chip border border-dashed border-input bg-card">assumed</span>}
-          </p>
-          {isMoneyField(value) && value.quote && !assumed && (
-            <p className="mt-0.5 text-sm text-muted-foreground">You said: “{value.quote}”</p>
-          )}
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-expanded={editing}
-          onClick={() => {
-            setDraft(isMoneyField(value) ? value.quote : String(value ?? ""));
-            setErr("");
-            setEditing((e) => !e);
-          }}
-        >
-          {editing ? "Cancel" : "Edit"}
-        </Button>
-      </div>
-      {editing && (
-        <form
-          className="mt-3 flex flex-col gap-2 sm:flex-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            save();
-          }}
-        >
-          <label className="sr-only" htmlFor={`f-${k}`}>
-            {FIELD_LABELS[k]}
-          </label>
-          <input
-            id={`f-${k}`}
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            className={inputCls}
-            aria-invalid={!!err}
-            aria-describedby={err ? `e-${k}` : undefined}
-          />
-          <Button type="submit">Save</Button>
-          {err && (
-            <p id={`e-${k}`} className="text-sm text-destructive sm:hidden">
-              {err}
-            </p>
-          )}
-        </form>
-      )}
-      {editing && err && <p className="mt-1 hidden text-sm text-destructive sm:block">{err}</p>}
-    </li>
-  );
-}
-
 export function HeardScreen() {
-  const { fields, missing, assumed, set, go } = useParallax();
+  const { missing, intake, set, go } = useParallax();
   const current = missing[0];
   const [answer, setAnswer] = useState("");
   const [err, setErr] = useState("");
-  const keys = (Object.keys(FIELD_LABELS) as FieldKey[]).filter((k) => fields[k] !== undefined);
 
   const resolve = (value: unknown, isDefault: boolean) => {
     if (!current) return;
@@ -202,37 +92,42 @@ export function HeardScreen() {
       fields: { ...s.fields, [current]: value },
       missing: s.missing.slice(1),
       assumed: isDefault ? [...s.assumed, current] : s.assumed,
+      followed: isDefault ? s.followed : [...s.followed, current],
     }));
     setAnswer("");
     setErr("");
   };
 
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!current) return;
+    const r = readValue(current, answer);
+    if (!r.ok) return setErr(r.msg);
+    resolve(r.value, false);
+  };
+
   return (
-    <section className="mx-auto max-w-2xl screen-in">
-      <ScreenTitle eyebrow="Step 2 of 3" title="Here is what I heard">
-        Check each line. Change anything that isn't quite right.
-      </ScreenTitle>
+    <section className="screen">
+      <div className="pagehead">
+        <div className="eyebrow">Step 2 of 3 · Your business, today</div>
+        <h1>Here is what I heard</h1>
+        <div className="sub">
+          Check each line. The quotes are your own words. Anything marked as a default or a follow-up is one tap from changing.
+        </div>
+      </div>
+      {intake?.notice && <p className="notice">{intake.notice}</p>}
 
       {current && (
-        <form
-          key={current}
-          className="surface mb-6 border-2 border-path bg-highlight p-5 msg-in"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const r = readValue(current, answer);
-            if (!r.ok) return setErr(r.msg);
-            resolve(r.value, false);
-          }}
-        >
-          <p className="text-sm font-medium text-muted-foreground">
+        <form key={current} className="followup-box" onSubmit={submit}>
+          <div className="caps">
             One more thing{missing.length > 1 ? ` · ${missing.length} left` : ""}
-          </p>
+          </div>
           {current === "decisionType" ? (
             <>
-              <p id="followup-q" className="mt-1 text-xl font-medium">
+              <p className="q" id="followup-q">
                 {FIELD_QUESTIONS[current]}
               </p>
-              <div className="mt-3 flex flex-wrap gap-3" role="group" aria-labelledby="followup-q">
+              <div className="row-btns" role="group" aria-labelledby="followup-q">
                 {DECISION_TYPES.map((t) => (
                   <Button key={t} variant="outline" onClick={() => resolve(t, false)}>
                     {DECISION_LABELS[t]}
@@ -242,26 +137,28 @@ export function HeardScreen() {
             </>
           ) : (
             <>
-              <label htmlFor="followup" className="mt-1 block text-xl font-medium">
+              <label htmlFor="followup" className="q">
                 {FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]}
               </label>
               <input
                 id="followup"
                 autoFocus
+                className="field-input"
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                className={`${inputCls} mt-3`}
                 placeholder={MONEY_FIELDS.includes(current) ? "e.g. 8k, or 8k to 12k" : NUMBER_FIELDS.includes(current) ? "e.g. 30" : ""}
                 aria-invalid={!!err}
                 aria-describedby={err ? "followup-err" : undefined}
               />
               {err && (
-                <p id="followup-err" className="mt-2 text-sm text-destructive">
+                <p id="followup-err" className="ferr" role="alert">
                   {err}
                 </p>
               )}
-              <div className="mt-3 flex flex-wrap gap-3">
-                <Button type="submit">Add</Button>
+              <div className="row-btns">
+                <Button type="submit" variant="primary">
+                  Add
+                </Button>
                 <Button variant="outline" onClick={() => resolve(FIELD_DEFAULTS[current] ?? "Not sure", true)}>
                   I don't know
                 </Button>
@@ -271,21 +168,21 @@ export function HeardScreen() {
         </form>
       )}
 
-      <ul className="surface divide-y px-5">
-        {keys.map((k) => (
-          <FieldRow key={k} k={k} value={fields[k]} assumed={assumed.includes(k)} />
-        ))}
-      </ul>
-
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      <DecisionStrip />
+      <FieldGrid editable />
+      <div className="notice">
+        <Src kind="placeholder" /> Behind the three paths, not yet sourced: the cost shares, the rented-equipment share and the setback
+        sizes come from the defaults file. Each is marked on the path pages.
+      </div>
+      <div className="actions-row">
         <Button variant="ghost" onClick={() => go("intake")}>
           Back
         </Button>
-        <Button className="ml-auto" size="lg" disabled={!!current} onClick={() => go("generating")}>
+        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current} onClick={() => go("generating")}>
           This is right
         </Button>
       </div>
-      {current && <p className="mt-2 text-right text-sm text-muted-foreground">Answer the question above first.</p>}
+      {current && <p className="hint">Answer the question above first.</p>}
     </section>
   );
 }

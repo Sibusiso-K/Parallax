@@ -1,85 +1,62 @@
-import { useEffect, useRef, useState } from "react";
-import { LETTERS, useParallax, type Letter } from "@/lib/parallax-store";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useParallax, type Letter } from "@/lib/parallax-store";
 import { describeAssumption, formatMoney, parseAmount } from "@/lib/format";
-import type { Assumption } from "@/lib/types";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-import { Avatar, Button, CashBand, Drawer, LetterBadge, ScreenTitle, SourceChip, inputCls } from "./shared";
+import { pathFigures } from "@/lib/stress";
+import type { Assumption, PathCard } from "@/lib/types";
+import { Avatar, Badge, Button, Drawer, NoPaths, SOURCE_KIND, Src, cx } from "./shared";
+import { RangeBar, domainOf } from "./charts";
 
+const end = (a: number[]) => a[a.length - 1] ?? 0;
+
+/** The three paths side by side: what each does to the business's cash, and where to go next. */
 export function PathsScreen() {
-  const { paths, active, set, go, sims, panel } = useParallax();
-  const mobile = useIsMobile();
-  const idx = LETTERS.indexOf(active);
-  const startX = useRef<number | null>(null);
-  const move = (d: number) => set({ active: LETTERS[(idx + d + 3) % 3] });
-
+  const { paths, set, go } = useParallax();
+  const figures = useMemo(() => paths.map((p) => pathFigures(p)), [paths]);
+  if (paths.length === 0) return <NoPaths />;
+  const domain = domainOf(figures);
   return (
-    <section className="mx-auto max-w-xl screen-in">
-      <ScreenTitle eyebrow="Three possible futures" title="Which future do you want to hear from first?">
-        {mobile ? "Swipe to see each path." : "Use the arrow keys or the buttons to bring a path forward."}
-      </ScreenTitle>
-      <div className="mb-4 flex items-center gap-2 no-print">
-        {LETTERS.map((l) => (
-          <Button key={l} variant={l === active ? "path" : "outline"} size="sm" data-path={l} aria-pressed={l === active} onClick={() => set({ active: l })}>
-            {l}
-          </Button>
-        ))}
-        <span className="ml-auto" />
-        <Button variant="ghost" size="sm" aria-label="Previous path" onClick={() => move(-1)}>←</Button>
-        <Button variant="ghost" size="sm" aria-label="Next path" onClick={() => move(1)}>→</Button>
+    <section className="screen">
+      <div className="pagehead">
+        <div className="eyebrow">Three possible futures</div>
+        <h1>Which future do you want to hear from first?</h1>
+        <div className="sub">Each path runs 36 months of cash in three cases. Open one to talk to the founder you would become on it.</div>
       </div>
-      <div
-        className={cn("depth-stack snap-mobile", !mobile && "pt-10")}
-        tabIndex={0}
-        aria-label="Path cards"
-        onKeyDown={(e) => {
-          if (e.key === "ArrowRight") move(1);
-          if (e.key === "ArrowLeft") move(-1);
-        }}
-        onPointerDown={(e) => (startX.current = e.clientX)}
-        onPointerUp={(e) => {
-          if (mobile || startX.current === null) return;
-          const dx = e.clientX - startX.current;
-          if (Math.abs(dx) > 50) move(dx < 0 ? 1 : -1);
-          startX.current = null;
-        }}
-        onScroll={(e) => {
-          if (!mobile) return;
-          const el = e.currentTarget;
-          const i = Math.round(el.scrollLeft / (el.scrollWidth / 3));
-          if (LETTERS[i] && LETTERS[i] !== active) set({ active: LETTERS[i] });
-        }}
-      >
-        {paths.map((p) => {
-          const depth = (LETTERS.indexOf(p.letter) - idx + 3) % 3;
-          const front = depth === 0;
+      <div className="pathgrid">
+        {paths.map((p, i) => {
+          const f = figures[i]!;
           return (
-            <article
-              key={p.id}
-              data-path={p.letter}
-              data-depth={depth}
-              inert={!mobile && !front}
-              aria-hidden={!mobile && !front}
-              className="depth-layer surface border-t-4 border-t-path p-5"
-            >
-              <div className="flex items-center gap-4">
-                <Avatar letter={p.letter} src={p.avatarUrl} vtName={front ? "pm-avatar" : undefined} />
+            <article key={p.id} className={cx("pcard", `p-${p.letter}`)}>
+              <div className="pname">
+                <Avatar letter={p.letter} src={p.avatarUrl} size={64} />
                 <div>
-                  <div className="flex items-center gap-2">
-                    <LetterBadge letter={p.letter} />
-                    <h2 className="text-xl font-semibold">{p.name}</h2>
+                  <div className="ptitle">
+                    <Badge letter={p.letter} /> <b>{p.name}</b>
                   </div>
-                  <p className="mt-1 text-muted-foreground">{p.summary}</p>
+                  <div className="psub">{p.summary}</div>
                 </div>
               </div>
-              <div className="mt-4">{sims[p.letter] && <CashBand sim={sims[p.letter]} letter={p.letter} />}</div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button variant="outline" aria-expanded={panel?.letter === p.letter} onClick={() => set({ panel: { letter: p.letter } })}>
+              <div className="pband">
+                <div className="caps">Cash in the business at month 36</div>
+                <div className="v">{formatMoney(end(f.likely))}</div>
+                <div className="r">
+                  Bad {formatMoney(end(f.bad))} · Good {formatMoney(end(f.good))}
+                </div>
+                <RangeBar letter={p.letter} bad={end(f.bad)} likely={end(f.likely)} good={end(f.good)} domain={domain} />
+              </div>
+              <div>
+                {f.runsOutBad ? (
+                  <span className="chipwarn">Runs out in month {f.runsOutBad} in the bad case</span>
+                ) : (
+                  <span className="chipok">Stays above zero in every case</span>
+                )}
+              </div>
+              <div className="pact">
+                <Button variant="outline" onClick={() => set({ panel: { letter: p.letter } })}>
                   Show assumptions
                 </Button>
                 <Button
                   variant="path"
-                  className="sm:ml-auto"
+                  className={`p-${p.letter}`}
                   onClick={() => {
                     set({ active: p.letter });
                     go("chat");
@@ -92,14 +69,16 @@ export function PathsScreen() {
           );
         })}
       </div>
-      <div className="mt-6">
-        <Button variant="ghost" onClick={() => go("profile")}>Back to your business today</Button>
+      <div className="actions-row">
+        <Button variant="ghost" onClick={() => go("profile")}>
+          Back to your business today
+        </Button>
       </div>
     </section>
   );
 }
 
-function Row({ a, letter, highlight }: { a: Assumption; letter: Letter; highlight: boolean }) {
+function AssumptionRow({ a, letter, highlight }: { a: Assumption; letter: Letter; highlight: boolean }) {
   const { set } = useParallax();
   const [edit, setEdit] = useState(false);
   const [v, setV] = useState({ low: "", base: "", high: "" });
@@ -108,28 +87,36 @@ function Row({ a, letter, highlight }: { a: Assumption; letter: Letter; highligh
   useEffect(() => {
     if (highlight) ref.current?.scrollIntoView({ block: "center" });
   }, [highlight]);
-  const save = () => {
+
+  const save = (e: FormEvent) => {
+    e.preventDefault();
     const n = [v.low, v.base, v.high].map((x) => parseAmount(x)?.base);
     if (n.some((x) => x === undefined)) return setErr("Each box needs an amount, like 8000 or 8k.");
     const [low, base, high] = n as [number, number, number];
     if (!(low <= base && base <= high)) return setErr("Low must be at most usual, and usual at most high.");
     set((s) => ({
       paths: s.paths.map((p) =>
-        p.letter !== letter ? p : { ...p, assumptions: p.assumptions.map((x) => (x.id === a.id ? { ...x, low, base, high, source: "you" } : x)) },
+        p.letter !== letter
+          ? p
+          : { ...p, assumptions: p.assumptions.map((x) => (x.id === a.id ? { ...x, low, base, high, source: "you" } : x)) },
       ),
     }));
     setEdit(false);
   };
+
   return (
-    <li ref={ref} className={cn("rounded-xl p-3 transition-colors duration-300", highlight && "bg-highlight ring-2 ring-path")}>
-      <div className="flex items-start gap-2">
-        <span className="chip font-mono">{a.id}</span>
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-2 font-medium">{a.label} <SourceChip source={a.source} /></p>
-          <p className="text-sm text-muted-foreground tabular-nums">{describeAssumption(a)}</p>
+    <li ref={ref} className={cx("arow", highlight && "hl")}>
+      <div className="arow-head">
+        <span className="aid">{a.id}</span>
+        <div className="arow-main">
+          <div className="alab">
+            {a.label}
+            {a.source && <Src kind={SOURCE_KIND[a.source]} />}
+          </div>
+          <div className="adesc">{describeAssumption(a)}</div>
         </div>
         <Button
-          variant="ghost"
+          variant="link"
           size="sm"
           aria-expanded={edit}
           onClick={() => {
@@ -142,39 +129,58 @@ function Row({ a, letter, highlight }: { a: Assumption; letter: Letter; highligh
         </Button>
       </div>
       {edit && (
-        <form className="mt-3" onSubmit={(e) => { e.preventDefault(); save(); }}>
-          <div className="grid grid-cols-3 gap-2">
+        <form onSubmit={save}>
+          <div className="arow-edit">
             {(["low", "base", "high"] as const).map((k) => (
-              <label key={k} className="text-sm text-muted-foreground">
+              <label key={k}>
                 {k === "base" ? "usually" : k}
-                <input className={`${inputCls} mt-1 px-3`} value={v[k]} onChange={(e) => setV({ ...v, [k]: e.target.value })} inputMode="numeric" />
+                <input className="field-input" value={v[k]} onChange={(e) => setV({ ...v, [k]: e.target.value })} inputMode="numeric" />
               </label>
             ))}
           </div>
-          {err && <p className="mt-2 text-sm text-destructive" role="alert">{err}</p>}
-          <Button type="submit" className="mt-3">Save and re-run</Button>
+          {err && (
+            <p className="aerr" role="alert">
+              {err}
+            </p>
+          )}
+          <div className="arow-edit-foot">
+            <Button type="submit" variant="primary" size="sm">
+              Save and re-run
+            </Button>
+          </div>
         </form>
       )}
     </li>
   );
 }
 
+function AssumptionList({ path, highlight }: { path: PathCard; highlight?: string }) {
+  const f = useMemo(() => pathFigures(path), [path]);
+  return (
+    <>
+      <div className="m36">
+        <span>Month 36</span> bad {formatMoney(end(f.bad))} · likely {formatMoney(end(f.likely))} · good {formatMoney(end(f.good))}
+      </div>
+      <p className="sub">
+        Cash in the business at the start: {formatMoney(path.startingCash)}. The bad case uses low income and high costs; the good
+        case the reverse.
+      </p>
+      <ul className="arows">
+        {path.assumptions.map((a) => (
+          <AssumptionRow key={a.id} a={a} letter={path.letter} highlight={highlight === a.id} />
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** The assumptions behind one path, each with its source and an edit. */
 export function AssumptionsPanel() {
-  const { panel, set, pathOf, sims } = useParallax();
+  const { panel, set, pathOf } = useParallax();
   const p = panel ? pathOf(panel.letter) : undefined;
   return (
     <Drawer open={!!panel} onClose={() => set({ panel: null })} title={p ? `Assumptions · ${p.letter}: ${p.name}` : "Assumptions"}>
-      {p && (
-        <div data-path={p.letter}>
-          <CashBand sim={sims[p.letter]} letter={p.letter} />
-          <p className="mt-3 text-sm text-muted-foreground">Cash in the business at the start: {formatMoney(p.startingCash)}. The bad case uses low income and high costs; the good case the reverse.</p>
-          <ul className="mt-4 space-y-1">
-            {p.assumptions.map((a) => (
-              <Row key={a.id} a={a} letter={p.letter} highlight={panel?.rowId === a.id} />
-            ))}
-          </ul>
-        </div>
-      )}
+      {p && <AssumptionList path={p} highlight={panel?.rowId} />}
     </Drawer>
   );
 }

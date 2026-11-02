@@ -94,15 +94,20 @@ export const FIELD_DEFAULTS: Partial<Record<FieldKey, unknown>> = {
   goals: "cash safety",
 };
 
-// /api/intake returns { value, quote } for text fields; the screens show plain values.
-function toScreenFields(ex: Extraction): Partial<Record<FieldKey, unknown>> {
-  const out: Partial<Record<FieldKey, unknown>> = {};
+// /api/intake returns { value, quote } for text fields; the screens show plain values and keep each quote beside them.
+function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKey, unknown>>; quotes: Partial<Record<FieldKey, string>> } {
+  const fields: Partial<Record<FieldKey, unknown>> = {};
+  const quotes: Partial<Record<FieldKey, string>> = {};
   for (const [key, field] of Object.entries(ex) as [FieldKey, Extraction[FieldKey]][]) {
     if (!field) continue;
-    if ("low" in field) out[key] = field;
-    else out[key] = Array.isArray(field.value) ? field.value.join(", ") : field.value;
+    if ("low" in field) {
+      fields[key] = field;
+      continue;
+    }
+    fields[key] = Array.isArray(field.value) ? field.value.join(", ") : field.value;
+    if (field.quote) quotes[key] = field.quote;
   }
-  return out;
+  return { fields, quotes };
 }
 
 async function intake(text: string): Promise<IntakeResponse> {
@@ -114,10 +119,12 @@ async function intake(text: string): Promise<IntakeResponse> {
     });
     const data = (await res.json()) as ApiIntake;
     if (!data.ok) return { ok: true, mode: "fixture", fields: {}, missing: [...ASK_WHEN_UNREAD], notice: data.error };
+    const screen = toScreenFields(data.fields);
     return {
       ok: true,
       mode: data.mode,
-      fields: toScreenFields(data.fields),
+      fields: screen.fields,
+      quotes: screen.quotes,
       missing: data.missing.filter((k) => k !== "decision"),
       notice:
         data.notice ?? (data.mode === "fixture" ? "Demo mode: no model is connected yet, so only the demo story is read for you." : undefined),
@@ -154,7 +161,7 @@ async function paths(profile: Profile): Promise<PathCard[]> {
   const built = buildProfile(toExtraction(profile));
   if (built.decisionType === null) throw new Error("Choose a kind of decision first");
   lastDecision = built.decisionType;
-  const cards = templatePaths(built);
+  const cards = templatePaths(built).map((c) => ({ ...c, avatarUrl: `/avatars/${c.letter}.png` }));
   for (const c of cards) lastPaths.set(c.id, c);
   return cards;
 }

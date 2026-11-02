@@ -69,6 +69,8 @@ export interface IntakeResponse {
   mode: "model" | "fixture";
   fields: Partial<Record<FieldKey, unknown>>;
   missing: FieldKey[];
+  /** The founder's own words for each text field, kept beside the value. */
+  quotes?: Partial<Record<FieldKey, string>>;
   notice?: string;
 }
 

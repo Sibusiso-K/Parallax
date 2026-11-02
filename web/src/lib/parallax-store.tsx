@@ -38,8 +38,11 @@ interface State {
   story: string;
   intake: IntakeResponse | null;
   fields: Partial<Record<FieldKey, unknown>>;
+  quotes: Partial<Record<FieldKey, string>>;
   assumed: FieldKey[];
   missing: FieldKey[];
+  /** Fields the founder answered as a follow-up question. */
+  followed: FieldKey[];
   paths: PathCard[];
   active: Letter;
   chats: Record<Letter, Msg[]>;
@@ -61,8 +64,10 @@ const initial: State = {
   story: "",
   intake: null,
   fields: {},
+  quotes: {},
   assumed: [],
   missing: [],
+  followed: [],
   paths: [],
   active: "A",
   chats: { A: [], B: [], C: [] },
