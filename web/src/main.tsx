@@ -1,5 +1,5 @@
 // UI generated with Lovable on 30 Oct 2026; restyled on 2 Nov 2026 in the marketplace-style preview branch.
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { ParallaxProvider, useParallax } from "@/lib/parallax-store";
@@ -26,6 +26,10 @@ const SCREENS = {
 
 /** These screens come before the business is read, so they stand alone; the rest sit inside the Control Room frame. */
 const STANDALONE = new Set(["start", "intake", "generating"]);
+
+// The immersive 3D world loads only on ?world, as its own chunk, so the main app's first screen stays small.
+const World = lazy(() => import("./immersive/World"));
+const wantsWorld = new URLSearchParams(location.search).has("world");
 
 function Shell() {
   const { step, paths, reset } = useParallax();
@@ -59,8 +63,14 @@ function Shell() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ParallaxProvider>
-      <Shell />
-    </ParallaxProvider>
+    {wantsWorld ? (
+      <Suspense fallback={null}>
+        <World />
+      </Suspense>
+    ) : (
+      <ParallaxProvider>
+        <Shell />
+      </ParallaxProvider>
+    )}
   </StrictMode>,
 );
