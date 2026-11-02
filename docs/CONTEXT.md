@@ -115,7 +115,7 @@ What carries over unchanged: the engine, the three cases, figures from code, the
 - **Lethabo Hoaeane** (GitHub LethaboMH14, collaborator on the repo).
 - **Roles, agreed 26 Oct** ([ROLES.md](ROLES.md)): Sibusiso leads UI and UX, the back end (including the simulation engine) and API integrations; Lethabo leads avatars, API integrations, feature integration (including the figure guard and traceability) and security.
 - Team rule from SONAR: no more than two overlapping builds at once; every entry must leave a reusable artifact.
-- Our "Build for Your World" story (since 1 Nov): we are founders, building the decision tool we need, in South Africa, where about three million small businesses make high-stakes cash decisions with little room for error (FOUNDERS.md §2).
+- Our "Build for Your World" story (since 1 Nov): we are founders, building the decision tool we need, in South Africa, where about three million MSMEs (micro, small and medium enterprises) make high-stakes cash decisions with little room for error (FOUNDERS.md §2).
 
 ## 5. Official Participant Guide (read 26 Oct 2026)
 

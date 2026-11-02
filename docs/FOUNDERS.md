@@ -17,7 +17,7 @@ Confidence labels follow [CONTEXT.md](CONTEXT.md): **confirmed** (read on the or
 
 | Finding | Figure | Label | Source |
 |---|---|---|---|
-| Startups rarely fail for one reason; lack of market need and running out of cash are near the top of founders' own post-mortems | "No market need" in 42% of 101 post-mortems (2018 edition); "ran out of cash" in about 29% of a later 242-letter update. Figures vary by edition, and the sample is founders who chose to publish | reported | CB Insights, *Top reasons startups fail* |
+| Startups rarely fail for one reason; lack of market need and running out of cash are near the top of founders' own post-mortems | "No market need" and running out of cash are the most-cited reasons in CB Insights' post-mortem studies. The shares vary by edition and were not checked against the primary report, so no percentage is quoted here. The sample is founders who chose to publish | reported | CB Insights, *Top reasons startups fail* |
 | Scaling ahead of the business is a common killer of high-growth startups | 74% of high-growth internet startups that failed had scaled prematurely, in a dataset of more than 3,200 (2011) | reported | Startup Genome report, via GeekWire and Steve Blank |
 | Most businesses do not last | 34.7% of US establishments born in 2013 were still operating in 2023 | confirmed (headline) | US Bureau of Labor Statistics, *The Economics Daily*, 2024 |
 | South Africa has about three million small, micro and medium enterprises | About 3 million (2024) | reported | FinScope MSME Survey 2024, via Trialogue |
@@ -25,7 +25,7 @@ Confidence labels follow [CONTEXT.md](CONTEXT.md): **confirmed** (read on the or
 | South African small businesses fail early | "70 to 80% fail within five years" | unverified | Widely repeated (Business Report, 2023, credits the University of the Western Cape); no original study found |
 | Many keep no financial records | 59% keep financial records | reported | FinScope MSME South Africa 2024 results deck |
 | Cash flow is a standing problem | 43% of small businesses call cash flow a problem; 74% say it stayed the same or got worse in 12 months (2025) | reported (vendor survey) | QuickBooks survey, via Stacker |
-| Late payment is a South African problem in particular | 95,399 government invoices older than 30 days, worth R12.4 billion, unpaid at the end of Q2 2025; private-sector terms of 90 to 120 days are common | reported | National Treasury data and industry comment, via SA press |
+| Late payment is a South African problem in particular | R12.4 billion of government invoices left unpaid for more than 30 days (National Treasury data); private-sector payment cycles of 90 to 120 days are standard | reported | Zawya, citing National Treasury data |
 | Getting paid on time worries owners most | 48% of SA small businesses worried most about overdue invoices and cash flow (2017) | reported (vendor survey) | Xero, via CBN |
 | Most small businesses cannot afford a finance chief | The premise of Mastercard's "Virtual CFO" for small businesses (announced 10 Mar 2026) | reported | Fortune |
 | Meta is betting on agents for small businesses | Meta Business Agent on WhatsApp, Instagram and Messenger (3 Jun 2026), piloted in India, Mexico and Brazil; more than one million businesses signed up; Zuckerberg wants agents to "eventually help you run your whole business" | reported | Engadget |

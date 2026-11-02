@@ -38,3 +38,7 @@ node --env-file=<repo>/.env.local generate-avatars.mjs
 ```
 
 The script never prints the key, and it writes the full-size images beside itself, where `.gitignore` keeps them out of the repo. Resize them to 480 px before committing.
+
+## Fonts
+
+The pages use Segoe UI and Consolas, both installed with Windows, and no web font is loaded. On another system the fallbacks (`system-ui` and the generic monospace) are used, so line breaks may differ; the PDF is the reference.

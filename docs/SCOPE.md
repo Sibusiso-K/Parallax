@@ -105,9 +105,9 @@ The screen always says: "One possible future, not a prediction."
 
 | Meta capability | How Parallax uses it beyond a basic call | Status |
 |---|---|---|
-| Muse Spark 1.3 (Muse Wonder behind a flag) | An **agent loop with tools and verification**: the intake agent fills a strict schema with quotes that code checks against the founder's text; the path planner proposes paths and assumptions as structured output; each path's founder agent calls tools (`get_figure`, `remember`) instead of doing arithmetic; every reply passes the figure guard and citation check before the founder sees it. Several agents with different facts talk about the same business. | Intake live behind a switch; agents in progress (F10) |
-| Muse Image | One founder avatar per path: a base portrait, then an edit per path so the founder stays recognisable while the setting follows the outcome | In progress (F9) |
-| Muse Voice Transcribe | Spoken intake, transcript confirmed before anything is extracted | Must ship (cut 5 in PLAN.md §5 if needed) |
+| Muse Spark 1.3 (Muse Wonder behind a flag) | An **agent loop with tools and verification**: the intake agent fills a strict schema with quotes that code checks against the founder's text; the path planner proposes paths and assumptions as structured output (today the paths come from code templates; the model's proposals are planned); each path's founder agent calls tools (`get_figure`, `remember`) instead of doing arithmetic; every reply will pass the figure guard and citation check before the founder sees it (planned, F11). Several agents with different facts talk about the same business. | Intake live behind a switch; founder agents not started (F10) |
+| Muse Image | One founder avatar per path: a base portrait, then an edit per path so the founder stays recognisable while the setting follows the outcome | Portraits for the mockup done; in-app avatars not started (F9) |
+| Muse Voice Transcribe | Spoken intake, transcript confirmed before anything is extracted | Not started; must ship (cut 5 in PLAN.md §5 if needed) |
 | Structured output | Strict JSON schemas for intake, paths, assumptions and the decision memo | Live for intake |
 | Open weights | Stretch goal 7 above | **Stretch only** |
 

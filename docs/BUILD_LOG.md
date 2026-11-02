@@ -172,3 +172,28 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 
 **Next**
 - Figure guard (F11) and the agents (F10) are the next engine pieces.
+
+## Day 8 · Mon 2 Nov 2026
+
+**Product code written today:** yes (engine tests and the review fixes on #8 and #9).
+
+**Built** (with branches; PR links once opened)
+- Engine tests: every backend export is named by a test, and the stress timeout scales with the run count (`feat/founder-pivot`, commit ede2bdc). 141 offline tests pass; the typecheck and the build pass.
+- Review notes from Lethabo on PR #8 and PR #9 addressed: trace checks show "not run" until the code runs them; a text that names two decision kinds asks the founder instead of guessing; the compare view shows when the late money is paid back; the competitor facts that could be checked are corrected (Xero's 180-day horizon is not verified; QuickBooks' feature is Cashflow Forecasting 2.0); "small businesses" is "MSMEs" where the figure is about MSMEs.
+- Mockup 5 v2 (the founder Control Room, four pages) built from engine figures, with four founder portraits from Muse Image.
+
+**Meta models used today:** muse-image-1.0 (Muse Image), four calls for the founder portraits in Mockup 5 v2: one base portrait, then one edit per path. No chat model was called.
+
+**Decisions** (who decided)
+- Generate the four portraits, after the cost was explained (about USD 0.04): Sibusiso.
+- X post owners: Sibusiso posts, Lethabo reposts, as DEMO.md and FEATURES.md already said; PLAN.md now matches. For Sibusiso and Lethabo to confirm.
+
+**Blockers and risks**
+- Founder agents (F10), in-app avatars (F9) and the figure guard (F11) are not built; the app shows letter badges where the portraits will go.
+- The 3-minute video depends on F9 and F10. A go/no-go on Tue 3 Nov at 12:00 is proposed in PLAN.md §3A.
+
+**Credits spent today (USD):** Meta about 0.04 (four Muse Image calls at USD 0.01 each) · Baseten none · Modal none.
+
+**Next**
+- Lethabo re-reviews PR #8 and PR #9.
+- F10, F9 and F11, in time for the go/no-go.
