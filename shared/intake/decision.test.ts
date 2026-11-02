@@ -10,12 +10,15 @@ describe('detectDecision', () => {
     expect(detectDecision('Should we hire someone since we got a new client?')).toMatchObject({ value: 'hire' });
     expect(detectDecision('Is it time to hire a second cook?')).toMatchObject({ value: 'hire' });
     expect(detectDecision('Should I take on someone to do deliveries?')).toMatchObject({ value: 'hire' });
+    // "take on a" alone is not a hire: the demo's own decision label is a contract that says "take on a".
+    expect(detectDecision('Take on a 12-month corporate lunch contract')).toMatchObject({ value: 'contract' });
     expect(detectDecision('Should we raise our prices by 10%?')).toMatchObject({ value: 'pricing', quote: 'raise our prices' });
     expect(detectDecision('I want to charge more for weekend orders')).toMatchObject({ value: 'pricing' });
   });
 
-  it('treats a hire inside a contract decision as part of the contract', () => {
-    expect(detectDecision('Should I hire a cook to take the contract?')).toMatchObject({ value: 'contract' });
+  it('asks rather than guesses when the text names two kinds', () => {
+    expect(detectDecision('Should I hire a cook to take the contract?')).toBeNull();
+    expect(detectDecision('Raise prices for my corporate client')).toBeNull();
   });
 
   it('gives the matched words as the quote, exactly as written', () => {

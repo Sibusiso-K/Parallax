@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applySetback, drivers, figureTable, lowestCash, milestones, runwayMonths, setbackImpact, setbackMonth, worstSetback } from './analysis.js';
+import { applySetback, drivers, figureTable, latePaidFromMonth, lowestCash, milestones, runwayMonths, setbackImpact, setbackMonth, worstSetback } from './analysis.js';
 import { simulate } from './simulate.js';
 import { DEMO_EXTRACTION } from '../intake/fixture.js';
 import { templatePaths } from '../paths/templates.js';
@@ -100,6 +100,8 @@ describe('setbacks', () => {
       ['cost', 3, 4],
       ['income', 5, 6],
     ]);
+    expect(latePaidFromMonth(offered)).toBe(5);
+    expect(latePaidFromMonth(lean)).toBe(8); // no contract: the default month 6, then the two late months
     expect(lean.assumptions).toHaveLength(5);
   });
 
@@ -123,6 +125,7 @@ describe('figure table', () => {
     expect(t['B.driver.B1']).toBe(648000);
     expect(t['B.setback.late-payment.lowest']).toBe(-62000);
     expect(t['B.setback.late-payment.runsOut']).toBe(4);
+    expect(t['B.setback.late-payment.paidFromMonth']).toBe(5);
     expect(t['B.milestone.back-to-start.likely']).toBe(5);
     expect(t['B.B6.base']).toBe(60000);
     expect(Object.values(t).every(Number.isFinite)).toBe(true);

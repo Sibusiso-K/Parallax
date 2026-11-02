@@ -3,6 +3,7 @@ import { LETTERS, useParallax } from "@/lib/parallax-store";
 import { formatMoney } from "@/lib/format";
 import type { Simulation } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { latePaidFromMonth } from "../../../../shared/engine/analysis";
 import { Avatar, Button, LetterBadge, ScreenTitle, at, inputCls } from "./shared";
 
 const range = (s: Simulation, m: number) => `${formatMoney(at(s, "bad", m))} to ${formatMoney(at(s, "good", m))} (likely ${formatMoney(at(s, "likely", m))})`;
@@ -22,12 +23,13 @@ function runsOut(s: Simulation) {
 }
 
 export function CompareScreen() {
-  const { paths, sims, comfort, pinned, go } = useParallax();
+  const { paths, sims, comfort, pinned, go, pathOf } = useParallax();
   const rows: [string, (l: (typeof LETTERS)[number]) => string][] = [
     ["Cash at month 12", (l) => range(sims[l], 12)],
     ["Cash at month 36", (l) => range(sims[l], 36)],
     ["Lowest cash", (l) => `${lowest(sims[l], "likely")} (likely); ${worst(sims[l])}`],
     ["Cash runs out", (l) => runsOut(sims[l])],
+    ["Late payment (stress test): money back from", (l) => `Month ${latePaidFromMonth(pathOf(l)!)}`],
     ["Your comfort", (l) => (comfort[l].length ? `${comfort[l].at(-1)} of 5` : "Not rated yet")],
     ["Pinned quote", (l) => (pinned[l] ? `“${pinned[l]}”` : "None pinned")],
   ];
@@ -54,6 +56,9 @@ export function CompareScreen() {
           </tbody>
         </table>
       </div>
+      <p className="mt-4 text-sm text-muted-foreground">
+        Some assumptions behind these figures are placeholders, not yet checked against South African sources. The table shows ranges and stress tests, not forecasts.
+      </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Button variant="ghost" onClick={() => go("chat")}>Back to chat</Button>
         <Button className="ml-auto" onClick={() => go("comfort")}>Comfort check</Button>

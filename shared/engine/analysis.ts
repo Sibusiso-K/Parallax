@@ -141,6 +141,11 @@ export function setbackMonth(path: PathInput, id: SetbackId): number {
   return s.defaultMonth;
 }
 
+/** The month the held-back money is paid again in the late-payment stress test: latePaymentMonths after it is held. */
+export function latePaidFromMonth(path: PathInput): number {
+  return setbackMonth(path, 'late-payment') + s.latePaymentMonths;
+}
+
 /**
  * Applies one setback as a stress test: extra lines, timed from `month` and sized from the path itself (the gross
  * profit or contract money it holds back) or from the placeholder amounts in za.json. Money held back is written as a
@@ -219,7 +224,8 @@ export function worstSetback(path: PathInput): SetbackImpact {
  * Keys: <path>.start, <path>.cash.m12.<case>, <path>.cash.m36.<case>, <path>.income.m1.<case>, <path>.costs.m1.<case>,
  * <path>.lowest.<case>, <path>.lowestMonth.<case>, <path>.milestone.<id>.<case>, <path>.runway,
  * <path>.driver.<assumptionId>, <path>.setback.<setbackId>.lowest, <path>.setback.<setbackId>.end,
- * <path>.setback.<setbackId>.runsOut (only when it does), <path>.<assumptionId>.<low|base|high>.
+ * <path>.setback.<setbackId>.runsOut (only when it does), <path>.setback.late-payment.paidFromMonth,
+ * <path>.<assumptionId>.<low|base|high>.
  * <case> is bad, likely or good. Milestones with no month are left out.
  */
 export function figureTable(path: PathInput): Record<string, number> {
@@ -247,6 +253,7 @@ export function figureTable(path: PathInput): Record<string, number> {
     out[`${path.id}.setback.${id}.end`] = impact.end;
     if (impact.runsOutMonth !== null) out[`${path.id}.setback.${id}.runsOut`] = impact.runsOutMonth;
   }
+  out[`${path.id}.setback.late-payment.paidFromMonth`] = latePaidFromMonth(path);
   for (const a of path.assumptions) {
     out[`${path.id}.${a.id}.low`] = a.low;
     out[`${path.id}.${a.id}.base`] = a.base;

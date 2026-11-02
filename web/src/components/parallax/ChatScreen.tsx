@@ -170,7 +170,7 @@ export function ChatScreen() {
               <p>Model: {m.trace!.model}</p>
               <p>Latency: {m.trace!.latencyMs} ms</p>
               <ul className="mt-1">
-                {m.trace!.checks.map((c) => <li key={c.name}>{c.ok ? "✓" : "✗"} {c.name}</li>)}
+                {m.trace!.checks.map((c) => <li key={c.name}>{c.ok === null ? "–" : c.ok ? "✓" : "✗"} {c.name}{c.ok === null ? " (not run)" : ""}</li>)}
               </ul>
             </li>
           ))}
