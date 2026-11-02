@@ -71,9 +71,36 @@ The app's own "I am 18 or older" box was ticked as test input on the local dev b
 
 Not verified in a browser yet: an edit round trip started inside the room, leave and re-enter, and 390×844 (each covered by unit tests only). The embedded room still uses the old stylised scene and its layout is cramped inside the frame; both are replaced by the photoreal pass. Refresh and Back behave as the whole app already does: no persistence, so a refresh returns to the start screen, and Back leaves the app.
 
+## Phase 3, part 1: the photoreal courtyard (2 Nov 2026)
+
+The user saw the old stylised room after Phase 1 and asked for the photoreal world first, so Phase 3 (photoreal environment) moved ahead of Phase 2 (walking). Choices, made by the user: the courtyard is a real 3D model built in Blender (not photo stations, not AI world generation), and the people are realistic rigged 3D characters (not video).
+
+Approved installs and downloads (user, in chat): group A, Poly Haven CC0 courtyard assets; group B, MPFB 2.0.18 for Blender plus CC0 MakeHuman packs; group C, `@react-three/rapier` 2.2.0 (pinned; pulls `@dimforge/rapier3d-compat` 0.19.2; wrapper licence MIT per its repository, engine Apache-2.0). Every downloaded file is in `assets/provenance.json` (75 files, 434 MB, URL, licence, SHA-256; Poly Haven MD5 and the extensions.blender.org SHA-256 verified). Originals stay unchanged in `assets/source/` (gitignored). MPFB is installed in Blender's `user_default` repository.
+
+What exists now:
+
+- `assets/blender/build_courtyard.py`: deterministic build (seed 20261102). Brick warehouse with the open stainless kitchen behind steel-framed glazing, stock room behind open sage doors, a sunken planted channel with seating steps, a steel bridge with a plank deck and cable railings, a planted wall at the far end, and the five places. Real CC0 photo textures (concrete and deck colour maps toned from measured means of sRGB 86 and 110 toward the reference's lighter surfaces), lit by Poly Haven's `sunset_jhbcentral`, a real HDR photograph of the Johannesburg CBD (-26.205, 28.040), plus a warm low sun. Static architecture is merged to one mesh per material; plants are decimated to about 8k triangles each.
+- `web/public/worlds/courtyard-v1/`: `environment.glb` (18.7 MB), `manifest.json` (places, objects, 21 colliders, lighting), the sky (`joburg_2k.hdr`, `joburg_bg.jpg`) and five Cycles stills used as loading posters and the no-WebGL fallback (`assets/derived-provenance.json`).
+- `web/src/immersive/courtyard/`: strict zod manifest schema (refuses a malformed world), and `Courtyard.tsx`, the R3F scene: one guided camera that eases between places (drag looks around), sky and sun, baked shadows, instanced plants, and pointer hits only on the five interactive objects (contract, pan, fridge, intake desk, memo board).
+- `World.tsx` and `immersive.css`: the Explore layout from the integrated mock-up. The stage carries a place card, path chips and view modes (Walk and VR shown disabled with the reason), plus Places and a separate 1 to 36 month slider. The context panel holds the late-payment switch, baseline versus delay figures, a first-shortfall caution with an icon, Show calculation, the selected object with its engine-validated edit, and the fixture advisor (Hold to talk is disabled with the reason). The old stylised `Scene.tsx` (floating islands, month-tile bridge, glass avatars) is removed.
+
+Evidence (planning pack, `docs/immersive/execution-v1/evidence/`): `photoreal-v1-cycles-{spawn,offer,intake,bridge,memo}.png`, `photoreal-v1-demo-desktop.jpg`, `photoreal-v1-app-explore-desktop.jpg`, `photoreal-v1-app-explore-phone.jpg`. In the app, Explore on the recorded profile shows Path B at R70,000 in month 1, lowest R45,000 and R695,000 at month 36, matching the live app.
+
+Measured frame cost on this laptop (Intel UHD Graphics via ANGLE/D3D11, dev build, forced renders timed with a 1-pixel read-back, pane hidden so frame-rate counters are throttled and unusable):
+
+| Configuration | Draw buffer | Avg / median / p95 (ms) | Draw calls, triangles |
+|---|---|---|---|
+| First version (shadow map every frame, ratio 1.25) | 1102×807 | 38.6 / 38 / 49 | 231, 787,627 |
+| Shadows baked once, plants instanced | 1102×807 | 30.6 / 29.4 / 42.9 | 50, 410,821 |
+| Same, pixel ratio 1 | 882×646 | 20.9 (p95 30.7) | as above |
+| Shipped integrated-GPU setting (ratio 1, PCF), wider pane | 1102×645 | 25.1 / 24 / 36.2 | 55, 411,629 |
+
+Against the pack's desktop target (60 fps, p95 under 22 ms) this is not met on integrated graphics; it is about 40 fps on average. Not verified: a discrete GPU, a phone, a production build, cold-cache download time.
+
+Not done yet, honestly: no people in the courtyard (realistic Ayanda and advisor are next, with MPFB); no walking or collision (Rapier installed, not wired); the Joburg panorama has no sun disc, so the warm sun is an added light, not measured from the photo; light is real-time, without the bounced light of the Cycles renders, so the browser view is flatter than the stills; the environment download (18.7 MB) is above the 15 MB first-payload target.
+
 ## Approvals still needed
 
-- Phase 2 runtime dependency (Rapier) and any later Spark/XR packages: exact versions to be proposed before install.
-- Asset downloads (CC0 textures/HDRIs, MPFB) for Phase 3: item list and sizes to be proposed; disk space is limited.
-- Cloud spending: none authorised; no job proposed yet.
+- Spark, XR or other new runtime packages: none requested yet.
+- Cloud spending: none authorised; no job proposed.
 - Meta API calls: none made; needs a key and usage authorisation.

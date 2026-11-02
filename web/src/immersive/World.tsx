@@ -1,3 +1,4 @@
+import '@fontsource/instrument-serif/400.css';
 import '@fontsource/instrument-serif/400-italic.css';
 import '@fontsource-variable/geist/index.css';
 import '@fontsource-variable/geist-mono/index.css';
@@ -11,8 +12,14 @@ import { EMPTY_MEMO, choiceLabel, evidenceAppendix, memoFooter, type Choice, typ
 import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type CameraStation, type Replay } from './replay';
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
 import { exploreSession } from './session-adapter';
+import { WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
 
-const Scene = lazy(() => import('./Scene'));
+const Courtyard = lazy(() => import('./courtyard/Courtyard'));
+
+/** Where the replay's camera stations stand in the courtyard. */
+const PLACE_FOR_STATION: Record<CameraStation, PlaceId> = { overview: 'spawn', contract: 'offer', bridge: 'bridge', marker: 'bridge', memo: 'memo' };
+const PLACE_ORDER: PlaceId[] = ['spawn', 'offer', 'intake', 'bridge', 'memo'];
+const MONTH_TICKS = [1, 6, 12, 18, 24, 30, 36];
 
 const SUGGESTIONS = ['Why did cash run out here?', 'What is the lowest point?', 'What does the late payment do?'];
 const PATH_ORDER: PathLetter[] = ['B', 'C', 'A'];
@@ -26,7 +33,6 @@ function hasWebGL(): boolean {
   }
 }
 
-const noop = () => {};
 const mq = (q: string) => (typeof matchMedia === 'function' ? matchMedia(q).matches : false);
 
 class Boundary extends Component<{ children: ReactNode; embedded: boolean }, { failed: boolean }> {
@@ -99,28 +105,35 @@ function World({ binding }: { binding?: ExploreBinding }) {
   useEffect(() => {
     onSelection?.({ pathId, stressed, month });
   }, [onSelection, pathId, stressed, month]);
-  const [hover, setHover] = useState<number | null>(null);
   const [answers, setAnswers] = useState<AdvisorAnswer[]>([]);
   const [working, setWorking] = useState(false);
   const [question, setQuestion] = useState('');
   const [evidence, setEvidence] = useState<ResolvedClaim | null>(null);
-  const [sheet, setSheet] = useState<null | 'contract' | 'fridge' | 'pan' | 'memo'>(null);
+  const [sheet, setSheet] = useState<null | 'memo'>(null);
   const [replay, setReplay] = useState<Replay | null>(null);
   const [replayT, setReplayT] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [memo, setMemo] = useState<Memo>(EMPTY_MEMO);
   const [announce, setAnnounce] = useState('');
-  const [mood, setMood] = useState<'idle' | 'speak' | 'point'>('idle');
-  const moodTimer = useRef(0);
-  const flash = useCallback((m: 'speak' | 'point', ms: number) => {
-    setMood(m);
-    window.clearTimeout(moodTimer.current);
-    moodTimer.current = window.setTimeout(() => setMood('idle'), ms);
-  }, []);
-  const [free, setFree] = useState(false);
-  const [stationPick, setStationPick] = useState<CameraStation | null>(null);
   const [editNote, setEditNote] = useState('');
-  const [dockOpen, setDockOpen] = useState(() => !mq('(max-width: 1500px)'));
+  // The courtyard: where the camera stands (places are not months) and the object in focus.
+  const [manifest, setManifest] = useState<CourtyardManifest | null>(null);
+  const [worldError, setWorldError] = useState('');
+  const [sceneReady, setSceneReady] = useState(false);
+  const [place, setPlace] = useState<PlaceId>('spawn');
+  const [focus, setFocus] = useState<ObjectId | null>(null);
+  const [hoverObject, setHoverObject] = useState<ObjectId | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadManifest().then(
+      (m) => live && setManifest(m),
+      (e: Error) => live && setWorldError(e.message),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  const markReady = useCallback(() => setSceneReady(true), []);
 
   // What is on screen: the founder's own exploration, or the replay's frozen shot.
   const shot = replay ? shotAt(replay, replayT).shot : null;
@@ -152,8 +165,19 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
   const select = useCallback((m: number) => {
     setMonth(Math.min(36, Math.max(1, m)));
-    flash('point', 3200);
-  }, [flash]);
+  }, []);
+
+  // Clicking an object in the courtyard focuses it and walks the guided camera to the place it belongs to.
+  const inspect = useCallback(
+    (id: ObjectId) => {
+      setFocus(id);
+      if (manifest) {
+        setPlace(manifest.objects[id].place);
+        say(`${manifest.objects[id].label} selected. Its details are in the panel.`);
+      }
+    },
+    [manifest, say],
+  );
 
   const toggleLever = useCallback(() => {
     const next = !stressed[pathId];
@@ -183,11 +207,10 @@ function World({ binding }: { binding?: ExploreBinding }) {
       if (gate.isCurrent(ticket, currentKey.current)) {
         setAnswers((prev) => [...prev, a]);
         setWorking(false);
-        if (a.status === 'answered') flash('speak', 4200);
         say(a.status === 'answered' ? `Advisor answered on path ${target}.` : a.status === 'declined' ? 'The fixture advisor declined that question.' : 'The answer was withheld because it did not match the simulation.');
       }
     },
-    [flash, gate, say, session],
+    [gate, say, session],
   );
 
   const ask = useCallback(
@@ -267,7 +290,6 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
   const startReplay = () => {
     gate.invalidate();
-    setFree(false);
     setReplay(buildReplay(session));
     setReplayT(0);
     setPlaying(!reduced);
@@ -285,6 +307,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
       if (e.key === 'Escape') {
         setEvidence(null);
         setSheet(null);
+        setFocus(null);
         return;
       }
       if (replay) return;
@@ -311,201 +334,314 @@ function World({ binding }: { binding?: ExploreBinding }) {
     endB: claim({ snapshotKey: k, scenario: 'baseline', metric: 'cash_at_end' }),
     endA: claim({ snapshotKey: k, scenario: 'active', metric: 'cash_at_end' }),
   };
-  const leverLabel = `Client pays ${snapshot.terms.addedDelayMonths || 2} months late`;
+  const delayMonths = snapshot.terms.addedDelayMonths || 2;
   const assumptionOf = (re: RegExp) => snapshot.assumptions.find((a) => re.test(a.label));
   const fridge = assumptionOf(/equipment/i);
   // Contract wording comes from the path's own contract line and the engine's terms, never from the demo story.
   const contractLine = snapshot.baselineAssumptions.find((a) => a.role === 'contract');
   const firstPay = snapshot.terms.firstReceiptMonth;
   const isDemo = session.mode === 'demo';
-  const stage: CameraStation = shot?.station ?? stationPick ?? 'bridge';
+  const shownPlace: PlaceId = shot ? PLACE_FOR_STATION[shot.station] : place;
   const replayOutdated = replay ? isOutdated(replay, session) : false;
   const shotClaims = replay && shot ? resolveShot(session, shot) : [];
   const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
+  const focusInfo = focus && manifest ? manifest.objects[focus] : null;
+  const tickAt = (m: number) => `${((m - 1) / 35) * 100}%`;
 
   return (
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
-      <div className="world__canvas">
-        {webgl ? (
-          <Suspense fallback={<div className="world__loading">Loading the 3D room. The controls on this page work without it.</div>}>
-            <Scene
-              snapshot={snapshot}
-              selectedMonth={shownMonth}
-              station={stage}
-              pulled={isStress}
-              reduced={reduced}
-              lowTier={lowTier}
-              speaking={working}
-              contractText={firstPay ? `Contract · first payment lands in month ${firstPay}` : 'This path declines the contract'}
-              fridgeText={fridge ? `${fridge.label}: R${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} (${fridge.source})` : 'No equipment on this path'}
-              leverLabel={leverLabel}
-              onSelectMonth={inReplay ? noop : select}
-              onHoverMonth={inReplay ? noop : setHover}
-              onLever={inReplay ? noop : toggleLever}
-              onOpenContract={() => setSheet('contract')}
-              onOpenFridge={() => setSheet('fridge')}
-              onOpenPan={() => setSheet('pan')}
-              mood={mood}
-              working={working}
-              panText="Ingredients and packaging: tap to edit"
-              free={free}
-              onContextLost={() => setWebgl(false)}
-            />
-          </Suspense>
-        ) : (
-          <div className="world__nogl" role="note">
-            The 3D room isn't available on this device or was interrupted. Everything below still works: the same figures, advisor, replay and memo.
+      <section className="stage" aria-label="The courtyard">
+        <div className="stage__view">
+          <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />
+          {webgl && manifest && (
+            <Suspense fallback={null}>
+              <Courtyard
+                manifest={manifest}
+                place={shownPlace}
+                selected={focus}
+                hovered={hoverObject}
+                onHover={setHoverObject}
+                onSelect={inspect}
+                reduced={reduced}
+                lowTier={lowTier}
+                onReady={markReady}
+                onContextLost={() => setWebgl(false)}
+              />
+            </Suspense>
+          )}
+          {webgl && !sceneReady && !worldError && (
+            <p className="stage__status" role="status">Loading the 3D courtyard. Until it is ready you see a still render of the same model.</p>
+          )}
+          {(!webgl || worldError) && (
+            <p className="stage__status stage__status--warn" role="note">
+              {worldError || '3D is not available on this device, so this is a still render of the courtyard model.'} The figures, objects and advisor work without it.
+            </p>
+          )}
+        </div>
+
+        <div className="stage__top">
+          <div className="placecard glass">
+            <b>{isDemo ? 'Ayanda’s courtyard' : 'The courtyard'}</b>
+            <span>{binding ? binding.founderLabel : 'Fictional founder'} · 3D model, illustrative setting</span>
+            <div role="tablist" aria-label="Path" className="paths">
+              {PATH_ORDER.map((p) => (
+                <button key={p} role="tab" aria-selected={snapshot.ref.pathId === p} className={`pathchip pathchip--${p}`} onClick={() => switchPath(p)} disabled={inReplay}>
+                  <b>{p}</b> {session.paths[p].name}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-
-      <header className="bar">
-        <div className="bar__brand">
-          {binding ? (
-            <span className="tag tag--bound">{binding.founderLabel} · revision {session.profileRevision}</span>
-          ) : (
-            <>
-              <span className="brand">Parallax</span>
-              <span className="tag">Decision rehearsal · Demo founder: fictional</span>
-              <a className="btn btn--ghost btn--sm" href="/">Open Parallax</a>
-            </>
-          )}
-        </div>
-        <div role="tablist" aria-label="Path" className="tabs">
-          {PATH_ORDER.map((p) => (
-            <button key={p} role="tab" aria-selected={snapshot.ref.pathId === p} className={`tab tab--${p}`} onClick={() => switchPath(p)} disabled={inReplay}>
-              <b>{p}</b> {session.paths[p].name}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <div className="honest" role="note">
-        Stylised characters authored in Blender (not photographs, not a real person). The advisor is a fixture: no model is connected.{' '}
-        {isDemo
-          ? 'Numbers come from the existing engine; template values are placeholders.'
-          : 'Numbers come from the existing engine, run on your confirmed answers; lines marked template or default are placeholders.'}
-      </div>
-
-      {session.profileRevision > 1 && (
-        <div className="honest honest--rev" role="note">Revision {session.profileRevision}: assumptions were edited. Answers and replays made before the edit are historical.</div>
-      )}
-      {hover !== null && !inReplay && (
-        <div className="hovercard glass" role="status">
-          <b>Month {hover}</b> · cash {cellText(snapshot.active.rows[hover - 1]!.cash)}{isStress ? ` (baseline ${cellText(snapshot.baseline.rows[hover - 1]!.cash)})` : ''} · net {cellText(snapshot.active.rows[hover - 1]!.net)}
-          {snapshot.active.rows[hover - 1]!.cash < 0 ? ' · below zero' : ''} <span className="muted small">tap to select</span>
-        </div>
-      )}
-      <section className="left" aria-label="Controls">
-        <h1 className="h1">{session.title}</h1>
-        <p className="sub">Path {snapshot.ref.pathId}: {session.paths[snapshot.ref.pathId].summary}</p>
-
-        <div className="month" role="group" aria-label="Month">
-          <button className="btn btn--round" onClick={() => select(shownMonth - 1)} disabled={inReplay || shownMonth <= 1} aria-label="Previous month">‹</button>
-          <label className="month__label">
-            <span>Month <b>{shownMonth}</b> of 36{hover && hover !== shownMonth ? ` · hovering ${hover}` : ''}</span>
-            <input type="range" min={1} max={36} value={shownMonth} disabled={inReplay} onChange={(e) => select(Number(e.target.value))} aria-valuetext={`Month ${shownMonth}`} />
-          </label>
-          <button className="btn btn--round" onClick={() => select(shownMonth + 1)} disabled={inReplay || shownMonth >= 36} aria-label="Next month">›</button>
+          <div className="modes glass" role="group" aria-label="View mode">
+            <button aria-pressed="true">Guided</button>
+            <button disabled title="Walking with collision is the next build step">Walk</button>
+            <button disabled title="Not offered until it is tested on a real headset">VR</button>
+          </div>
         </div>
 
-        <button className={`btn btn--lever ${isStress ? 'is-on' : ''}`} aria-pressed={isStress} onClick={toggleLever} disabled={inReplay}>
-          <span className="lever-ico" aria-hidden="true">{isStress ? '▾' : '▴'}</span>
-          {isStress ? 'Late payment applied. Reset' : 'Pull the lever: client pays 2 months late'}
-        </button>
-        <p className="rule">
-          {isStress ? snapshot.terms.stressRule : 'Baseline. The lever applies the engine’s late-payment rule: receipts due in two months are held back, then paid two months later.'}
-          {snapshot.terms.firstReceiptMonth ? ` First contract payment lands in month ${snapshot.terms.firstReceiptMonth}.` : ' This path has no contract.'}
+        <div className="stage__bottom glass">
+          <div className="places" role="group" aria-label="Places in the courtyard">
+            <span className="rowlabel">Places</span>
+            {PLACE_ORDER.map((id) => (
+              <button
+                key={id}
+                aria-pressed={shownPlace === id}
+                disabled={inReplay}
+                onClick={() => {
+                  setPlace(id);
+                  say(`Moved to ${manifest?.places[id].label ?? id}.`);
+                }}
+              >
+                {manifest?.places[id].label ?? id}
+              </button>
+            ))}
+            <span className="hint">Drag to look · click an object</span>
+          </div>
+          <div className="months">
+            <span className="rowlabel">
+              Month <b>{shownMonth}</b> of 36
+            </span>
+            <div className="months__track">
+              <input type="range" min={1} max={36} value={shownMonth} disabled={inReplay} onChange={(e) => select(Number(e.target.value))} aria-label="Month" aria-valuetext={`Month ${shownMonth} of 36`} />
+              <div className="months__ticks" aria-hidden="true">
+                {MONTH_TICKS.map((m) => (
+                  <span key={m} style={{ left: tickAt(m) }}>
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside className="panel" aria-label="The payment gap, from the engine">
+        <h2 className="panel__h">Explore the payment gap</h2>
+        <p className="panel__sub">
+          Path {snapshot.ref.pathId} · Month {shownMonth} · {isStress ? 'late payment applied' : 'baseline'}
         </p>
-        <div className="objects" role="group" aria-label="Move the camera">
-          {(['overview', 'contract', 'bridge', 'marker'] as CameraStation[]).map((st) => (
-            <button key={st} className={`btn btn--ghost btn--sm ${stationPick === st && !free ? 'is-on' : ''}`} onClick={() => { setFree(false); setStationPick(st); }} disabled={inReplay} aria-pressed={stationPick === st && !free}>
-              {st === 'overview' ? 'Overview' : st === 'contract' ? 'The offer' : st === 'bridge' ? 'On the bridge' : 'The marker'}
-            </button>
-          ))}
-          <button className={`btn btn--ghost btn--sm ${free ? 'is-on' : ''}`} onClick={() => setFree((f) => !f)} aria-pressed={free} disabled={inReplay}>Free camera{free ? ': drag to orbit' : ''}</button>
-        </div>
-        <div className="objects" role="group" aria-label="Objects in the room">
-          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('contract')}>Contract terms</button>
-          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('fridge')}>Fridge</button>
-          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('pan')}>Ingredients</button>
-        </div>
-        <p className="keys">Keys: ← → month · L lever · Esc close</p>
-      </section>
+        <p className="note">
+          {isDemo ? 'Fictional demo founder. ' : 'Your confirmed answers. '}Every figure comes from the engine
+          {session.profileRevision > 1 ? `; revision ${session.profileRevision}, so earlier answers are historical` : ''}.
+        </p>
 
-      <section className="readings glass" aria-label="Readings, from the engine" aria-live="off">
-        <div className="readings__head">
-          <span>Readings · {isStress ? 'baseline vs late payment' : 'baseline'} · path {snapshot.ref.pathId}</span>
-          <span className="chip">{MATCHED_LABEL}</span>
-        </div>
-        <div className="rgrid">
-          <Cell title={`Cash, end of month ${shownMonth}`} a={cells.cashB} b={isStress ? cells.cashA : null} onOpen={setEvidence} />
-          <Cell title="Lowest cash" a={cells.lowB} b={isStress ? cells.lowA : null} onOpen={setEvidence} />
-          <Cell title="Cash first runs out" a={isStress ? null : cells.first} b={isStress ? cells.first : null} onOpen={setEvidence} />
-          <Cell title="Cash, month 36" a={cells.endB} b={isStress ? cells.endA : null} onOpen={setEvidence} />
-        </div>
-        {isStress && snapshot.active.firstShortfall !== null && <p className="qual">After the first shortfall the bridge continues as a projection. The engine does not model whether the business keeps trading or finds funding.</p>}
-        <details className="table">
-          <summary>All 36 months as a table</summary>
-          <table>
-            <thead><tr><th>Month</th><th>Baseline cash</th>{isStress && <th>Late-payment cash</th>}</tr></thead>
-            <tbody>
-              {snapshot.baseline.rows.map((r, i) => (
-                <tr key={r.month} className={r.month === shownMonth ? 'is-sel' : ''}>
-                  <td><button className="linkish" onClick={() => select(r.month)} disabled={inReplay}>{r.month}</button></td>
-                  <td>{cellText(r.cash)}</td>
-                  {isStress && <td className={snapshot.active.rows[i]!.cash < 0 ? 'neg' : ''}>{cellText(snapshot.active.rows[i]!.cash)}{snapshot.active.rows[i]!.cash < 0 ? ' (below zero)' : ''}</td>}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </details>
-      </section>
-
-      <aside className={`dock glass ${dockOpen ? '' : 'is-closed'}`} aria-label="Ask the advisor">
-        <button className="dock__toggle" onClick={() => setDockOpen((o) => !o)} aria-expanded={dockOpen}>
-          {dockOpen ? 'Hide advisor' : 'Ask the advisor'}
+        <button className={`switch ${isStress ? 'is-on' : ''}`} role="switch" aria-checked={isStress} onClick={toggleLever} disabled={inReplay}>
+          <span>
+            Late payment<small>Client pays {delayMonths} months late</small>
+          </span>
+          <i aria-hidden="true" />
         </button>
-        {dockOpen && (
-          <>
-            <p className="fixture">{FIXTURE_LABEL}</p>
-            <div className="chips">
-              {SUGGESTIONS.map((s) => (
-                <button key={s} className="chip chip--btn" onClick={() => ask(s)} disabled={inReplay}>{s}</button>
-              ))}
-            </div>
-            <form
-              className="ask"
-              onSubmit={(e) => {
-                e.preventDefault();
-                ask(question);
-              }}
-            >
-              <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about this month, the lowest point or the delay" aria-label="Your question" disabled={inReplay} />
-              <button className="btn" type="submit" disabled={inReplay || !question.trim()}>Ask</button>
-            </form>
-            <div className="answers" aria-live="polite">
-              {working && <p className="working">Running the local tools…</p>}
-              {answers.slice(-4).map((a, i) => (
-                <AnswerCard key={i} a={a} onEvidence={setEvidence} onCarry={(t) => carry(a, t)} canCarry={a.status === 'answered' && session.registry.get(a.snapshotKey)?.ref.profileRevision === session.profileRevision} historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision} fromPath={a.pathId} />
-              ))}
-              {answers.length === 0 && !working && <p className="muted">Try “Why did cash run out here?” after pulling the lever.</p>}
-            </div>
-          </>
-        )}
-      </aside>
 
-      <footer className="foot">
-        <div className="foot__actions">
-          {!inReplay ? (
-            <button className="btn btn--ghost" onClick={startReplay}>▶ Play 15 s replay</button>
-          ) : (
-            <button className="btn btn--ghost" onClick={closeReplay}>Close replay</button>
+        <div className="evidence">
+          <h3>Cash at month {shownMonth}</h3>
+          <div className="pair">
+            <Figure c={cells.cashB} title="Baseline" onOpen={setEvidence} />
+            {isStress && <Figure c={cells.cashA} title="With the delay" stress onOpen={setEvidence} />}
+          </div>
+          {isStress && snapshot.active.firstShortfall !== null && (
+            <p className="caution" role="note">
+              <b>First shortfall: month {snapshot.active.firstShortfall}.</b> Later months are still projected; the engine does not model funding or closing.
+            </p>
           )}
-          <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
+          <dl className="minor">
+            <dt>Lowest cash</dt>
+            <dd>
+              {cells.lowB && <button className="linkish" onClick={() => setEvidence(cells.lowB)}>{cells.lowB.text}</button>}
+              {isStress && cells.lowA && (
+                <>
+                  {' · '}
+                  <button className="linkish" onClick={() => setEvidence(cells.lowA)}>{cells.lowA.text} with the delay</button>
+                </>
+              )}
+            </dd>
+            <dt>Month 36</dt>
+            <dd>
+              {cells.endB && <button className="linkish" onClick={() => setEvidence(cells.endB)}>{cells.endB.text}</button>}
+              {isStress && cells.endA && (
+                <>
+                  {' · '}
+                  <button className="linkish" onClick={() => setEvidence(cells.endA)}>{cells.endA.text} with the delay</button>
+                </>
+              )}
+            </dd>
+          </dl>
+          <button className="calc" onClick={() => setEvidence((isStress ? cells.cashA : cells.cashB) ?? null)}>
+            Show calculation <span aria-hidden="true">›</span>
+          </button>
+          <p className="rule">
+            {isStress ? snapshot.terms.stressRule : 'The switch applies the engine’s late-payment rule to this path.'}
+            {firstPay ? ` The first contract payment lands in month ${firstPay}.` : ' This path has no contract.'}
+          </p>
+          <details className="table">
+            <summary>All 36 months as a table</summary>
+            <table>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Baseline cash</th>
+                  {isStress && <th>With the delay</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {snapshot.baseline.rows.map((r, i) => (
+                  <tr key={r.month} className={r.month === shownMonth ? 'is-sel' : ''}>
+                    <td>
+                      <button className="linkish" onClick={() => select(r.month)} disabled={inReplay}>
+                        {r.month}
+                      </button>
+                    </td>
+                    <td>{cellText(r.cash)}</td>
+                    {isStress && (
+                      <td className={snapshot.active.rows[i]!.cash < 0 ? 'neg' : ''}>
+                        {cellText(snapshot.active.rows[i]!.cash)}
+                        {snapshot.active.rows[i]!.cash < 0 ? ' (below zero)' : ''}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
         </div>
-        <span>{isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction</span>
-      </footer>
+
+        {focus && focusInfo && (
+          <section className="object" aria-label={focusInfo.label}>
+            <div className="object__head">
+              <span className="chip">Selected object</span>
+              <b>{focusInfo.label}</b>
+              <button className="x" onClick={() => setFocus(null)} aria-label="Close the object">
+                ×
+              </button>
+            </div>
+            {focus === 'contract' && (
+              <>
+                <p>
+                  {contractLine && firstPay
+                    ? `Contract payments run from month ${firstPay} to month ${contractLine.toMonth ?? 36}. The first payment lands ${snapshot.terms.paymentLagMonths} months after work starts.`
+                    : 'This path declines the contract.'}
+                </p>
+                <EditField session={session} pathId={snapshot.ref.pathId} role="contract" label="Monthly contract value (rand)" onApply={applyEdit} note={editNote} />
+                <p className="muted small">Payment terms change only through a reviewed edit of the story, not here. An edit applies to the path shown.</p>
+              </>
+            )}
+            {focus === 'pan' && (
+              <>
+                <p>The direct cost of the contract work on this path: a template share of the contract’s value, marked as template.</p>
+                <EditField session={session} pathId={snapshot.ref.pathId} role="direct" label="Direct costs per month (rand)" onApply={applyEdit} note={editNote} />
+              </>
+            )}
+            {focus === 'fridge' && (
+              <>
+                <p>{fridge ? `${fridge.label}. Base R${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} (${fridge.source}).` : 'This path does not buy equipment.'}</p>
+                <EditField session={session} pathId={snapshot.ref.pathId} role="equipment" label="Equipment cost (rand)" onApply={applyEdit} note={editNote} />
+                <p className="muted small">Rent versus buy is the difference between paths B and C: switch path to compare.</p>
+              </>
+            )}
+            {focus === 'intake_desk' && (
+              <>
+                <p>What path {snapshot.ref.pathId} assumes{isDemo ? ' for the demo founder' : ', from your confirmed answers'}:</p>
+                <ul className="assumptions">
+                  {snapshot.baselineAssumptions.map((a) => (
+                    <li key={a.id}>
+                      <span>{a.label}</span>
+                      <span className="mono">
+                        {a.low === a.high ? cellText(a.base) : `${cellText(a.low)}–${cellText(a.high)}`}
+                      </span>
+                      <span className="muted small">{a.source ?? ''}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {focus === 'memo' && (
+              <>
+                <p>Your decision in your own words, with an appendix of exactly the figures you looked at.</p>
+                <button className="btn" onClick={() => setSheet('memo')}>
+                  Write my decision memo
+                </button>
+              </>
+            )}
+          </section>
+        )}
+
+        <section className="advisor" aria-label="Ask the advisor">
+          <h3 className="panel__h3">Ask the advisor</h3>
+          <p className="fixture">{FIXTURE_LABEL}</p>
+          <div className="answers" aria-live="polite">
+            {working && <p className="working">Running the local tools…</p>}
+            {answers.slice(-3).map((a, i) => (
+              <AnswerCard
+                key={i}
+                a={a}
+                onEvidence={setEvidence}
+                onCarry={(t) => carry(a, t)}
+                canCarry={a.status === 'answered' && session.registry.get(a.snapshotKey)?.ref.profileRevision === session.profileRevision}
+                historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision}
+                fromPath={a.pathId}
+              />
+            ))}
+          </div>
+          <div className="chips">
+            {SUGGESTIONS.map((s) => (
+              <button key={s} className="chip chip--btn" onClick={() => ask(s)} disabled={inReplay}>
+                {s}
+              </button>
+            ))}
+          </div>
+          <form
+            className="ask"
+            onSubmit={(e) => {
+              e.preventDefault();
+              ask(question);
+            }}
+          >
+            <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Type a question about this month or the delay" aria-label="Your question" disabled={inReplay} />
+            <button className="btn" type="submit" disabled={inReplay || !question.trim()}>
+              Ask
+            </button>
+          </form>
+          <div className="voice">
+            <button className="btn btn--talk" disabled aria-describedby="voice-note">
+              Hold to talk
+            </button>
+            <span id="voice-note" className="muted small">Voice arrives in a later phase. Type instead.</span>
+          </div>
+        </section>
+
+        <footer className="panel__foot">
+          <div className="foot__actions">
+            {!inReplay ? (
+              <button className="btn btn--ghost" onClick={startReplay}>▶ Play 15 s replay</button>
+            ) : (
+              <button className="btn btn--ghost" onClick={closeReplay}>Close replay</button>
+            )}
+            <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
+          </div>
+          <p className="muted small">
+            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky; people and walking are not in it yet. The advisor is a fixture: no
+            model is connected. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
+          </p>
+        </footer>
+      </aside>
 
       {replay && shot && (
         <div className="replay glass" role="region" aria-label="Replay">
@@ -516,40 +652,26 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <input type="range" min={0} max={replay.totalMs - 1} value={Math.round(replayT)} onChange={(e) => { setPlaying(false); setReplayT(Number(e.target.value)); }} aria-label="Replay position" aria-valuetext={`${shot.title}, ${(replayT / 1000).toFixed(1)} of ${(replay.totalMs / 1000).toFixed(0)} seconds`} />
             <span className="mono">{(replayT / 1000).toFixed(1)} / {(replay.totalMs / 1000).toFixed(0)} s</span>
           </div>
-          <p className="replay__cap"><b>{shot.title}.</b> {shotBroken ? 'This frozen snapshot is no longer available, so this shot is not shown as evidence. Close the replay and play it again.' : shot.line} {!shotBroken && shotClaims.map((c, i) => <button key={i} className="figure" onClick={() => setEvidence(c)}>{c.text}</button>)}</p>
+          <p className="replay__cap"><b>{shot.title}.</b> {shotBroken ? 'This frozen snapshot is no longer available, so this shot is not shown as evidence. Close the replay and play it again.' : shot.line} {!shotBroken && shotClaims.map((c, i) => <button key={i} className="figure figure--inline" onClick={() => setEvidence(c)}><span>{c.text}</span></button>)}</p>
           <p className="muted small">In-browser playback of frozen snapshots, not an exported video.{replayOutdated ? ' This replay is historical: the inputs changed after it was made.' : ''}</p>
         </div>
       )}
 
       {evidence && <EvidenceDrawer claim={evidence} session={session} onClose={() => setEvidence(null)} />}
-      {sheet === 'contract' && (
-        <InfoSheet title="The contract" onClose={() => setSheet(null)}>
-          <p>
-            {contractLine && firstPay
-              ? `Contract payments run from month ${firstPay} to month ${contractLine.toMonth ?? 36}. The first payment lands ${snapshot.terms.paymentLagMonths} months after work starts.`
-              : 'This path declines it.'}
-          </p>
-          <EditField session={session} pathId={snapshot.ref.pathId} role="contract" label="Monthly contract value (rand)" onApply={applyEdit} note={editNote} />
-          <p className="muted small">Payment terms change only through a reviewed edit of the story, not here. Edits apply to the path shown.</p>
-        </InfoSheet>
-      )}
-      {sheet === 'fridge' && (
-        <InfoSheet title={isDemo ? 'The second fridge' : 'Equipment'} onClose={() => setSheet(null)}>
-          <p>{fridge ? `${fridge.label}. Base R${fridge.base.toLocaleString('en-ZA').replace(/\u00a0/g, ',')} (${fridge.source}).` : 'This path does not buy equipment.'}</p>
-          <EditField session={session} pathId={snapshot.ref.pathId} role="equipment" label="Equipment cost (rand)" onApply={applyEdit} note={editNote} />
-          <p className="muted small">Rent versus buy is the difference between paths B and C: switch path to compare. An edit changes only the path shown.</p>
-        </InfoSheet>
-      )}
-      {sheet === 'pan' && (
-        <InfoSheet title="Ingredients and packaging" onClose={() => setSheet(null)}>
-          <p>The direct cost of the contract work on this path (a template share of the contract's value, marked as template).</p>
-          <EditField session={session} pathId={snapshot.ref.pathId} role="direct" label="Direct costs per month (rand)" onApply={applyEdit} note={editNote} />
-        </InfoSheet>
-      )}
       {sheet === 'memo' && <MemoSheet session={session} viewed={viewed} memo={memo} setMemo={setMemo} onClose={() => setSheet(null)} />}
 
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
     </div>
+  );
+}
+
+function Figure({ c, title, stress, onOpen }: { c: ResolvedClaim | null; title: string; stress?: boolean; onOpen: (c: ResolvedClaim) => void }) {
+  if (!c) return null;
+  return (
+    <button className={`figure ${stress ? 'figure--stress' : ''}`} onClick={() => onOpen(c)} aria-label={`${title}: ${c.text}. Show the calculation`}>
+      <small>{title}</small>
+      <span>{c.text}</span>
+    </button>
   );
 }
 
@@ -592,26 +714,6 @@ function EditField({ session, pathId, role, label, onApply, note }: { session: S
 
 function cellText(n: number) {
   return `${n < 0 ? '-' : ''}R${Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-}
-
-function Cell({ title, a, b, onOpen }: { title: string; a: ResolvedClaim | null; b: ResolvedClaim | null; onOpen: (c: ResolvedClaim) => void }) {
-  return (
-    <div className="cell">
-      <div className="cell__t">{title}</div>
-      {a && (
-        <button className={`figure ${a.unit === 'none' ? 'figure--text' : ''}`} onClick={() => onOpen(a)} aria-label={`${title}, ${a.scenarioLabel}: ${a.text}. Open evidence`}>
-          <small>{a.scenarioLabel}</small>
-          <span>{a.text}</span>
-        </button>
-      )}
-      {b && (
-        <button className={`figure figure--stress ${b.unit === 'none' ? 'figure--text' : ''}`} onClick={() => onOpen(b)} aria-label={`${title}, ${b.scenarioLabel}: ${b.text}. Open evidence`}>
-          <small>{b.scenarioLabel}</small>
-          <span>{b.text}</span>
-        </button>
-      )}
-    </div>
-  );
 }
 
 function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter }) {
@@ -680,16 +782,6 @@ function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; ses
           </table>
         </details>
       )}
-    </div>
-  );
-}
-
-function InfoSheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
-  useModal(false, false);
-  return (
-    <div className="sheet glass" role="dialog" aria-label={title}>
-      <div className="drawer__head"><b>{title}</b><button className="btn btn--round" onClick={onClose} aria-label="Close">×</button></div>
-      {children}
     </div>
   );
 }
