@@ -37,8 +37,9 @@ describe('POST /api/intake, fixture mode', () => {
     expect((await POST(req({ text: 42 }))).status).toBe(400);
   });
 
-  it('answers 413 for a body far over the limit', async () => {
-    expect((await POST(req('x'.repeat(9_000)))).status).toBe(413);
+  it('answers 413 for a body far over the byte limit, and 400 for text over 4,000 characters', async () => {
+    expect((await POST(req('x'.repeat(40_000)))).status).toBe(413);
+    expect((await POST(req({ text: 'x'.repeat(9_000) }))).status).toBe(400);
   });
 });
 
