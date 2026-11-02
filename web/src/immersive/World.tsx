@@ -72,6 +72,13 @@ function World() {
   const [playing, setPlaying] = useState(false);
   const [memo, setMemo] = useState<Memo>(EMPTY_MEMO);
   const [announce, setAnnounce] = useState('');
+  const [mood, setMood] = useState<'idle' | 'speak' | 'point'>('idle');
+  const moodTimer = useRef(0);
+  const flash = useCallback((m: 'speak' | 'point', ms: number) => {
+    setMood(m);
+    window.clearTimeout(moodTimer.current);
+    moodTimer.current = window.setTimeout(() => setMood('idle'), ms);
+  }, []);
   const [free, setFree] = useState(false);
   const [stationPick, setStationPick] = useState<CameraStation | null>(null);
   const [editNote, setEditNote] = useState('');
@@ -92,7 +99,10 @@ function World() {
 
   const say = useCallback((msg: string) => setAnnounce(msg), []);
 
-  const select = useCallback((m: number) => setMonth(Math.min(36, Math.max(1, m))), []);
+  const select = useCallback((m: number) => {
+    setMonth(Math.min(36, Math.max(1, m)));
+    flash('point', 3200);
+  }, [flash]);
 
   const toggleLever = useCallback(() => {
     const next = !stressed[pathId];
@@ -122,10 +132,11 @@ function World() {
       if (gate.isCurrent(ticket, currentKey.current)) {
         setAnswers((prev) => [...prev, a]);
         setWorking(false);
+        if (a.status === 'answered') flash('speak', 4200);
         say(a.status === 'answered' ? `Advisor answered on path ${target}.` : a.status === 'declined' ? 'The fixture advisor declined that question.' : 'The answer was withheld because it did not match the simulation.');
       }
     },
-    [gate, say, session],
+    [flash, gate, say, session],
   );
 
   const ask = useCallback(
@@ -274,6 +285,8 @@ function World() {
               onOpenContract={() => setSheet('contract')}
               onOpenFridge={() => setSheet('fridge')}
               onOpenPan={() => setSheet('pan')}
+              mood={mood}
+              working={working}
               panText="Ingredients and packaging: tap to edit"
               free={free}
               onContextLost={() => setWebgl(false)}

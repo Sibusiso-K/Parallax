@@ -1,6 +1,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html, OrbitControls } from '@react-three/drei';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Html, OrbitControls, useAnimations, useGLTF } from '@react-three/drei';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { formatRand } from '../../../shared/guard/figures';
 import type { RoomSnapshot } from '../../../shared/scene/room-model';
@@ -555,6 +556,82 @@ function Person({ anchor, glass, pointAt, speaking }: { anchor: THREE.Vector3; g
   );
 }
 
+export type Clip = 'idle' | 'listen' | 'speak' | 'point' | 'walk' | 'acknowledge' | 'hold';
+export type Mood = 'idle' | 'speak' | 'point';
+
+useGLTF.preload('/models/ayanda.glb');
+useGLTF.preload('/models/advisor.glb');
+
+/**
+ * A Blender-authored skinned character (public/models, built by assets/blender/build_characters.py). The clip is chosen by a
+ * small state machine: walking while it relocates beside the selected month, otherwise the requested pose. Facing eases
+ * toward the target when pointing. Purely cosmetic: it never reads or writes a figure.
+ */
+function Avatar({ url, anchor, pointAt, clip, faceCamera, turn }: { url: string; anchor: THREE.Vector3; pointAt: THREE.Vector3; clip: Clip; faceCamera: number; turn: number }) {
+  const { scene, animations } = useGLTF(url);
+  const model = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  const root = useRef<THREE.Group>(null);
+  const { actions } = useAnimations(animations, root);
+  const playing = useRef<string>('');
+  const yaw = useRef(faceCamera);
+  const want = useRef<Clip>(clip);
+  want.current = clip;
+  useEffect(() => {
+    model.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) {
+        o.castShadow = false;
+        o.frustumCulled = false;
+      }
+    });
+  }, [model]);
+  useFrame((_, dt) => {
+    const r = root.current;
+    if (!r) return;
+    const d = Math.hypot(anchor.x - r.position.x, anchor.z - r.position.z);
+    if (REDUCED) r.position.copy(anchor);
+    else {
+      r.position.x = THREE.MathUtils.damp(r.position.x, anchor.x, 2.6, dt);
+      r.position.y = THREE.MathUtils.damp(r.position.y, anchor.y, 2.6, dt);
+      r.position.z = THREE.MathUtils.damp(r.position.z, anchor.z, 2.6, dt);
+    }
+    const walking = !REDUCED && d > 0.25;
+    const name: Clip = walking ? 'walk' : want.current;
+    // face the bridge when walking or pointing, otherwise turn toward the camera
+    const toward = Math.atan2(pointAt.x - r.position.x, pointAt.z - r.position.z);
+    const targetYaw = walking || name === 'point' ? toward : faceCamera + turn;
+    yaw.current = REDUCED ? targetYaw : THREE.MathUtils.damp(yaw.current, targetYaw, 5, dt);
+    r.rotation.y = yaw.current;
+    if (playing.current !== name) {
+      const next = actions[name];
+      const prev = actions[playing.current];
+      if (next) {
+        next.reset().fadeIn(REDUCED ? 0 : 0.25).play();
+        if (name === 'point') {
+          next.clampWhenFinished = true;
+          next.setLoop(THREE.LoopOnce, 1);
+        } else next.setLoop(THREE.LoopRepeat, Infinity);
+        prev?.fadeOut(REDUCED ? 0 : 0.25);
+        playing.current = name;
+      }
+    }
+  });
+  return (
+    <group ref={root} position={[anchor.x, anchor.y, anchor.z]} scale={1.15}>
+      <primitive object={model} />
+    </group>
+  );
+}
+
+class AvatarBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 function Pearls({ count }: { count: number }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   const seeds = useMemo(() => Array.from({ length: count }, (_, i) => ({ x: ((i * 37) % 50) - 25, y: 2 + ((i * 13) % 9), z: -((i * 23) % 60), s: 0.08 + ((i * 7) % 5) * 0.03, p: i })), [count]);
@@ -635,6 +712,8 @@ export interface SceneProps {
   onOpenContract: () => void;
   onOpenFridge: () => void;
   onOpenPan: () => void;
+  mood: Mood;
+  working: boolean;
   panText: string;
   free: boolean;
   onContextLost: () => void;
@@ -672,8 +751,12 @@ export default function Scene(p: SceneProps) {
       <Contract text={p.contractText} onOpen={p.onOpenContract} />
       <Fridge label={p.fridgeText} onOpen={p.onOpenFridge} />
       <Pan label={p.panText} onOpen={p.onOpenPan} />
-      <Person anchor={ayanda} pointAt={point} speaking={p.speaking} />
-      <Person anchor={advisor} glass pointAt={point} speaking={p.speaking} />
+      <AvatarBoundary fallback={<><Person anchor={ayanda} pointAt={point} speaking={p.speaking} /><Person anchor={advisor} glass pointAt={point} speaking={p.speaking} /></>}>
+        <Suspense fallback={<><Person anchor={ayanda} pointAt={point} speaking={p.speaking} /><Person anchor={advisor} glass pointAt={point} speaking={p.speaking} /></>}>
+          <Avatar url="/models/ayanda.glb" anchor={ayanda} pointAt={point} faceCamera={0} turn={0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'acknowledge' : p.station === 'contract' ? 'hold' : 'idle'} />
+          <Avatar url="/models/advisor.glb" anchor={advisor} pointAt={point} faceCamera={0} turn={-0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'speak' : p.mood === 'point' ? 'point' : 'idle'} />
+        </Suspense>
+      </AvatarBoundary>
       <Atmosphere low={p.lowTier} />
       {!p.lowTier && <Islands />}
       {!p.lowTier && <Pearls count={36} />}
