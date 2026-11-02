@@ -1,0 +1,114 @@
+// Explore: the 3D room for the decision the founder confirmed. The store owns every figure; the room reads the same
+// path cards through the session adapter and sends edits back through the store, so every screen shows one revision.
+import { Suspense, lazy, useCallback, useMemo, useRef } from "react";
+import type { Edit } from "../../../../shared/engine/simulate";
+import { SnapshotRegistry } from "../../../../shared/scene/room-model";
+import { DECISION_LABELS, DEMO_STORY } from "@/lib/parallax-api";
+import { LETTERS, useParallax, type Letter } from "@/lib/parallax-store";
+import { exploreSession, reviseCards } from "@/immersive/session-adapter";
+import type { ExploreBinding, ExploreSelection } from "@/immersive/World";
+import { Button, NoPaths } from "./shared";
+
+const World = lazy(() => import("@/immersive/World"));
+
+export function ExploreScreen() {
+  const { paths, fields, story, sessionId, revision, active, explore, set, go } = useParallax();
+  // One snapshot registry per decision, kept across revisions so earlier answers still resolve as historical.
+  const registry = useRef<{ id: string; snapshots: SnapshotRegistry } | null>(null);
+  if (registry.current?.id !== sessionId) registry.current = { id: sessionId, snapshots: new SnapshotRegistry() };
+  const snapshots = registry.current.snapshots;
+  // The path the founder entered on; switching paths inside the room does not rebuild the session.
+  const enteredOn = useRef(active);
+  const title = typeof fields.decision === "string" ? fields.decision : "";
+
+  const result = useMemo(
+    () =>
+      paths.length > 0
+        ? exploreSession({ kind: "confirmed", sessionId, revision, title, paths, selectedPath: enteredOn.current }, snapshots)
+        : null,
+    [paths, sessionId, revision, title, snapshots],
+  );
+
+  const onSelection = useCallback(
+    (view: ExploreSelection) =>
+      set((s) =>
+        s.active === view.pathId && s.explore.month === view.month && LETTERS.every((l) => s.explore.stressed[l] === view.stressed[l])
+          ? {}
+          : { active: view.pathId, explore: { stressed: { ...view.stressed }, month: view.month } },
+      ),
+    [set],
+  );
+
+  const onRevise = useCallback(
+    (letter: Letter, assumptionId: string, edit: Edit) => {
+      const r = reviseCards(paths, letter, assumptionId, edit);
+      if (!r.ok) return r;
+      set({ paths: r.paths });
+      return { ok: true as const, revision: revision + 1 };
+    },
+    [paths, revision, set],
+  );
+
+  const founderLabel = story.trim() === DEMO_STORY.trim() ? "Fictional founder · demo story" : "Your decision";
+  const binding = useMemo<ExploreBinding | null>(
+    () =>
+      result?.ok
+        ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel }
+        : null,
+    // The initial view only matters when the room mounts; later selection changes flow out, not back in.
+    [result, onSelection, onRevise, founderLabel],
+  );
+
+  if (paths.length === 0) return <NoPaths />;
+
+  const kind = fields.decisionType;
+  if (kind !== "contract") {
+    const label = typeof kind === "string" && kind in DECISION_LABELS ? DECISION_LABELS[kind as keyof typeof DECISION_LABELS] : "this kind of decision";
+    return (
+      <section className="screen">
+        <div className="pagehead">
+          <div className="eyebrow">Explore</div>
+          <h1>The 3D room covers contract decisions for now</h1>
+          <div className="sub">
+            Your decision is “{label}”. Its paths, figures and stress tests are all in Paths and Compare. A room built for this kind of
+            decision is not ready yet, so none is shown.
+          </div>
+        </div>
+        <div className="actions-row">
+          <Button variant="primary" onClick={() => go("paths")}>
+            Back to your paths
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  if (!binding) {
+    return (
+      <section className="screen" role="alert">
+        <div className="pagehead">
+          <div className="eyebrow">Explore</div>
+          <h1>Explore could not open this decision</h1>
+          <div className="sub">{result && !result.ok ? result.reason : "The paths are not ready."} Nothing was changed.</div>
+        </div>
+        <div className="actions-row">
+          <Button variant="primary" onClick={() => go("paths")}>
+            Back to your paths
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <div className="explore-loading" role="status">
+          Loading the 3D room. Your figures are ready in Paths while it loads.
+        </div>
+      }
+    >
+      <World key={sessionId} binding={binding} />
+    </Suspense>
+  );
+}

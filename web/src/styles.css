@@ -192,6 +192,9 @@ button { cursor: pointer; }
 .btn-link:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
 .btn-path { border-color: var(--c); color: var(--ink); }
 .btn-sm { min-height: 38px; padding: 0 16px; font-size: 12px; }
+/* Explore: the path card's way into the 3D room spans the card, and the room's loading line sits where the room will. */
+.nft-explore { grid-column: 1 / -1; }
+.explore-loading { display: grid; place-items: center; min-height: 50vh; border-radius: 28px; background: var(--panel); color: var(--muted); font-size: 14px; text-align: center; padding: 24px; }
 .btn-lg { min-height: 54px; padding: 0 30px; font-size: 14px; }
 
 .field-input, .field-area {

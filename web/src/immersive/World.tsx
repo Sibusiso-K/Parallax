@@ -3,12 +3,14 @@ import '@fontsource-variable/geist/index.css';
 import '@fontsource-variable/geist-mono/index.css';
 import './immersive.css';
 import { Component, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { Edit } from '../../../shared/engine/simulate';
 import { resolveClaim, type ClaimRef, type ResolvedClaim } from '../../../shared/scene/claims';
 import { RequestGate, type PathLetter, type RoomSnapshot } from '../../../shared/scene/room-model';
 import { FIXTURE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorAnswer } from './advisor-fixture';
-import { EMPTY_MEMO, MEMO_FOOTER, choiceLabel, evidenceAppendix, type Choice, type Memo } from './memo';
+import { EMPTY_MEMO, choiceLabel, evidenceAppendix, memoFooter, type Choice, type Memo } from './memo';
 import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type CameraStation, type Replay } from './replay';
-import { createSession, SYNTHETIC_WAGES_NOTE } from './session';
+import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
+import { exploreSession } from './session-adapter';
 
 const Scene = lazy(() => import('./Scene'));
 
@@ -27,14 +29,20 @@ function hasWebGL(): boolean {
 const noop = () => {};
 const mq = (q: string) => (typeof matchMedia === 'function' ? matchMedia(q).matches : false);
 
-class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class Boundary extends Component<{ children: ReactNode; embedded: boolean }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
   render() {
     if (!this.state.failed) return this.props.children;
-    return (
+    // Inside the app a reload would clear this tab's decision, so the embedded room sends the founder elsewhere instead.
+    return this.props.embedded ? (
+      <div role="alert" style={{ padding: 24 }}>
+        <h1>The 3D room hit an error.</h1>
+        <p>Your decision is unchanged. Use the navigation to go back to your paths; reloading would clear this tab. No model call was made.</p>
+      </div>
+    ) : (
       <div role="alert" style={{ padding: 24, fontFamily: 'sans-serif' }}>
         <h1>The 3D room hit an error.</h1>
         <p>Reload the page to try again. Nothing was sent anywhere and no model call was made.</p>
@@ -44,23 +52,53 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   }
 }
 
-export default function WorldRoot() {
+/** Where the founder is in Explore: a path, the late-payment lever per path, and a month. */
+export interface ExploreSelection {
+  pathId: PathLetter;
+  stressed: Record<PathLetter, boolean>;
+  month: number;
+}
+
+/** Ties the room to a confirmed decision held by the app. Without it, the room shows the fictional demo founder. */
+export interface ExploreBinding {
+  session: Session;
+  initial: ExploreSelection;
+  onSelection: (view: ExploreSelection) => void;
+  /** Applies an edit to the app's path cards. The new revision arrives as a new session. */
+  onRevise: (pathId: PathLetter, assumptionId: string, edit: Edit) => { ok: true; revision: number } | { ok: false; error: string };
+  /** Whose figures these are, shown beside the scene. */
+  founderLabel: string;
+}
+
+export default function WorldRoot({ binding }: { binding?: ExploreBinding }) {
   return (
-    <Boundary>
-      <World />
+    <Boundary embedded={!!binding}>
+      <World binding={binding} />
     </Boundary>
   );
 }
 
-function World() {
-  const [session, setSession] = useState(() => createSession('demo'));
+function demoSession(): Session {
+  const r = exploreSession({ kind: 'demo' });
+  if (!r.ok) throw new Error(r.reason);
+  return r.session;
+}
+
+function World({ binding }: { binding?: ExploreBinding }) {
+  const [ownSession, setOwnSession] = useState<Session | null>(() => (binding ? null : demoSession()));
+  const session = binding?.session ?? ownSession!;
   const gate = useMemo(() => new RequestGate(), []);
   const reduced = useMemo(() => mq('(prefers-reduced-motion: reduce)'), []);
   const lowTier = useMemo(() => mq('(max-width: 768px)') || ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 8) <= 4 || (navigator.hardwareConcurrency ?? 8) <= 4, []);
   const [webgl, setWebgl] = useState(() => hasWebGL());
-  const [pathId, setPathId] = useState<PathLetter>('B');
-  const [stressed, setStressed] = useState<Record<PathLetter, boolean>>({ A: false, B: false, C: false });
-  const [month, setMonth] = useState(2);
+  const [pathId, setPathId] = useState<PathLetter>(binding?.initial.pathId ?? 'B');
+  const [stressed, setStressed] = useState<Record<PathLetter, boolean>>(binding?.initial.stressed ?? { A: false, B: false, C: false });
+  const [month, setMonth] = useState(binding?.initial.month ?? 2);
+  // The app keeps the selection, so leaving Explore and coming back returns to the same place.
+  const onSelection = binding?.onSelection;
+  useEffect(() => {
+    onSelection?.({ pathId, stressed, month });
+  }, [onSelection, pathId, stressed, month]);
   const [hover, setHover] = useState<number | null>(null);
   const [answers, setAnswers] = useState<AdvisorAnswer[]>([]);
   const [working, setWorking] = useState(false);
@@ -98,6 +136,19 @@ function World() {
   currentKey.current = snapshot.key;
 
   const say = useCallback((msg: string) => setAnnounce(msg), []);
+
+  // A new revision can come from an object here or from the assumptions panel elsewhere in the app. Either way no
+  // pending answer may land on the new figures, and a replay of the old ones is closed rather than relabelled.
+  const seenRevision = useRef(session.profileRevision);
+  useEffect(() => {
+    if (seenRevision.current === session.profileRevision) return;
+    seenRevision.current = session.profileRevision;
+    gate.invalidate();
+    setWorking(false);
+    setReplay(null);
+    setPlaying(false);
+    say(`Revision ${session.profileRevision}: the inputs changed and the engine recomputed every figure. Earlier answers are historical.`);
+  }, [gate, say, session.profileRevision]);
 
   const select = useCallback((m: number) => {
     setMonth(Math.min(36, Math.max(1, m)));
@@ -169,17 +220,20 @@ function World() {
       if (!Number.isFinite(newBase) || newBase < 0 || newBase > 5_000_000) return setEditNote('Enter a whole-rand amount from 0 to 5,000,000.');
       const k = newBase / a.base;
       const edit = a.base === 0 ? { low: 0, base: Math.round(newBase), high: Math.round(newBase) } : { low: Math.round(a.low * k), base: Math.round(newBase), high: Math.round(a.high * k) };
-      const r = session.revise(pathLetter, a.id, edit);
+      // A confirmed decision's cards live in the app, so the edit goes there; the demo keeps its own session.
+      const r = binding
+        ? binding.onRevise(pathLetter, a.id, edit)
+        : (() => {
+            const next = session.revise(pathLetter, a.id, edit);
+            if (!next.ok) return next;
+            setOwnSession(next.session);
+            return { ok: true as const, revision: next.session.profileRevision };
+          })();
       if (!r.ok) return setEditNote(`The engine refused that edit: ${r.error}`);
       gate.invalidate();
-      setWorking(false);
-      setSession(r.session);
-      setReplay(null);
-      setPlaying(false);
-      setEditNote(`Applied to path ${pathLetter}: ${a.label} is now R${Math.round(newBase).toLocaleString('en-ZA').replace(/\u00a0/g, ',')}. New revision ${r.session.profileRevision}. Earlier answers and any replay are now historical.`);
-      say(`Edit applied to path ${pathLetter}. Revision ${r.session.profileRevision}. Figures recomputed by the engine.`);
+      setEditNote(`Applied to path ${pathLetter}: ${a.label} is now R${Math.round(newBase).toLocaleString('en-ZA').replace(/\u00a0/g, ',')}. New revision ${r.revision}. Earlier answers and any replay are now historical.`);
     },
-    [gate, say, session],
+    [binding, gate, session],
   );
 
   const switchPath = (p: PathLetter) => {
@@ -260,13 +314,17 @@ function World() {
   const leverLabel = `Client pays ${snapshot.terms.addedDelayMonths || 2} months late`;
   const assumptionOf = (re: RegExp) => snapshot.assumptions.find((a) => re.test(a.label));
   const fridge = assumptionOf(/equipment/i);
+  // Contract wording comes from the path's own contract line and the engine's terms, never from the demo story.
+  const contractLine = snapshot.baselineAssumptions.find((a) => a.role === 'contract');
+  const firstPay = snapshot.terms.firstReceiptMonth;
+  const isDemo = session.mode === 'demo';
   const stage: CameraStation = shot?.station ?? stationPick ?? 'bridge';
   const replayOutdated = replay ? isOutdated(replay, session) : false;
   const shotClaims = replay && shot ? resolveShot(session, shot) : [];
   const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
 
   return (
-    <div className="world" data-lite={lowTier ? '' : undefined}>
+    <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
       <div className="world__canvas">
         {webgl ? (
           <Suspense fallback={<div className="world__loading">Loading the 3D room. The controls on this page work without it.</div>}>
@@ -278,8 +336,8 @@ function World() {
               reduced={reduced}
               lowTier={lowTier}
               speaking={working}
-              contractText={`Corporate lunch contract · 12 months · paid ${(snapshot.terms.paymentLagMonths ?? 0) * 30 || 60} days after each invoice`}
-              fridgeText={fridge ? `${fridge.label}: R${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} (${fridge.source})` : 'Equipment (path A has none)'}
+              contractText={firstPay ? `Contract · first payment lands in month ${firstPay}` : 'This path declines the contract'}
+              fridgeText={fridge ? `${fridge.label}: R${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} (${fridge.source})` : 'No equipment on this path'}
               leverLabel={leverLabel}
               onSelectMonth={inReplay ? noop : select}
               onHoverMonth={inReplay ? noop : setHover}
@@ -303,8 +361,15 @@ function World() {
 
       <header className="bar">
         <div className="bar__brand">
-          <span className="brand">Parallax</span>
-          <span className="tag">Decision rehearsal · Demo founder: fictional</span>
+          {binding ? (
+            <span className="tag tag--bound">{binding.founderLabel} · revision {session.profileRevision}</span>
+          ) : (
+            <>
+              <span className="brand">Parallax</span>
+              <span className="tag">Decision rehearsal · Demo founder: fictional</span>
+              <a className="btn btn--ghost btn--sm" href="/">Open Parallax</a>
+            </>
+          )}
         </div>
         <div role="tablist" aria-label="Path" className="tabs">
           {PATH_ORDER.map((p) => (
@@ -316,7 +381,10 @@ function World() {
       </header>
 
       <div className="honest" role="note">
-        Stylised characters authored in Blender (not photographs, not a real person). The advisor is a fixture: no model is connected. Numbers come from the existing engine; template values are placeholders.
+        Stylised characters authored in Blender (not photographs, not a real person). The advisor is a fixture: no model is connected.{' '}
+        {isDemo
+          ? 'Numbers come from the existing engine; template values are placeholders.'
+          : 'Numbers come from the existing engine, run on your confirmed answers; lines marked template or default are placeholders.'}
       </div>
 
       {session.profileRevision > 1 && (
@@ -329,7 +397,7 @@ function World() {
         </div>
       )}
       <section className="left" aria-label="Controls">
-        <h1 className="h1">Should Ayanda take the 12-month corporate lunch contract?</h1>
+        <h1 className="h1">{session.title}</h1>
         <p className="sub">Path {snapshot.ref.pathId}: {session.paths[snapshot.ref.pathId].summary}</p>
 
         <div className="month" role="group" aria-label="Month">
@@ -436,7 +504,7 @@ function World() {
           )}
           <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
         </div>
-        <span>Demo founder: fictional · Not financial advice · One possible future, not a prediction</span>
+        <span>{isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction</span>
       </footer>
 
       {replay && shot && (
@@ -456,14 +524,18 @@ function World() {
       {evidence && <EvidenceDrawer claim={evidence} session={session} onClose={() => setEvidence(null)} />}
       {sheet === 'contract' && (
         <InfoSheet title="The contract" onClose={() => setSheet(null)}>
-          <p>12 months{snapshot.assumptions.find((x) => x.role === 'contract') ? '' : ''}. {snapshot.terms.firstReceiptMonth ? `The first payment lands in month ${snapshot.terms.firstReceiptMonth} (${snapshot.terms.paymentLagMonths} months after work starts).` : 'This path declines it.'}</p>
+          <p>
+            {contractLine && firstPay
+              ? `Contract payments run from month ${firstPay} to month ${contractLine.toMonth ?? 36}. The first payment lands ${snapshot.terms.paymentLagMonths} months after work starts.`
+              : 'This path declines it.'}
+          </p>
           <EditField session={session} pathId={snapshot.ref.pathId} role="contract" label="Monthly contract value (rand)" onApply={applyEdit} note={editNote} />
           <p className="muted small">Payment terms change only through a reviewed edit of the story, not here. Edits apply to the path shown.</p>
         </InfoSheet>
       )}
       {sheet === 'fridge' && (
-        <InfoSheet title="The second fridge" onClose={() => setSheet(null)}>
-          <p>{fridge ? `${fridge.label}. Base R${fridge.base.toLocaleString('en-ZA').replace(/\u00a0/g, ',')} (${fridge.source}).` : 'Path A does not buy equipment.'}</p>
+        <InfoSheet title={isDemo ? 'The second fridge' : 'Equipment'} onClose={() => setSheet(null)}>
+          <p>{fridge ? `${fridge.label}. Base R${fridge.base.toLocaleString('en-ZA').replace(/\u00a0/g, ',')} (${fridge.source}).` : 'This path does not buy equipment.'}</p>
           <EditField session={session} pathId={snapshot.ref.pathId} role="equipment" label="Equipment cost (rand)" onApply={applyEdit} note={editNote} />
           <p className="muted small">Rent versus buy is the difference between paths B and C: switch path to compare. An edit changes only the path shown.</p>
         </InfoSheet>
@@ -485,7 +557,8 @@ function World() {
 function useModal(trap: boolean, focusFirst: boolean, target?: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const before = document.activeElement as HTMLElement | null;
-    const others = trap ? [...document.querySelectorAll<HTMLElement>('.world > *:not(.memo-wrap)')] : [];
+    // Inside the app the navigation rail and top bar are made inert too, so focus cannot leave the open memo.
+    const others = trap ? [...document.querySelectorAll<HTMLElement>('.world > *:not(.memo-wrap), .sidebar, .topbar')] : [];
     others.forEach((el) => el.setAttribute('inert', ''));
     const t = window.setTimeout(() => {
       const node = target?.current ?? document.querySelector<HTMLElement>(focusFirst ? '.memo-wrap select, .memo-wrap input' : '.sheet button');
@@ -499,7 +572,7 @@ function useModal(trap: boolean, focusFirst: boolean, target?: React.RefObject<H
   }, [trap, focusFirst, target]);
 }
 
-function EditField({ session, pathId, role, label, onApply, note }: { session: ReturnType<typeof createSession>; pathId: PathLetter; role: 'equipment' | 'contract' | 'direct'; label: string; onApply: (p: PathLetter, role: 'equipment' | 'contract' | 'direct', v: number) => void; note: string }) {
+function EditField({ session, pathId, role, label, onApply, note }: { session: Session; pathId: PathLetter; role: 'equipment' | 'contract' | 'direct'; label: string; onApply: (p: PathLetter, role: 'equipment' | 'contract' | 'direct', v: number) => void; note: string }) {
   const line = session.paths[pathId].path.assumptions.find((x) => x.role === role && x.kind === (role === 'contract' ? 'income' : 'cost'));
   const [v, setV] = useState(line ? String(line.base) : '');
   useEffect(() => setV(line ? String(line.base) : ''), [line?.id, line?.base]);
@@ -574,7 +647,7 @@ function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath }: 
   );
 }
 
-function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; session: ReturnType<typeof createSession>; onClose: () => void }) {
+function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; session: Session; onClose: () => void }) {
   const snap = session.registry.get(claim.ref.snapshotKey);
   const outcome = snap ? (claim.ref.scenario === 'baseline' ? snap.baseline : snap.active) : null;
   const row = outcome && claim.month ? outcome.rows[claim.month - 1] : null;
@@ -592,7 +665,7 @@ function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; ses
         {row && (<><dt>Row used</dt><dd className="mono">month {row.month}: in {cellText(row.income)}, out {cellText(row.costs)}, net {cellText(row.net)}, cash {cellText(row.cash)}</dd></>)}
       </dl>
       {claim.qualification && <p className="qual">{claim.qualification}</p>}
-      <p className="muted small">“Matched” means consistent with this simulation, not that the assumptions are true or the reasoning is financial advice. Template values are placeholders. {SYNTHETIC_WAGES_NOTE}</p>
+      <p className="muted small">“Matched” means consistent with this simulation, not that the assumptions are true or the reasoning is financial advice. Template values are placeholders.{session.mode === 'demo' ? ` ${SYNTHETIC_WAGES_NOTE}` : ''}</p>
       {snap && (
         <details>
           <summary>Assumptions this run used ({(claim.ref.scenario === 'baseline' ? snap.baselineAssumptions : snap.assumptions).length})</summary>
@@ -621,7 +694,7 @@ function InfoSheet({ title, children, onClose }: { title: string; children: Reac
   );
 }
 
-function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: ReturnType<typeof createSession>; viewed: string[]; memo: Memo; setMemo: (m: Memo) => void; onClose: () => void }) {
+function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: Session; viewed: string[]; memo: Memo; setMemo: (m: Memo) => void; onClose: () => void }) {
   const lines = useMemo(() => evidenceAppendix(session, viewed), [session, viewed]);
   useModal(true, true);
   const set = (p: Partial<Memo>) => setMemo({ ...memo, ...p });
@@ -653,7 +726,7 @@ function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: Retur
           </tbody>
         </table>
         <p className="qual">After a first shortfall the projection continues; the engine does not model whether the business keeps trading or finds funding.</p>
-        <p className="muted small">{MEMO_FOOTER} Generated {new Date().toLocaleDateString('en-ZA')}.</p>
+        <p className="muted small">{memoFooter(session)} Generated {new Date().toLocaleDateString('en-ZA')}.</p>
         <div className="no-print memo__actions">
           <button className="btn" onClick={() => window.print()}>Print or save as PDF</button>
           <span className="muted small">Your words stay in this browser tab until you print or close it. Nothing is saved to a server.</span>

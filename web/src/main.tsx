@@ -10,6 +10,7 @@ import { GeneratingScreen, ProfileScreen } from "@/components/parallax/ProfileSc
 import { AssumptionsPanel, PathsScreen } from "@/components/parallax/PathScreens";
 import { ChatScreen } from "@/components/parallax/ChatScreen";
 import { CompareScreen, SummaryScreen } from "@/components/parallax/DecideScreens";
+import { ExploreScreen } from "@/components/parallax/ExploreScreen";
 
 const SCREENS = {
   start: StartScreen,
@@ -19,6 +20,7 @@ const SCREENS = {
   profile: ProfileScreen,
   paths: PathsScreen,
   chat: ChatScreen,
+  explore: ExploreScreen,
   compare: CompareScreen,
   comfort: CompareScreen,
   summary: SummaryScreen,
@@ -27,7 +29,8 @@ const SCREENS = {
 /** These screens come before the business is read, so they stand alone; the rest sit inside the Control Room frame. */
 const STANDALONE = new Set(["start", "intake", "generating"]);
 
-// The immersive 3D world loads only on ?world, as its own chunk, so the main app's first screen stays small.
+// ?world opens the fictional demo founder's room on its own page, clearly labelled as the demo. It never reads or
+// writes the app's store, so it cannot stand in for a confirmed decision; Explore inside the app is the bound room.
 const World = lazy(() => import("./immersive/World"));
 const wantsWorld = new URLSearchParams(location.search).has("world");
 

@@ -5,18 +5,27 @@ import { editAssumption, type Edit, type PathInput } from '../../../shared/engin
 import { SnapshotRegistry, buildSnapshot, type PathLetter, type RoomSnapshot } from '../../../shared/scene/room-model';
 import type { ToolContext } from '../../../shared/scene/tools';
 
-// One rehearsal session: the synthetic demo founder, the three template paths from the existing engine, and a registry
-// of every snapshot built so far. Snapshots are immutable and cached by (path, stress), so the same inputs are never
-// recomputed and never half-updated. An edit to an assumption makes a NEW session revision; the registry is shared so
-// earlier answers and evidence still resolve, but they are marked historical because their snapshot belongs to an older revision.
+// One rehearsal session: three paths from the existing engine and a registry of every snapshot built so far.
+// Snapshots are immutable and cached by (path, stress), so the same inputs are never recomputed and never
+// half-updated. An edit to an assumption makes a NEW session revision; the registry is shared so earlier answers
+// and evidence still resolve, but they are marked historical because their snapshot belongs to an older revision.
+// A session is either the fictional demo founder, chosen explicitly, or a founder's confirmed decision, whose
+// path cards come straight from the app's store (session-adapter.ts), so both surfaces simulate the same inputs.
 
 export const SYNTHETIC_WAGES_NOTE = 'Synthetic follow-up: R21,000 monthly wages (the demo story does not say; Parallax would ask).';
+export const DEMO_SESSION_ID = 'demo';
+export const DEMO_TITLE = 'Should Ayanda take the 12-month corporate lunch contract?';
 
-type PathEntry = { path: PathInput; name: string; summary: string };
+export type SessionMode = 'demo' | 'confirmed';
+export type PathEntry = { path: PathInput; name: string; summary: string };
 
 export interface Session {
   readonly sessionId: string;
-  readonly profile: Profile;
+  readonly mode: SessionMode;
+  /** The decision as a heading: the demo's question, or the founder's own words. Shown, never parsed. */
+  readonly title: string;
+  /** The demo's synthetic profile. Null for a confirmed session, whose inputs are the app's own path cards. */
+  readonly profile: Profile | null;
   readonly profileRevision: number;
   readonly simulationVersion: number;
   readonly paths: Readonly<Record<PathLetter, PathEntry>>;
@@ -27,12 +36,25 @@ export interface Session {
   revise(pathId: PathLetter, assumptionId: string, edit: Edit): { ok: true; session: Session } | { ok: false; error: string };
 }
 
-function make(sessionId: string, profile: Profile, paths: Record<PathLetter, PathEntry>, registry: SnapshotRegistry, profileRevision: number): Session {
+export interface SessionSeed {
+  sessionId: string;
+  mode: SessionMode;
+  title: string;
+  profile: Profile | null;
+  paths: Record<PathLetter, PathEntry>;
+  registry: SnapshotRegistry;
+  profileRevision: number;
+}
+
+export function sessionFromPaths(seed: SessionSeed): Session {
+  const { sessionId, paths, registry, profileRevision } = seed;
   const simulationVersion = profileRevision;
   const cache = new Map<string, RoomSnapshot>();
   const session: Session = {
     sessionId,
-    profile,
+    mode: seed.mode,
+    title: seed.title,
+    profile: seed.profile,
     profileRevision,
     simulationVersion,
     paths,
@@ -65,15 +87,16 @@ function make(sessionId: string, profile: Profile, paths: Record<PathLetter, Pat
       const r = editAssumption(entry.path, assumptionId, edit);
       if (!r.ok) return r;
       const next = { ...paths, [pathId]: { ...entry, path: r.path } } as Record<PathLetter, PathEntry>;
-      return { ok: true, session: make(sessionId, profile, next, registry, profileRevision + 1) };
+      return { ok: true, session: sessionFromPaths({ ...seed, paths: next, profileRevision: profileRevision + 1 }) };
     },
   };
   return session;
 }
 
-export function createSession(sessionId = 'demo'): Session {
+/** The fictional demo founder. Only an explicit demo entry may create this; a confirmed decision never falls back to it. */
+export function createSession(sessionId = DEMO_SESSION_ID): Session {
   const profile = buildProfile({ ...DEMO_EXTRACTION, payroll: { low: 21000, high: 21000, quote: SYNTHETIC_WAGES_NOTE } });
   const cards = templatePaths(profile);
   const paths = Object.fromEntries(cards.map((c) => [c.letter, { path: c as PathInput, name: c.name, summary: c.summary }])) as Record<PathLetter, PathEntry>;
-  return make(sessionId, profile, paths, new SnapshotRegistry(), 1);
+  return sessionFromPaths({ sessionId, mode: 'demo', title: DEMO_TITLE, profile, paths, registry: new SnapshotRegistry(), profileRevision: 1 });
 }

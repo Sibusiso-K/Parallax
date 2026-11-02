@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { mockApi } from "./parallax-api";
+import { applyPatch } from "./store-patch";
 import type { FieldKey, IntakeResponse, PathCard, Profile, Simulation } from "./types";
 
 export type Letter = "A" | "B" | "C";
@@ -12,9 +13,17 @@ export type Step =
   | "profile"
   | "paths"
   | "chat"
+  | "explore"
   | "compare"
   | "comfort"
   | "summary";
+
+/** What the founder last looked at in Explore. The path is the shared `active` path, so every screen agrees on it. */
+export interface ExploreView {
+  /** Whether the late-payment lever is pulled, per path. */
+  stressed: Record<Letter, boolean>;
+  month: number;
+}
 
 export interface Trace {
   model: string;
@@ -56,9 +65,17 @@ interface State {
   panel: { letter: Letter; rowId?: string } | null;
   traceOpen: boolean;
   announce: string;
+  /** This decision's id in this tab. A reset starts a new one, so nothing from an earlier decision can be cited. */
+  sessionId: string;
+  /** Rises by one whenever any path card changes; Explore and every figure key to it. */
+  revision: number;
+  explore: ExploreView;
 }
 
 const initial: State = {
+  sessionId: "",
+  revision: 0,
+  explore: { stressed: { A: false, B: false, C: false }, month: 1 },
   step: "start",
   agreed: false,
   story: "",
@@ -109,14 +126,16 @@ export function withTransition(fn: () => void) {
 
 let uid = 0;
 const nid = () => `m${++uid}`;
+let decisionSeq = 0;
+const fresh = (): State => ({ ...initial, sessionId: `decision-${++decisionSeq}` });
 
 export function ParallaxProvider({ children }: { children: ReactNode }) {
-  const [s, setS] = useState<State>(initial);
+  const [s, setS] = useState<State>(fresh);
   const ref = useRef(s);
   ref.current = s;
 
   const set = useCallback((p: Partial<State> | ((s: State) => Partial<State>)) => {
-    setS((prev) => ({ ...prev, ...(typeof p === "function" ? p(prev) : p) }));
+    setS((prev) => applyPatch(prev, typeof p === "function" ? p(prev) : p));
   }, []);
 
   const go = useCallback(
@@ -176,7 +195,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
   );
 
   const reset = useCallback(() => {
-    withTransition(() => setS(initial));
+    withTransition(() => setS(fresh()));
     window.scrollTo({ top: 0 });
   }, []);
 

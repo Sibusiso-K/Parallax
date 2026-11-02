@@ -3,8 +3,8 @@ import { useState, type ReactNode } from "react";
 import { useParallax, type Step } from "@/lib/parallax-store";
 import { Avatar, Footer, ParallaxMark, cx } from "./shared";
 
-type NavId = "Profile" | "Paths" | "Assumptions" | "Compare" | "Trace";
-const NAV: NavId[] = ["Profile", "Paths", "Assumptions", "Compare", "Trace"];
+type NavId = "Profile" | "Paths" | "Explore" | "Assumptions" | "Compare" | "Trace";
+const NAV: NavId[] = ["Profile", "Paths", "Explore", "Assumptions", "Compare", "Trace"];
 
 const ICON: Record<NavId, ReactNode> = {
   Profile: (
@@ -18,6 +18,12 @@ const ICON: Record<NavId, ReactNode> = {
       <path d="M10 3l7 3.6-7 3.6-7-3.6z" />
       <path d="M3 10.2l7 3.6 7-3.6" />
       <path d="M3 13.6l7 3.6 7-3.6" />
+    </>
+  ),
+  Explore: (
+    <>
+      <path d="M10 2.8l6.5 3.6v7.2L10 17.2l-6.5-3.6V6.4z" />
+      <path d="M3.5 6.4L10 10l6.5-3.6M10 10v7.2" />
     </>
   ),
   Assumptions: (
@@ -66,6 +72,7 @@ const CURRENT: Partial<Record<Step, NavId>> = {
   profile: "Profile",
   paths: "Paths",
   chat: "Paths",
+  explore: "Explore",
   compare: "Compare",
   comfort: "Compare",
 };
@@ -105,6 +112,7 @@ export function ControlRoom({ children }: { children: ReactNode }) {
   function open(id: NavId) {
     if (id === "Profile") go(ready ? "profile" : "heard");
     if (id === "Paths") go("paths");
+    if (id === "Explore") go("explore");
     if (id === "Assumptions") set({ panel: { letter: active } });
     if (id === "Compare") go("compare");
     if (id === "Trace") {
@@ -164,11 +172,13 @@ export function ControlRoom({ children }: { children: ReactNode }) {
       <div className="main">
         <header className="topbar no-print">
           <div className="decision-block">
-            <div className="eyebrow">{decision ? "Your decision" : "Parallax"}</div>
+            <div className="eyebrow">{step === "explore" ? "Explore" : decision ? "Your decision" : "Parallax"}</div>
             <div className="decision-title">{decision || "Describe a business decision to begin"}</div>
           </div>
           <div className="tabs">
+            {/* Explore has its own path selector inside the room; two selectors that disagree would confuse. */}
             {ready &&
+              step !== "explore" &&
               paths.map((p) => (
                 <button
                   key={p.id}

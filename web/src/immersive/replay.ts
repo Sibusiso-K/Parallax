@@ -36,7 +36,7 @@ export function buildReplay(session: Session, now: () => Date = () => new Date()
   const first = b1.active.firstShortfall;
   const shots: Shot[] = [
     { id: 'offer', title: 'The offer', durationMs: 3000, pathId: 'B', stressed: false, month: 1, station: 'contract', snapshotKey: b0.key,
-      line: 'Should Ayanda take the 12-month corporate lunch contract? The client pays 60 days after each invoice.', claimRefs: [] },
+      line: `${session.title} ${b0.terms.firstReceiptMonth ? `The first contract payment lands in month ${b0.terms.firstReceiptMonth}.` : 'Path B has no contract payment.'}`, claimRefs: [] },
     { id: 'b-baseline', title: 'B: take it as offered', durationMs: 4000, pathId: 'B', stressed: false, month: b0.baseline.lowest.month, station: 'bridge', snapshotKey: b0.key,
       line: 'Baseline: the lowest cash on this path.', claimRefs: [{ snapshotKey: b0.key, scenario: 'baseline', metric: 'lowest_cash' }] },
     { id: 'b-late', title: 'B: the client pays late', durationMs: 3000, pathId: 'B', stressed: true, month: first ?? b1.active.lowest.month, station: 'marker', snapshotKey: b1.key,

@@ -53,6 +53,16 @@ export function PathsScreen() {
                   Open path
                 </Button>
                 <Button onClick={() => set({ panel: { letter: p.letter } })}>Assumptions</Button>
+                <Button
+                  variant="path"
+                  className="nft-explore"
+                  onClick={() => {
+                    set({ active: p.letter });
+                    go("explore");
+                  }}
+                >
+                  Explore this path
+                </Button>
               </div>
             </article>
           );

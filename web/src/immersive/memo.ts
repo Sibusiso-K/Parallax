@@ -73,5 +73,11 @@ export function evidenceAppendix(session: Session, viewedKeys: readonly string[]
   return lines;
 }
 
-export const MEMO_FOOTER =
-  'Demo founder: fictional. Synthetic inputs; template values are placeholders, not sourced figures. Not financial advice. One possible future, not a prediction.';
+/** The memo's closing line. The demo says it is fictional; a confirmed decision says whose answers it used. */
+export function memoFooter(session: Session): string {
+  const inputs =
+    session.mode === 'demo'
+      ? 'Demo founder: fictional. Synthetic inputs; template values are placeholders, not sourced figures.'
+      : 'Your confirmed answers; lines marked template or default are placeholders, not sourced figures.';
+  return `${inputs} Not financial advice. One possible future, not a prediction.`;
+}
