@@ -3,6 +3,7 @@ import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABE
 import { useParallax } from "@/lib/parallax-store";
 import { Avatar, Button, Src } from "./shared";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
+import { MicButton } from "./MicButton";
 
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
@@ -85,6 +86,7 @@ export function IntakeScreen() {
         <Button variant="outline" onClick={() => set({ story: DEMO_STORY })}>
           Use the demo story (fictional founder)
         </Button>
+        <MicButton onText={(text) => set((s) => ({ story: s.story.trim() ? `${s.story.trimEnd()} ${text}` : text }))} />
         <Button variant="primary" className="ml-auto" onClick={next} disabled={!story.trim() || busy}>
           {busy ? "Reading…" : "Continue"}
         </Button>

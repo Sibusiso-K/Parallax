@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEMO_EXTRACTION, DEMO_TEXT } from '../shared/intake/fixture.js';
 import { pick, rng } from '../shared/testing/random.js';
+import { intakeResponseSchema } from '../shared/intake/contract.js';
 import { POST } from './intake.js';
 
 // Stress test for POST /api/intake: many requests at once, good and bad, with the model switched on and its replies
@@ -48,7 +49,9 @@ describe('POST /api/intake under load', () => {
     const responses = await Promise.all(Array.from({ length: Math.ceil(RUNS / 4) }, () => post(JSON.stringify({ text: DEMO_TEXT }))));
     for (const res of responses) expect(res.status).toBe(200);
     for (const res of responses) {
-      const data = (await res.json()) as { ok: boolean; mode: string; fields: object };
+      const raw: unknown = await res.json();
+      expect(intakeResponseSchema.safeParse(raw).success, JSON.stringify(raw)).toBe(true); // the contract holds under load
+      const data = raw as { ok: boolean; mode: string; fields: object };
       expect(data.ok).toBe(true);
       expect(['model', 'fixture']).toContain(data.mode);
       expect(Object.keys(data.fields).length).toBeGreaterThan(0); // the demo text always fills something

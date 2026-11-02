@@ -51,7 +51,8 @@ const TODAY_KEYS = ['revenue', 'directCosts', 'overheads', 'payroll', 'founderPa
 // Rounded to R50 only to pick a midpoint; displayed figures are not rounded here (REVIEW.md L2).
 function baseOf(low: number, high: number, base?: number): number {
   if (base !== undefined && base >= low && base <= high) return base;
-  return Math.round((low + high) / 2 / 50) * 50;
+  // Never outside the range the founder gave: rounding a small range's midpoint can land below its bottom.
+  return Math.min(high, Math.max(low, Math.round((low + high) / 2 / 50) * 50));
 }
 
 function figure(f: Extraction[MoneyKey], fallback: Range): Figure {
