@@ -14,7 +14,7 @@ import type { CameraStation } from './replay';
 let REDUCED = false;
 
 export const TILE_LEN = 1.5;
-export const TILE_W = 3.4;
+export const TILE_W = 4.8;
 const STEP = TILE_LEN + 0.07;
 
 export function tilePose(i: number, count = 36): { x: number; y: number; z: number; yaw: number } {
@@ -26,7 +26,7 @@ export function tilePose(i: number, count = 36): { x: number; y: number; z: numb
   return { x, y, z, yaw };
 }
 
-const PEARL = new THREE.Color('#efe9ff');
+const PEARL = new THREE.Color('#e4d9ff');
 const FROST = new THREE.Color('#aab3e6');
 const GOLD = '#e7c46b';
 const INK = '#121826';
@@ -73,7 +73,7 @@ function Sky() {
   useEffect(() => {
     const tex = skyTexture();
     scene.background = tex;
-    scene.fog = new THREE.Fog('#e4dcfb', 18, 70);
+    scene.fog = new THREE.Fog('#ead9f4', 26, 120);
     return () => {
       scene.background = null;
       scene.fog = null;
@@ -172,7 +172,7 @@ function Bridge({ snapshot, selectedMonth, onSelect, onHover, showGhost }: Bridg
         onPointerOut={() => onHover(null)}
       >
         <boxGeometry args={[TILE_W, 0.14, TILE_LEN]} />
-        <meshPhysicalMaterial roughness={0.18} metalness={0.1} clearcoat={1} clearcoatRoughness={0.12} iridescence={0.6} iridescenceIOR={1.4} emissive="#d9ccff" emissiveIntensity={0.18} />
+        <meshPhysicalMaterial roughness={0.22} metalness={0.15} clearcoat={1} clearcoatRoughness={0.1} iridescence={0.8} iridescenceIOR={1.5} sheen={0.6} sheenColor="#ffe3c8" emissive="#cdbcff" emissiveIntensity={0.28} />
       </instancedMesh>
       <instancedMesh ref={hatch} args={[undefined, undefined, 36]} raycast={() => null}>
         <planeGeometry args={[TILE_W * 0.98, TILE_LEN * 0.96]} />
@@ -232,9 +232,28 @@ function Rails({ n }: { n: number }) {
       return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n * 4, 0.045, 8, false);
     });
   }, [n]);
+  const edgeGeos = useMemo(
+    () =>
+      [-1, 1].map((side) => {
+        const pts = Array.from({ length: n }, (_, i) => {
+          const p = tilePose(i, n);
+          const c = Math.cos(p.yaw);
+          const sn = Math.sin(p.yaw);
+          const dx = side * (TILE_W / 2 + 0.05);
+          return new THREE.Vector3(p.x + dx * c, p.y + 0.08, p.z - dx * sn);
+        });
+        return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n * 3, 0.05, 6, false);
+      }),
+    [n],
+  );
   const posts = useMemo(() => Array.from({ length: Math.ceil(n / 4) + 1 }, (_, k) => Math.min(k * 4, n - 1)), [n]);
   return (
     <group>
+      {edgeGeos.map((g, i) => (
+        <mesh key={`e${i}`} geometry={g} raycast={() => null}>
+          <meshBasicMaterial color="#ffe2a0" />
+        </mesh>
+      ))}
       {geos.map((g, i) => (
         <mesh key={i} geometry={g} raycast={() => null}>
           <meshStandardMaterial color="#f3d27a" emissive="#ffd978" emissiveIntensity={0.7} metalness={0.9} roughness={0.2} />
@@ -283,7 +302,7 @@ function Atmosphere({ low }: { low: boolean }) {
   const sun = useMemo(() => softTexture('rgba(255,244,214,1)', 'rgba(255,214,170,0)'), []);
   useEffect(() => () => { cloud.dispose(); sun.dispose(); }, [cloud, sun]);
   const clouds = useMemo(
-    () => Array.from({ length: low ? 40 : 90 }, (_, i) => ({ x: ((i * 53) % 80) - 40, y: -3.2 + ((i * 7) % 5) * 0.55, z: 8 - ((i * 31) % 100), s: 7 + ((i * 11) % 9) })),
+    () => Array.from({ length: low ? 50 : 130 }, (_, i) => ({ x: ((i * 53) % 120) - 60, y: -4.5 + ((i * 7) % 9) * 0.7, z: 10 - ((i * 31) % 150), s: 8 + ((i * 11) % 12) })),
     [low],
   );
   return (
@@ -339,6 +358,41 @@ function Islands() {
   );
 }
 
+/** The far end of the bridge: a gate and a skyline of soft towers, so the path leads somewhere. */
+function Destination({ n }: { n: number }) {
+  const end = tilePose(n - 1, n);
+  const towers = useMemo(
+    () => Array.from({ length: 26 }, (_, i) => ({ x: ((i * 29) % 44) - 22, z: -((i * 7) % 26) - 4, h: 5 + ((i * 17) % 15), w: 1.4 + ((i * 5) % 3) * 0.6, tint: ['#d9ccff', '#f1d4e6', '#cbd8ff'][i % 3] })),
+    [],
+  );
+  return (
+    <group position={[end.x, end.y, end.z - 6]}>
+      <mesh position={[0, 4.2, 0]} raycast={() => null}>
+        <torusGeometry args={[4.2, 0.28, 12, 40, Math.PI]} />
+        <meshStandardMaterial color="#f3d27a" emissive="#ffd978" emissiveIntensity={0.9} metalness={0.9} roughness={0.2} />
+      </mesh>
+      {[-4.2, 4.2].map((x) => (
+        <mesh key={x} position={[x, 2.1, 0]} raycast={() => null}>
+          <cylinderGeometry args={[0.3, 0.38, 4.2, 12]} />
+          <meshStandardMaterial color="#f3d27a" emissive="#ffd978" emissiveIntensity={0.5} metalness={0.9} roughness={0.25} />
+        </mesh>
+      ))}
+      {towers.map((t, i) => (
+        <group key={i} position={[t.x, 0, t.z - 8]}>
+          <mesh position={[0, t.h / 2 - 3, 0]} raycast={() => null}>
+            <boxGeometry args={[t.w, t.h, t.w]} />
+            <meshStandardMaterial color={t.tint} emissive="#ffe9d0" emissiveIntensity={0.25} roughness={0.5} />
+          </mesh>
+          <mesh position={[0, t.h - 3 + 0.8, 0]} raycast={() => null}>
+            <coneGeometry args={[t.w * 0.7, 1.8, 6]} />
+            <meshStandardMaterial color="#f3d27a" emissive="#ffd978" emissiveIntensity={0.6} metalness={0.8} roughness={0.3} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => void; label: string }) {
   const handle = useRef<THREE.Group>(null);
   const drag = useRef<{ y: number; start: number; moved: boolean } | null>(null);
@@ -353,7 +407,7 @@ function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => v
   const [hot, setHot] = useState(false);
   return (
     <group
-      position={[-3.2, 0.1, 0.6]}
+      position={[-4.2, 0.1, 1.4]}
       onPointerDown={(e) => {
         e.stopPropagation();
         (e.target as Element).setPointerCapture?.(e.pointerId);
@@ -433,7 +487,7 @@ function Contract({ onOpen, text }: { onOpen: () => void; text: string }) {
 function Pan({ label, onOpen }: { label: string; onOpen: () => void }) {
   return (
     <group
-      position={[3.6, 0, 0.4]}
+      position={[3.9, 0, 2.2]}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();
@@ -461,7 +515,7 @@ function Pan({ label, onOpen }: { label: string; onOpen: () => void }) {
 function Fridge({ label, onOpen }: { label: string; onOpen: () => void }) {
   return (
     <group
-      position={[4.4, 0, -3]}
+      position={[4.6, 0, -1.2]}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();
@@ -559,8 +613,8 @@ function Person({ anchor, glass, pointAt, speaking }: { anchor: THREE.Vector3; g
 export type Clip = 'idle' | 'listen' | 'speak' | 'point' | 'walk' | 'acknowledge' | 'hold';
 export type Mood = 'idle' | 'speak' | 'point';
 
-useGLTF.preload('/models/ayanda.glb');
-useGLTF.preload('/models/advisor.glb');
+useGLTF.preload('/models/ayanda.glb?v=3');
+useGLTF.preload('/models/advisor.glb?v=3');
 
 /**
  * A Blender-authored skinned character (public/models, built by assets/blender/build_characters.py). The clip is chosen by a
@@ -569,6 +623,7 @@ useGLTF.preload('/models/advisor.glb');
  */
 function Avatar({ url, anchor, pointAt, clip, faceCamera, turn }: { url: string; anchor: THREE.Vector3; pointAt: THREE.Vector3; clip: Clip; faceCamera: number; turn: number }) {
   const { scene, animations } = useGLTF(url);
+  const camera = useThree((st) => st.camera);
   const model = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const root = useRef<THREE.Group>(null);
   const { actions } = useAnimations(animations, root);
@@ -598,7 +653,8 @@ function Avatar({ url, anchor, pointAt, clip, faceCamera, turn }: { url: string;
     const name: Clip = walking ? 'walk' : want.current;
     // face the bridge when walking or pointing, otherwise turn toward the camera
     const toward = Math.atan2(pointAt.x - r.position.x, pointAt.z - r.position.z);
-    const targetYaw = walking || name === 'point' ? toward : faceCamera + turn;
+    const toCamera = Math.atan2(camera.position.x - r.position.x, camera.position.z - r.position.z);
+    const targetYaw = walking || name === 'point' ? toward : toCamera + faceCamera + turn * 0.6;
     yaw.current = REDUCED ? targetYaw : THREE.MathUtils.damp(yaw.current, targetYaw, 5, dt);
     r.rotation.y = yaw.current;
     if (playing.current !== name) {
@@ -616,8 +672,11 @@ function Avatar({ url, anchor, pointAt, clip, faceCamera, turn }: { url: string;
     }
   });
   return (
-    <group ref={root} position={[anchor.x, anchor.y, anchor.z]} scale={1.15}>
-      <primitive object={model} />
+    <group ref={root} position={[anchor.x, anchor.y, anchor.z]} scale={1.5}>
+      {/* the exported model faces -Z; turn it so yaw 0 means facing the camera (+Z) */}
+      <group rotation={[0, 0, 0]}>
+        <primitive object={model} />
+      </group>
     </group>
   );
 }
@@ -684,8 +743,8 @@ function CameraRig({ station, month, count, reduced, free }: { station: CameraSt
         tgt = new THREE.Vector3(0, 0, -22);
         break;
       default:
-        pos = new THREE.Vector3(p.x + 2.2, p.y + 4.6, p.z + 8.8);
-        tgt = new THREE.Vector3(p.x, p.y - 1.1, p.z - 3.5);
+        pos = new THREE.Vector3(p.x + 1.4, p.y + 2.6, p.z + 6.6);
+        tgt = new THREE.Vector3(p.x - 0.2, p.y + 1.5, p.z - 9);
     }
     const k = reduced ? 1 : 1 - Math.exp(-dt * 3.2);
     camera.position.lerp(pos, k);
@@ -725,13 +784,13 @@ export default function Scene(p: SceneProps) {
   const pose = tilePose(Math.min(Math.max(p.selectedMonth, 1), n) - 1, n);
   const point = useMemo(() => new THREE.Vector3(pose.x, pose.y + 0.1, pose.z), [pose.x, pose.y, pose.z]);
   const stressed = p.snapshot.ref.setback !== null;
-  const ayanda = useMemo(() => new THREE.Vector3(pose.x - 1.0, pose.y + 0.07, pose.z + 1.6), [pose.x, pose.y, pose.z]);
-  const advisor = useMemo(() => new THREE.Vector3(pose.x + 1.0, pose.y + 0.07, pose.z + 1.9), [pose.x, pose.y, pose.z]);
+  const ayanda = useMemo(() => new THREE.Vector3(pose.x - 1.1, pose.y + 0.07, pose.z + 2.2), [pose.x, pose.y, pose.z]);
+  const advisor = useMemo(() => new THREE.Vector3(pose.x + 1.2, pose.y + 0.07, pose.z + 2.5), [pose.x, pose.y, pose.z]);
   const pathColour = PATH_COLOUR[p.snapshot.ref.pathId] ?? INK;
   return (
     <Canvas
       dpr={p.lowTier ? [1, 1.25] : [1, 2]}
-      camera={{ position: [2.4, 5, 9], fov: 52, near: 0.1, far: 140 }}
+      camera={{ position: [1.4, 3, 7], fov: 42, near: 0.1, far: 220 }}
       gl={{ antialias: !p.lowTier, powerPreference: 'high-performance' }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', (e) => {
@@ -742,9 +801,10 @@ export default function Scene(p: SceneProps) {
       aria-hidden="true"
     >
       <Sky />
-      <ambientLight intensity={0.95} color="#efe8ff" />
-      <hemisphereLight args={['#dfe6ff', '#ffd9c2', 0.9]} />
-      <directionalLight position={[6, 12, 6]} intensity={2.1} color="#fff1dc" />
+      <ambientLight intensity={0.55} color="#e6dcff" />
+      <hemisphereLight args={['#cfd8ff', '#ffd2b0', 0.8]} />
+      <directionalLight position={[10, 7, -60]} intensity={3.4} color="#ffc98a" />
+      <directionalLight position={[-6, 10, 8]} intensity={0.9} color="#e8e0ff" />
       <pointLight position={[-6, 4, -2]} intensity={14} color={pathColour} distance={18} />
       <Bridge snapshot={p.snapshot} selectedMonth={p.selectedMonth} onSelect={p.onSelectMonth} onHover={p.onHoverMonth} showGhost={stressed} />
       <Lever pulled={p.pulled} onToggle={p.onLever} label={p.leverLabel} />
@@ -753,11 +813,12 @@ export default function Scene(p: SceneProps) {
       <Pan label={p.panText} onOpen={p.onOpenPan} />
       <AvatarBoundary fallback={<><Person anchor={ayanda} pointAt={point} speaking={p.speaking} /><Person anchor={advisor} glass pointAt={point} speaking={p.speaking} /></>}>
         <Suspense fallback={<><Person anchor={ayanda} pointAt={point} speaking={p.speaking} /><Person anchor={advisor} glass pointAt={point} speaking={p.speaking} /></>}>
-          <Avatar url="/models/ayanda.glb" anchor={ayanda} pointAt={point} faceCamera={0} turn={0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'acknowledge' : p.station === 'contract' ? 'hold' : 'idle'} />
-          <Avatar url="/models/advisor.glb" anchor={advisor} pointAt={point} faceCamera={0} turn={-0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'speak' : p.mood === 'point' ? 'point' : 'idle'} />
+          <Avatar url="/models/ayanda.glb?v=3" anchor={ayanda} pointAt={point} faceCamera={0} turn={0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'acknowledge' : p.station === 'contract' ? 'hold' : 'idle'} />
+          <Avatar url="/models/advisor.glb?v=3" anchor={advisor} pointAt={point} faceCamera={0} turn={-0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'speak' : p.mood === 'point' ? 'point' : 'idle'} />
         </Suspense>
       </AvatarBoundary>
       <Atmosphere low={p.lowTier} />
+      <Destination n={n} />
       {!p.lowTier && <Islands />}
       {!p.lowTier && <Pearls count={36} />}
       <CameraRig station={p.station} month={p.selectedMonth} count={n} reduced={p.reduced} free={p.free} />

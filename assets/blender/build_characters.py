@@ -12,7 +12,7 @@ import bpy
 from mathutils import Vector
 
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-OUT = argv[0] if argv else os.path.join(os.getcwd(), 'public', 'models')
+OUT = argv[0] if argv else os.path.join(os.getcwd(), 'web', 'public', 'models')
 PREVIEW = '--preview' in argv
 os.makedirs(OUT, exist_ok=True)
 
@@ -169,11 +169,13 @@ def build_skin(kind):
     # neck and head
     part(cyl((0, 0, 1.62), 0.07, 0.14), 'neck', skin)
     part(sphere((0, 0, 1.84), 0.21, (0.92, 1.0, 1.08), 24), 'head', skin)
-    part(sphere((-0.075, -0.185, 1.87), 0.026, (1, 0.6, 1.2), 10), 'head', dark)
-    part(sphere((0.075, -0.185, 1.87), 0.026, (1, 0.6, 1.2), 10), 'head', dark)
-    part(sphere((0, -0.2, 1.77), 0.045, (1.3, 0.5, 0.5), 10), 'jaw', lip)
+    white = material('EyeWhite', (0.98, 0.97, 0.95, 1), rough=0.3)
+    for ex in (-0.085, 0.085):
+        part(sphere((ex, -0.175, 1.87), 0.05, (1, 0.55, 1.1), 14), 'head', white)
+        part(sphere((ex, -0.205, 1.87), 0.028, (1, 0.5, 1.1), 10), 'head', dark)
+    part(sphere((0, -0.2, 1.775), 0.065, (1.4, 0.5, 0.6), 12), 'jaw', lip)
     # hair
-    part(sphere((0, 0.035, 1.9), 0.235, (0.95, 1.0, 0.95), 22), 'head', hair)
+    part(sphere((0, 0.075, 1.915), 0.235, (0.95, 1.0, 0.95), 22), 'head', hair)
     part(sphere((0, 0.12, 2.1), 0.11, (1, 1, 1), 14), 'head', hair)
     if kind == 'ayanda':
         for i, x in enumerate((-0.14, -0.07, 0.0, 0.07, 0.14)):
