@@ -152,10 +152,10 @@ def build_skin(kind):
         dark = material('Dark', (0.05, 0.03, 0.03, 1), rough=0.5)
         lip = material('Lip', (0.45, 0.16, 0.18, 1), rough=0.5)
     else:
-        skin = material('GlassSkin', (0.85, 0.8, 1.0, 1), rough=0.05, alpha=0.5, transmission=0.9, emit=(0.78, 0.7, 1.0, 1), emit_strength=0.35)
-        top = material('GlassTop', (0.75, 0.68, 1.0, 1), rough=0.05, alpha=0.55, transmission=0.9, emit=(0.7, 0.6, 1.0, 1), emit_strength=0.4)
+        skin = material('GlassSkin', (0.88, 0.83, 1.0, 1), rough=0.1, alpha=0.82, transmission=0.25, emit=(0.78, 0.7, 1.0, 1), emit_strength=0.35)
+        top = material('GlassTop', (0.72, 0.64, 1.0, 1), rough=0.1, alpha=0.78, transmission=0.25, emit=(0.7, 0.6, 1.0, 1), emit_strength=0.4)
         apron = trousers = shoes = top
-        hair = material('GlassHair', (0.8, 0.72, 1.0, 1), rough=0.05, alpha=0.6, transmission=0.8, emit=(0.8, 0.7, 1.0, 1), emit_strength=0.5)
+        hair = material('GlassHair', (0.78, 0.7, 1.0, 1), rough=0.1, alpha=0.85, transmission=0.2, emit=(0.8, 0.7, 1.0, 1), emit_strength=0.5)
         gold = material('GlowGold', (1.0, 0.85, 0.5, 1), rough=0.2, metal=1.0, emit=(1.0, 0.85, 0.5, 1), emit_strength=0.8)
         dark = material('GlassEye', (0.35, 0.28, 0.6, 1), rough=0.3)
         lip = dark
@@ -170,10 +170,10 @@ def build_skin(kind):
     part(cyl((0, 0, 1.62), 0.07, 0.14), 'neck', skin)
     part(sphere((0, 0, 1.84), 0.21, (0.92, 1.0, 1.08), 24), 'head', skin)
     white = material('EyeWhite', (0.98, 0.97, 0.95, 1), rough=0.3)
-    for ex in (-0.085, 0.085):
-        part(sphere((ex, -0.175, 1.87), 0.05, (1, 0.55, 1.1), 14), 'head', white)
-        part(sphere((ex, -0.205, 1.87), 0.028, (1, 0.5, 1.1), 10), 'head', dark)
-    part(sphere((0, -0.2, 1.775), 0.065, (1.4, 0.5, 0.6), 12), 'jaw', lip)
+    for ex in (-0.07, 0.07):
+        part(sphere((ex, -0.18, 1.865), 0.034, (1, 0.5, 1.1), 14), 'head', white)
+        part(sphere((ex, -0.2, 1.865), 0.019, (1, 0.5, 1.1), 10), 'head', dark)
+    part(sphere((0, -0.2, 1.775), 0.038, (1.5, 0.45, 0.45), 12), 'jaw', lip)
     # hair
     part(sphere((0, 0.075, 1.915), 0.235, (0.95, 1.0, 0.95), 22), 'head', hair)
     part(sphere((0, 0.12, 2.1), 0.11, (1, 1, 1), 14), 'head', hair)

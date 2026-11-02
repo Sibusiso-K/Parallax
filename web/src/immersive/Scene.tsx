@@ -179,6 +179,16 @@ function Bridge({ snapshot, selectedMonth, onSelect, onHover, showGhost }: Bridg
         <meshBasicMaterial map={hatchTex} transparent depthWrite={false} side={THREE.DoubleSide} />
       </instancedMesh>
       <Rails n={n} />
+      {rows.map((r, i) => {
+        const near = Math.abs(r.month - selectedMonth) <= 4 || r.month % 6 === 0 || r.month === 1;
+        if (!near) return null;
+        const p = tilePose(i, n);
+        return (
+          <Html key={r.month} zIndexRange={[3, 0]} position={[p.x, p.y + 0.12, p.z + 0.2]} center distanceFactor={11} style={{ pointerEvents: 'none' }}>
+            <div className={`tile-no ${r.cash < 0 ? 'tile-no--neg' : ''} ${r.month === selectedMonth ? 'tile-no--sel' : ''}`}>{String(r.month).padStart(2, '0')}</div>
+          </Html>
+        );
+      })}
       {/* selected month ring */}
       <mesh position={[sel.x, sel.y + 0.12, sel.z]} rotation={[-Math.PI / 2, 0, sel.yaw]} raycast={() => null}>
         <ringGeometry args={[1.45, 1.6, 4, 1, Math.PI / 4]} />
@@ -312,7 +322,7 @@ function Atmosphere({ low }: { low: boolean }) {
           <spriteMaterial map={cloud} transparent opacity={0.9} depthWrite={false} fog={false} />
         </sprite>
       ))}
-      <sprite position={[8, 7, -62]} scale={[30, 30, 1]} raycast={() => null}>
+      <sprite position={[8, 7, -62]} scale={[17, 17, 1]} raycast={() => null}>
         <spriteMaterial map={sun} transparent depthWrite={false} fog={false} blending={THREE.AdditiveBlending} />
       </sprite>
     </group>
@@ -613,8 +623,8 @@ function Person({ anchor, glass, pointAt, speaking }: { anchor: THREE.Vector3; g
 export type Clip = 'idle' | 'listen' | 'speak' | 'point' | 'walk' | 'acknowledge' | 'hold';
 export type Mood = 'idle' | 'speak' | 'point';
 
-useGLTF.preload('/models/ayanda.glb?v=3');
-useGLTF.preload('/models/advisor.glb?v=3');
+useGLTF.preload('/models/ayanda.glb?v=4');
+useGLTF.preload('/models/advisor.glb?v=4');
 
 /**
  * A Blender-authored skinned character (public/models, built by assets/blender/build_characters.py). The clip is chosen by a
@@ -813,8 +823,8 @@ export default function Scene(p: SceneProps) {
       <Pan label={p.panText} onOpen={p.onOpenPan} />
       <AvatarBoundary fallback={<><Person anchor={ayanda} pointAt={point} speaking={p.speaking} /><Person anchor={advisor} glass pointAt={point} speaking={p.speaking} /></>}>
         <Suspense fallback={<><Person anchor={ayanda} pointAt={point} speaking={p.speaking} /><Person anchor={advisor} glass pointAt={point} speaking={p.speaking} /></>}>
-          <Avatar url="/models/ayanda.glb?v=3" anchor={ayanda} pointAt={point} faceCamera={0} turn={0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'acknowledge' : p.station === 'contract' ? 'hold' : 'idle'} />
-          <Avatar url="/models/advisor.glb?v=3" anchor={advisor} pointAt={point} faceCamera={0} turn={-0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'speak' : p.mood === 'point' ? 'point' : 'idle'} />
+          <Avatar url="/models/ayanda.glb?v=4" anchor={ayanda} pointAt={point} faceCamera={0} turn={0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'acknowledge' : p.station === 'contract' ? 'hold' : 'idle'} />
+          <Avatar url="/models/advisor.glb?v=4" anchor={advisor} pointAt={point} faceCamera={0} turn={-0.5} clip={p.working ? 'listen' : p.mood === 'speak' ? 'speak' : p.mood === 'point' ? 'point' : 'idle'} />
         </Suspense>
       </AvatarBoundary>
       <Atmosphere low={p.lowTier} />

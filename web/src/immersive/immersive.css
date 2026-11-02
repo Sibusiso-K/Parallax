@@ -131,3 +131,7 @@
   .memo-wrap { position: static; background: none; padding: 0; overflow: visible; display: block; }
   .memo { box-shadow: none; border: 0; width: 100%; background: #fff; backdrop-filter: none; }
 }
+
+.tile-no { font: 700 14px 'Geist Mono Variable', monospace; color: #3a3f66; background: rgba(255,255,255,0.78); border-radius: 8px; padding: 1px 6px; letter-spacing: 0.04em; }
+.tile-no--sel { background: #fff7dc; color: #121826; outline: 2px solid #e7c46b; }
+.tile-no--neg { background: #e8e1ff; color: #3a2a7a; text-decoration: underline dotted; }
