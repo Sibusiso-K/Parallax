@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { Html, OrbitControls } from '@react-three/drei';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { formatRand } from '../../../shared/guard/figures';
@@ -340,19 +340,44 @@ function Islands() {
 
 function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => void; label: string }) {
   const handle = useRef<THREE.Group>(null);
+  const drag = useRef<{ y: number; start: number; moved: boolean } | null>(null);
+  const preview = useRef<number | null>(null);
   useFrame((_, dt) => {
     const g = handle.current;
     if (!g) return;
-    const target = pulled ? 0.95 : -0.65;
-    g.rotation.x = REDUCED ? target : THREE.MathUtils.damp(g.rotation.x, target, 7, dt);
+    const progress = preview.current ?? (pulled ? 1 : 0);
+    const target = -0.65 + progress * 1.6;
+    g.rotation.x = REDUCED || preview.current !== null ? target : THREE.MathUtils.damp(g.rotation.x, target, 7, dt);
   });
   const [hot, setHot] = useState(false);
   return (
     <group
       position={[-3.2, 0.1, 0.6]}
-      onClick={(e) => {
+      onPointerDown={(e) => {
         e.stopPropagation();
-        onToggle();
+        (e.target as Element).setPointerCapture?.(e.pointerId);
+        drag.current = { y: e.clientY, start: pulled ? 1 : 0, moved: false };
+      }}
+      onPointerMove={(e) => {
+        const d = drag.current;
+        if (!d) return;
+        const dy = e.clientY - d.y;
+        if (Math.abs(dy) > 6) d.moved = true;
+        if (d.moved) preview.current = Math.min(1, Math.max(0, d.start + dy / 110));
+      }}
+      onPointerUp={(e) => {
+        e.stopPropagation();
+        const d = drag.current;
+        drag.current = null;
+        const p = preview.current;
+        preview.current = null;
+        if (!d) return;
+        if (!d.moved) onToggle();
+        else if ((p ?? 0) > 0.5 !== pulled) onToggle();
+      }}
+      onPointerCancel={() => {
+        drag.current = null;
+        preview.current = null;
       }}
       onPointerOver={() => setHot(true)}
       onPointerOut={() => setHot(false)}
@@ -367,12 +392,12 @@ function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => v
           <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.2} />
         </mesh>
         <mesh position={[0, 1.45, 0]}>
-          <sphereGeometry args={[0.2, 20, 20]} />
-          <meshPhysicalMaterial color="#fffaf0" roughness={0.1} clearcoat={1} emissive={hot ? '#ffe9b0' : '#000000'} emissiveIntensity={0.5} />
+          <sphereGeometry args={[0.22, 20, 20]} />
+          <meshPhysicalMaterial color="#fffaf0" roughness={0.1} clearcoat={1} emissive={hot ? '#ffe9b0' : '#000000'} emissiveIntensity={0.6} />
         </mesh>
       </group>
       <Html zIndexRange={[4, 0]} position={[0, 2.8, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
-        <div className="room-label">{label}</div>
+        <div className="room-label">{label} · drag or click</div>
       </Html>
     </group>
   );
@@ -399,6 +424,34 @@ function Contract({ onOpen, text }: { onOpen: () => void; text: string }) {
       </mesh>
       <Html zIndexRange={[4, 0]} position={[0, 4.3, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
         <div className="room-label">{text}</div>
+      </Html>
+    </group>
+  );
+}
+
+function Pan({ label, onOpen }: { label: string; onOpen: () => void }) {
+  return (
+    <group
+      position={[3.6, 0, 0.4]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+    >
+      <mesh position={[0, 0.3, 0]}>
+        <cylinderGeometry args={[0.55, 0.5, 0.6, 24]} />
+        <meshPhysicalMaterial color="#f1ecf7" roughness={0.2} metalness={0.7} clearcoat={0.8} />
+      </mesh>
+      <mesh position={[0, 0.62, 0]}>
+        <cylinderGeometry args={[0.58, 0.58, 0.06, 24]} />
+        <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.25} />
+      </mesh>
+      <mesh position={[0.8, 0.4, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.05, 0.05, 0.5, 8]} />
+        <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.25} />
+      </mesh>
+      <Html zIndexRange={[4, 0]} position={[0, 1.7, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
+        <div className="room-label">{label}</div>
       </Html>
     </group>
   );
@@ -528,10 +581,11 @@ function Pearls({ count }: { count: number }) {
   );
 }
 
-function CameraRig({ station, month, count, reduced }: { station: CameraStation; month: number; count: number; reduced: boolean }) {
+function CameraRig({ station, month, count, reduced, free }: { station: CameraStation; month: number; count: number; reduced: boolean; free: boolean }) {
   const { camera } = useThree();
   const look = useRef(new THREE.Vector3(0, 0.5, -4));
   useFrame((_, dt) => {
+    if (free) return;
     const p = tilePose(Math.min(Math.max(month, 1), count) - 1, count);
     let pos: THREE.Vector3;
     let tgt: THREE.Vector3;
@@ -543,6 +597,10 @@ function CameraRig({ station, month, count, reduced }: { station: CameraStation;
       case 'marker':
         pos = new THREE.Vector3(p.x + 3.2, p.y + 3.4, p.z + 6.5);
         tgt = new THREE.Vector3(p.x, p.y + 1, p.z - 1);
+        break;
+      case 'overview':
+        pos = new THREE.Vector3(8, 16, 14);
+        tgt = new THREE.Vector3(0, 0, -20);
         break;
       case 'memo':
         pos = new THREE.Vector3(0, 7, 12);
@@ -576,6 +634,9 @@ export interface SceneProps {
   onLever: () => void;
   onOpenContract: () => void;
   onOpenFridge: () => void;
+  onOpenPan: () => void;
+  panText: string;
+  free: boolean;
   onContextLost: () => void;
 }
 
@@ -610,12 +671,14 @@ export default function Scene(p: SceneProps) {
       <Lever pulled={p.pulled} onToggle={p.onLever} label={p.leverLabel} />
       <Contract text={p.contractText} onOpen={p.onOpenContract} />
       <Fridge label={p.fridgeText} onOpen={p.onOpenFridge} />
+      <Pan label={p.panText} onOpen={p.onOpenPan} />
       <Person anchor={ayanda} pointAt={point} speaking={p.speaking} />
       <Person anchor={advisor} glass pointAt={point} speaking={p.speaking} />
       <Atmosphere low={p.lowTier} />
       {!p.lowTier && <Islands />}
       {!p.lowTier && <Pearls count={36} />}
-      <CameraRig station={p.station} month={p.selectedMonth} count={n} reduced={p.reduced} />
+      <CameraRig station={p.station} month={p.selectedMonth} count={n} reduced={p.reduced} free={p.free} />
+      {p.free && <OrbitControls makeDefault enableDamping maxPolarAngle={Math.PI * 0.49} minDistance={3} maxDistance={60} />}
     </Canvas>
   );
 }

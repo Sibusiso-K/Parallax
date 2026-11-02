@@ -5,7 +5,7 @@ import type { Session } from './session';
 // The 15-second replay (BUILD-SPEC section 9): a deterministic camera and caption track over FROZEN snapshots, played in
 // the browser. It is not exported video. Editing the profile later marks a replay "historical" instead of relabelling it.
 
-export type CameraStation = 'contract' | 'bridge' | 'marker' | 'memo';
+export type CameraStation = 'contract' | 'bridge' | 'marker' | 'memo' | 'overview';
 
 export interface Shot {
   id: string;

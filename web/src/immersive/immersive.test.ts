@@ -136,3 +136,32 @@ describe('replay failing closed', () => {
     expect(shotUnavailable(fresh, replay.shots[2]!)).toBe(true);
   });
 });
+
+describe('objects change the numbers (session revisions)', () => {
+  it('an edit creates a new revision, the engine recomputes, old snapshots stay resolvable but are not current', () => {
+    const s1 = createSession('rev');
+    const before = s1.snapshotFor('B', false);
+    expect(before.baseline.lowest.cash).toBe(33000);
+    const fridge = s1.paths.B.path.assumptions.find((a) => a.role === 'equipment')!;
+    const r = s1.revise('B', fridge.id, { low: 45000, base: 45000, high: 45000 });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const s2 = r.session;
+    expect(s2.profileRevision).toBe(2);
+    expect(s2.snapshotFor('B', false).baseline.lowest.cash).toBe(13000);
+    expect(s2.snapshotFor('B', false).key).not.toBe(before.key);
+    expect(s2.registry.has(before.key)).toBe(true);
+    expect(s2.snapshotFor('C', false).baseline.lowest.cash).toBe(87750);
+    expect(s1.snapshotFor('B', false).baseline.lowest.cash).toBe(33000);
+    expect(s2.registry.get(before.key)!.ref.profileRevision).not.toBe(s2.profileRevision);
+  });
+
+  it('the engine refuses an invalid edit and the session is unchanged', () => {
+    const s = createSession('bad');
+    const id = s.paths.B.path.assumptions[0]!.id;
+    const r = s.revise('B', id, { low: 10, base: 5, high: 20 });
+    expect(r.ok).toBe(false);
+    expect(s.profileRevision).toBe(1);
+    expect(s.revise('B', 'nope', { low: 1, base: 1, high: 1 }).ok).toBe(false);
+  });
+});

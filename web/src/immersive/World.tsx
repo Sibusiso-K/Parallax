@@ -7,7 +7,7 @@ import { resolveClaim, type ClaimRef, type ResolvedClaim } from '../../../shared
 import { RequestGate, type PathLetter, type RoomSnapshot } from '../../../shared/scene/room-model';
 import { FIXTURE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorAnswer } from './advisor-fixture';
 import { EMPTY_MEMO, MEMO_FOOTER, choiceLabel, evidenceAppendix, type Choice, type Memo } from './memo';
-import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type Replay } from './replay';
+import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type CameraStation, type Replay } from './replay';
 import { createSession, SYNTHETIC_WAGES_NOTE } from './session';
 
 const Scene = lazy(() => import('./Scene'));
@@ -53,7 +53,7 @@ export default function WorldRoot() {
 }
 
 function World() {
-  const session = useMemo(() => createSession('demo'), []);
+  const [session, setSession] = useState(() => createSession('demo'));
   const gate = useMemo(() => new RequestGate(), []);
   const reduced = useMemo(() => mq('(prefers-reduced-motion: reduce)'), []);
   const lowTier = useMemo(() => mq('(max-width: 768px)') || ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 8) <= 4 || (navigator.hardwareConcurrency ?? 8) <= 4, []);
@@ -66,12 +66,15 @@ function World() {
   const [working, setWorking] = useState(false);
   const [question, setQuestion] = useState('');
   const [evidence, setEvidence] = useState<ResolvedClaim | null>(null);
-  const [sheet, setSheet] = useState<null | 'contract' | 'fridge' | 'memo'>(null);
+  const [sheet, setSheet] = useState<null | 'contract' | 'fridge' | 'pan' | 'memo'>(null);
   const [replay, setReplay] = useState<Replay | null>(null);
   const [replayT, setReplayT] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [memo, setMemo] = useState<Memo>(EMPTY_MEMO);
   const [announce, setAnnounce] = useState('');
+  const [free, setFree] = useState(false);
+  const [stationPick, setStationPick] = useState<CameraStation | null>(null);
+  const [editNote, setEditNote] = useState('');
   const [dockOpen, setDockOpen] = useState(() => !mq('(max-width: 1500px)'));
 
   // What is on screen: the founder's own exploration, or the replay's frozen shot.
@@ -145,6 +148,26 @@ function World() {
       void runAnswer(target, stress, a.month, a.question);
     },
     [runAnswer, say, session],
+  );
+
+  // Objects change the numbers: an edit goes through the engine's own validation and makes a NEW revision.
+  const applyEdit = useCallback(
+    (pathLetter: PathLetter, role: 'equipment' | 'contract' | 'direct', newBase: number) => {
+      const a = session.paths[pathLetter].path.assumptions.find((x) => x.role === role && x.kind === (role === 'contract' ? 'income' : 'cost'));
+      if (!a) return setEditNote('This path has no such line to edit.');
+      if (!Number.isFinite(newBase) || newBase < 0 || newBase > 5_000_000) return setEditNote('Enter a whole-rand amount from 0 to 5,000,000.');
+      const k = a.base === 0 ? 1 : newBase / a.base;
+      const r = session.revise(pathLetter, a.id, { low: Math.round(a.low * k), base: Math.round(newBase), high: Math.round(a.high * k) });
+      if (!r.ok) return setEditNote(`The engine refused that edit: ${r.error}`);
+      gate.invalidate();
+      setWorking(false);
+      setSession(r.session);
+      setReplay(null);
+      setPlaying(false);
+      setEditNote(`Applied to path ${pathLetter}: ${a.label} is now R${Math.round(newBase).toLocaleString('en-ZA').replace(/\u00a0/g, ',')}. New revision ${r.session.profileRevision}. Earlier answers and any replay are now historical.`);
+      say(`Edit applied to path ${pathLetter}. Revision ${r.session.profileRevision}. Figures recomputed by the engine.`);
+    },
+    [gate, say, session],
   );
 
   const switchPath = (p: PathLetter) => {
@@ -224,7 +247,7 @@ function World() {
   const leverLabel = `Client pays ${snapshot.terms.addedDelayMonths || 2} months late`;
   const assumptionOf = (re: RegExp) => snapshot.assumptions.find((a) => re.test(a.label));
   const fridge = assumptionOf(/equipment/i);
-  const stage = shot?.station ?? 'bridge';
+  const stage: CameraStation = shot?.station ?? stationPick ?? 'bridge';
   const replayOutdated = replay ? isOutdated(replay, session) : false;
   const shotClaims = replay && shot ? resolveShot(session, shot) : [];
   const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
@@ -250,6 +273,9 @@ function World() {
               onLever={inReplay ? noop : toggleLever}
               onOpenContract={() => setSheet('contract')}
               onOpenFridge={() => setSheet('fridge')}
+              onOpenPan={() => setSheet('pan')}
+              panText="Ingredients and packaging: tap to edit"
+              free={free}
               onContextLost={() => setWebgl(false)}
             />
           </Suspense>
@@ -278,6 +304,15 @@ function World() {
         Stand-in figures and a fixture advisor: no model is connected, and the rigged Ayanda is pending. Numbers come from the existing engine; template values are placeholders.
       </div>
 
+      {session.profileRevision > 1 && (
+        <div className="honest honest--rev" role="note">Revision {session.profileRevision}: assumptions were edited. Answers and replays made before the edit are historical.</div>
+      )}
+      {hover !== null && !inReplay && (
+        <div className="hovercard glass" role="status">
+          <b>Month {hover}</b> · cash {cellText(snapshot.active.rows[hover - 1]!.cash)}{isStress ? ` (baseline ${cellText(snapshot.baseline.rows[hover - 1]!.cash)})` : ''} · net {cellText(snapshot.active.rows[hover - 1]!.net)}
+          {snapshot.active.rows[hover - 1]!.cash < 0 ? ' · below zero' : ''} <span className="muted small">tap to select</span>
+        </div>
+      )}
       <section className="left" aria-label="Controls">
         <h1 className="h1">Should Ayanda take the 12-month corporate lunch contract?</h1>
         <p className="sub">Path {snapshot.ref.pathId}: {session.paths[snapshot.ref.pathId].summary}</p>
@@ -299,9 +334,18 @@ function World() {
           {isStress ? snapshot.terms.stressRule : 'Baseline. The lever applies the engine’s late-payment rule: receipts due in two months are held back, then paid two months later.'}
           {snapshot.terms.firstReceiptMonth ? ` First contract payment lands in month ${snapshot.terms.firstReceiptMonth}.` : ' This path has no contract.'}
         </p>
+        <div className="objects" role="group" aria-label="Move the camera">
+          {(['overview', 'contract', 'bridge', 'marker'] as CameraStation[]).map((st) => (
+            <button key={st} className={`btn btn--ghost btn--sm ${stationPick === st && !free ? 'is-on' : ''}`} onClick={() => { setFree(false); setStationPick(st); }} disabled={inReplay} aria-pressed={stationPick === st && !free}>
+              {st === 'overview' ? 'Overview' : st === 'contract' ? 'The offer' : st === 'bridge' ? 'On the bridge' : 'The marker'}
+            </button>
+          ))}
+          <button className={`btn btn--ghost btn--sm ${free ? 'is-on' : ''}`} onClick={() => setFree((f) => !f)} aria-pressed={free} disabled={inReplay}>Free camera{free ? ': drag to orbit' : ''}</button>
+        </div>
         <div className="objects" role="group" aria-label="Objects in the room">
           <button className="btn btn--ghost btn--sm" onClick={() => setSheet('contract')}>Contract terms</button>
-          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('fridge')}>Fridge details</button>
+          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('fridge')}>Fridge</button>
+          <button className="btn btn--ghost btn--sm" onClick={() => setSheet('pan')}>Ingredients</button>
         </div>
         <p className="keys">Keys: ← → month · L lever · Esc close</p>
       </section>
@@ -360,7 +404,7 @@ function World() {
             <div className="answers" aria-live="polite">
               {working && <p className="working">Running the local tools…</p>}
               {answers.slice(-4).map((a, i) => (
-                <AnswerCard key={i} a={a} onEvidence={setEvidence} onCarry={(t) => carry(a, t)} canCarry={a.status === 'answered'} fromPath={a.pathId} />
+                <AnswerCard key={i} a={a} onEvidence={setEvidence} onCarry={(t) => carry(a, t)} canCarry={a.status === 'answered' && session.registry.get(a.snapshotKey)?.ref.profileRevision === session.profileRevision} historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision} fromPath={a.pathId} />
               ))}
               {answers.length === 0 && !working && <p className="muted">Try “Why did cash run out here?” after pulling the lever.</p>}
             </div>
@@ -395,8 +439,26 @@ function World() {
       )}
 
       {evidence && <EvidenceDrawer claim={evidence} session={session} onClose={() => setEvidence(null)} />}
-      {sheet === 'contract' && <InfoSheet title="The contract" onClose={() => setSheet(null)}><p>12 months, worth R{snapshot.assumptions.find((a) => a.role === 'contract')?.base.toLocaleString('en-ZA').replace(/ /g, ',') ?? '0'} a month on path {snapshot.ref.pathId}. {snapshot.terms.firstReceiptMonth ? `The first payment lands in month ${snapshot.terms.firstReceiptMonth} (${snapshot.terms.paymentLagMonths} months after work starts).` : 'This path declines it.'}</p><p className="muted">From the founder's own words: “they pay 60 days after each invoice”. Changes to terms need a reviewed edit; they are not made by clicking the contract.</p></InfoSheet>}
-      {sheet === 'fridge' && <InfoSheet title="The second fridge" onClose={() => setSheet(null)}><p>{fridge ? `${fridge.label}. Base ${fridge.base.toLocaleString('en-ZA').replace(/ /g, ',')} rand (${fridge.source}; range ${fridge.low.toLocaleString('en-ZA').replace(/ /g, ',')} to ${fridge.high.toLocaleString('en-ZA').replace(/ /g, ',')}).` : 'Path A does not buy equipment.'}</p><p className="muted">Rent-versus-buy is the difference between paths B and C. Compare them by switching path; nothing is applied by clicking the fridge.</p></InfoSheet>}
+      {sheet === 'contract' && (
+        <InfoSheet title="The contract" onClose={() => setSheet(null)}>
+          <p>12 months{snapshot.assumptions.find((x) => x.role === 'contract') ? '' : ''}. {snapshot.terms.firstReceiptMonth ? `The first payment lands in month ${snapshot.terms.firstReceiptMonth} (${snapshot.terms.paymentLagMonths} months after work starts).` : 'This path declines it.'}</p>
+          <EditField session={session} pathId={snapshot.ref.pathId} role="contract" label="Monthly contract value (rand)" onApply={applyEdit} note={editNote} />
+          <p className="muted small">Payment terms change only through a reviewed edit of the story, not here. Edits apply to the path shown.</p>
+        </InfoSheet>
+      )}
+      {sheet === 'fridge' && (
+        <InfoSheet title="The second fridge" onClose={() => setSheet(null)}>
+          <p>{fridge ? `${fridge.label}. Base R${fridge.base.toLocaleString('en-ZA').replace(/\u00a0/g, ',')} (${fridge.source}).` : 'Path A does not buy equipment.'}</p>
+          <EditField session={session} pathId={snapshot.ref.pathId} role="equipment" label="Equipment cost (rand)" onApply={applyEdit} note={editNote} />
+          <p className="muted small">Rent versus buy is the difference between paths B and C: switch path to compare. An edit changes only the path shown.</p>
+        </InfoSheet>
+      )}
+      {sheet === 'pan' && (
+        <InfoSheet title="Ingredients and packaging" onClose={() => setSheet(null)}>
+          <p>The direct cost of the contract work on this path (a template share of the contract's value, marked as template).</p>
+          <EditField session={session} pathId={snapshot.ref.pathId} role="direct" label="Direct costs per month (rand)" onApply={applyEdit} note={editNote} />
+        </InfoSheet>
+      )}
       {sheet === 'memo' && <MemoSheet session={session} viewed={viewed} memo={memo} setMemo={setMemo} onClose={() => setSheet(null)} />}
 
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
@@ -420,6 +482,24 @@ function useModal(trap: boolean, focusFirst: boolean, target?: React.RefObject<H
       before?.focus?.();
     };
   }, [trap, focusFirst, target]);
+}
+
+function EditField({ session, pathId, role, label, onApply, note }: { session: ReturnType<typeof createSession>; pathId: PathLetter; role: 'equipment' | 'contract' | 'direct'; label: string; onApply: (p: PathLetter, role: 'equipment' | 'contract' | 'direct', v: number) => void; note: string }) {
+  const line = session.paths[pathId].path.assumptions.find((x) => x.role === role && x.kind === (role === 'contract' ? 'income' : 'cost'));
+  const [v, setV] = useState(line ? String(line.base) : '');
+  useEffect(() => setV(line ? String(line.base) : ''), [line?.id, line?.base]);
+  if (!line) return <p className="muted">This path has no such line.</p>;
+  return (
+    <form className="field" onSubmit={(e) => { e.preventDefault(); onApply(pathId, role, Number(v)); }}>
+      <span>{label}</span>
+      <div className="ask">
+        <input inputMode="numeric" value={v} onChange={(e) => setV(e.target.value)} aria-label={label} />
+        <button className="btn" type="submit">Apply</button>
+      </div>
+      <span className="muted small">{line.label}: range R{line.low.toLocaleString('en-ZA').replace(/\u00a0/g, ',')} to R{line.high.toLocaleString('en-ZA').replace(/\u00a0/g, ',')}, source: {line.source}. The range scales with your edit; the engine recomputes everything.</span>
+      {note && <span role="status" className="qual">{note}</span>}
+    </form>
+  );
 }
 
 function cellText(n: number) {
@@ -446,7 +526,7 @@ function Cell({ title, a, b, onOpen }: { title: string; a: ResolvedClaim | null;
   );
 }
 
-function AnswerCard({ a, onEvidence, onCarry, canCarry, fromPath }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; fromPath: PathLetter }) {
+function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter }) {
   const targets = (['B', 'C', 'A'] as PathLetter[]).filter((p) => p !== fromPath);
   return (
     <article className={`answer answer--${a.status}`}>
@@ -460,7 +540,7 @@ function AnswerCard({ a, onEvidence, onCarry, canCarry, fromPath }: { a: Advisor
           ),
         )}
       </p>
-      {a.status === 'answered' && <p className="chip">{MATCHED_LABEL}</p>}
+      {a.status === 'answered' && <p className="chip">{historical ? 'Historical: inputs changed after this answer' : MATCHED_LABEL}</p>}
       {a.trace.length > 0 && (
         <details className="trace">
           <summary>What actually ran ({a.trace.length})</summary>

@@ -43,6 +43,9 @@
 .btn--lever.is-on { background: linear-gradient(#fff6d6, #ffe9a8); }
 .lever-ico { font-size: 18px; }
 .keys { font-size: 12px; }
+.btn.is-on { background: var(--ink); color: #fff; }
+.hovercard { position: fixed; left: 50%; transform: translateX(-50%); bottom: 118px; z-index: 12; padding: 8px 16px; font-size: 13px; pointer-events: none; }
+.honest--rev { background: #fff4d6; }
 .world :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 8px; }
 
 .glass { background: var(--glass); border: 1px solid var(--edge); backdrop-filter: blur(14px); border-radius: 22px; box-shadow: 0 18px 50px rgba(70, 60, 140, 0.18); }
