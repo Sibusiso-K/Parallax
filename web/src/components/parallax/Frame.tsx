@@ -1,4 +1,4 @@
-// The Control Room frame: the sidebar, the three path tabs and the decision line, around each workspace screen.
+// The workspace frame: a slim icon sidebar, the decision heading and the three path tabs above each screen.
 import { useState, type ReactNode } from "react";
 import { useParallax, type Step } from "@/lib/parallax-store";
 import { Avatar, Footer, ParallaxMark, cx } from "./shared";
@@ -44,7 +44,23 @@ const ICON: Record<NavId, ReactNode> = {
   ),
 };
 
-/** The nav item each screen sits under. The printed memo has none, as in the mockup. */
+const EXPORT_ICON = (
+  <>
+    <path d="M10 3v9" />
+    <path d="M6.5 8.5 10 12l3.5-3.5" />
+    <path d="M4 15.5V17h12v-1.5" />
+  </>
+);
+
+const TRASH_ICON = (
+  <>
+    <path d="M4 6h12" />
+    <path d="M8 6V4.5h4V6" />
+    <path d="M5.5 6l.8 10.2h7.4L14.5 6" />
+  </>
+);
+
+/** The nav item each screen sits under. The printed memo has none. */
 const CURRENT: Partial<Record<Step, NavId>> = {
   heard: "Profile",
   profile: "Profile",
@@ -53,8 +69,6 @@ const CURRENT: Partial<Record<Step, NavId>> = {
   compare: "Compare",
   comfort: "Compare",
 };
-
-const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** Downloads what the founder has entered and the paths built from it. Nothing is sent anywhere. */
 function exportJson(s: ReturnType<typeof useParallax>) {
@@ -103,8 +117,7 @@ export function ControlRoom({ children }: { children: ReactNode }) {
     <div className="cr">
       <aside className="sidebar no-print">
         <div className="logo">
-          <ParallaxMark />
-          <span>Parallax</span>
+          <ParallaxMark size={26} />
         </div>
         <nav className="nav" aria-label="Main">
           {NAV.map((id) => (
@@ -112,6 +125,8 @@ export function ControlRoom({ children }: { children: ReactNode }) {
               key={id}
               type="button"
               className={cx(here === id && "on")}
+              aria-label={id}
+              title={id}
               aria-current={here === id ? "page" : undefined}
               disabled={id !== "Profile" && !ready}
               onClick={() => open(id)}
@@ -119,60 +134,59 @@ export function ControlRoom({ children }: { children: ReactNode }) {
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 {ICON[id]}
               </svg>
-              {id}
             </button>
           ))}
         </nav>
         <div className="side-foot">
-          <button type="button" onClick={() => exportJson(s)}>
-            Export JSON
+          <button type="button" title="Export JSON" aria-label="Export JSON" onClick={() => exportJson(s)}>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              {EXPORT_ICON}
+            </svg>
           </button>
           {confirming ? (
             <>
-              <button type="button" onClick={reset}>
-                Yes, delete everything
+              <button type="button" className="confirm" onClick={reset}>
+                Yes, delete
               </button>
               <button type="button" onClick={() => setConfirming(false)}>
                 Cancel
               </button>
             </>
           ) : (
-            <button type="button" onClick={() => setConfirming(true)}>
-              Delete everything
+            <button type="button" title="Delete everything" aria-label="Delete everything" onClick={() => setConfirming(true)}>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                {TRASH_ICON}
+              </svg>
             </button>
           )}
         </div>
       </aside>
       <div className="main">
         <header className="topbar no-print">
+          <div className="decision-block">
+            <div className="eyebrow">{decision ? "Your decision" : "Parallax"}</div>
+            <div className="decision-title">{decision || "Describe a business decision to begin"}</div>
+          </div>
           <div className="tabs">
-            {ready ? (
+            {ready &&
               paths.map((p) => (
                 <button
                   key={p.id}
                   type="button"
                   className={cx("tab", `p-${p.letter}`, step === "chat" && p.letter === active && "sel")}
                   aria-pressed={step === "chat" && p.letter === active}
+                  title={`${p.letter} · ${p.name}`}
+                  aria-label={`${p.letter} · ${p.name}`}
                   onClick={() => {
                     set({ active: p.letter });
                     if (step !== "chat") go("chat");
                   }}
                 >
-                  <Avatar letter={p.letter} src={p.avatarUrl} size={30} />
-                  <span>
-                    {p.letter} · {p.name}
-                  </span>
+                  <Avatar letter={p.letter} src={p.avatarUrl} size={44} />
+                  <span className="tab-letter">{p.letter}</span>
                 </button>
-              ))
-            ) : (
-              <span className="sub">Your three paths appear once you confirm what you heard.</span>
-            )}
+              ))}
           </div>
-          {decision && (
-            <div className="decision">
-              <b>Your decision:</b> {lowerFirst(decision)}
-            </div>
-          )}
         </header>
         <main className="content">{children}</main>
         <Footer />
