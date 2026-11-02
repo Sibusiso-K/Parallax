@@ -167,8 +167,9 @@ function World() {
       const a = session.paths[pathLetter].path.assumptions.find((x) => x.role === role && x.kind === (role === 'contract' ? 'income' : 'cost'));
       if (!a) return setEditNote('This path has no such line to edit.');
       if (!Number.isFinite(newBase) || newBase < 0 || newBase > 5_000_000) return setEditNote('Enter a whole-rand amount from 0 to 5,000,000.');
-      const k = a.base === 0 ? 1 : newBase / a.base;
-      const r = session.revise(pathLetter, a.id, { low: Math.round(a.low * k), base: Math.round(newBase), high: Math.round(a.high * k) });
+      const k = newBase / a.base;
+      const edit = a.base === 0 ? { low: 0, base: Math.round(newBase), high: Math.round(newBase) } : { low: Math.round(a.low * k), base: Math.round(newBase), high: Math.round(a.high * k) };
+      const r = session.revise(pathLetter, a.id, edit);
       if (!r.ok) return setEditNote(`The engine refused that edit: ${r.error}`);
       gate.invalidate();
       setWorking(false);
@@ -212,6 +213,7 @@ function World() {
 
   const startReplay = () => {
     gate.invalidate();
+    setFree(false);
     setReplay(buildReplay(session));
     setReplayT(0);
     setPlaying(!reduced);
@@ -314,7 +316,7 @@ function World() {
       </header>
 
       <div className="honest" role="note">
-        Stand-in figures and a fixture advisor: no model is connected, and the rigged Ayanda is pending. Numbers come from the existing engine; template values are placeholders.
+        Stylised characters authored in Blender (not photographs, not a real person). The advisor is a fixture: no model is connected. Numbers come from the existing engine; template values are placeholders.
       </div>
 
       {session.profileRevision > 1 && (
@@ -503,7 +505,7 @@ function EditField({ session, pathId, role, label, onApply, note }: { session: R
   useEffect(() => setV(line ? String(line.base) : ''), [line?.id, line?.base]);
   if (!line) return <p className="muted">This path has no such line.</p>;
   return (
-    <form className="field" onSubmit={(e) => { e.preventDefault(); onApply(pathId, role, Number(v)); }}>
+    <form className="field" onSubmit={(e) => { e.preventDefault(); const t = v.trim(); onApply(pathId, role, /^\d{1,7}$/.test(t) ? Number(t) : Number.NaN); }}>
       <span>{label}</span>
       <div className="ask">
         <input inputMode="numeric" value={v} onChange={(e) => setV(e.target.value)} aria-label={label} />
@@ -645,9 +647,9 @@ function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: Retur
         <label className="field"><span>The setback to watch</span><textarea rows={2} value={memo.watch} onChange={(e) => set({ watch: e.target.value })} /></label>
         <h3 className="memo__sub">Evidence appendix: the {viewed.length === 0 ? 'snapshots you looked at (none yet)' : `${new Set(viewed).size} snapshot(s) you looked at`}, code-generated</h3>
         <table className="assump">
-          <thead><tr><th>Path</th><th>Figure</th><th>Scenario</th><th>Value</th><th>Snapshot</th></tr></thead>
+          <thead><tr><th>Path</th><th>Figure</th><th>Scenario</th><th>Value</th><th>Snapshot</th><th>Revision</th></tr></thead>
           <tbody>
-            {lines.map((l, i) => (<tr key={i}><td>{l.path}</td><td>{l.label}</td><td>{l.scenario}</td><td className="mono">{l.value}</td><td className="mono">{l.snapshot}</td></tr>))}
+            {lines.map((l, i) => (<tr key={i}><td>{l.path}</td><td>{l.label}</td><td>{l.scenario}</td><td className="mono">{l.value}</td><td className="mono">{l.snapshot}</td><td>{l.revision}{l.revision === session.profileRevision ? '' : ' (historical)'}</td></tr>))}
           </tbody>
         </table>
         <p className="qual">After a first shortfall the projection continues; the engine does not model whether the business keeps trading or finds funding.</p>

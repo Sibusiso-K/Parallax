@@ -165,3 +165,17 @@ describe('objects change the numbers (session revisions)', () => {
     expect(s.revise('B', 'nope', { low: 1, base: 1, high: 1 }).ok).toBe(false);
   });
 });
+
+describe('appendix revisions', () => {
+  it('labels each row with its revision so edited-away figures are identifiable as historical', () => {
+    const s1 = createSession('rv');
+    const old = s1.snapshotFor('B', true);
+    const fridge = s1.paths.B.path.assumptions.find((a) => a.role === 'equipment')!;
+    const r = s1.revise('B', fridge.id, { low: 30000, base: 30000, high: 30000 });
+    if (!r.ok) throw new Error('edit failed');
+    const now = r.session.snapshotFor('B', true);
+    const lines = evidenceAppendix(r.session, [old.key, now.key]);
+    expect(new Set(lines.map((l) => l.revision))).toEqual(new Set([1, 2]));
+    expect(lines.filter((l) => l.revision === 2).length).toBe(3);
+  });
+});

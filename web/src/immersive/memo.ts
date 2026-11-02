@@ -28,6 +28,8 @@ export interface AppendixLine {
   value: string;
   path: string;
   snapshot: string;
+  /** The profile revision the snapshot belongs to; an edit makes older rows historical. */
+  revision: number;
   qualification?: string;
 }
 
@@ -63,6 +65,7 @@ export function evidenceAppendix(session: Session, viewedKeys: readonly string[]
         value: c.text,
         path: c.pathId,
         snapshot: snap.inputHash,
+        revision: snap.ref.profileRevision,
         ...(c.qualification ? { qualification: c.qualification } : {}),
       });
     }

@@ -437,6 +437,8 @@ function Lever({ pulled, onToggle, label }: { pulled: boolean; onToggle: () => v
         const p = preview.current;
         preview.current = null;
         if (!d) return;
+        // if the lever was changed by keyboard or button during the drag, that newer choice wins
+        if ((d.start === 1) !== pulled) return;
         if (!d.moved) onToggle();
         else if ((p ?? 0) > 0.5 !== pulled) onToggle();
       }}
@@ -672,6 +674,11 @@ function Avatar({ url, anchor, pointAt, clip, faceCamera, turn }: { url: string;
       const prev = actions[playing.current];
       if (next) {
         next.reset().fadeIn(REDUCED ? 0 : 0.25).play();
+        if (REDUCED) {
+          // reduced motion: hold a still pose instead of looping
+          next.time = name === 'point' || name === 'hold' ? next.getClip().duration : 0;
+          next.paused = true;
+        }
         if (name === 'point') {
           next.clampWhenFinished = true;
           next.setLoop(THREE.LoopOnce, 1);
