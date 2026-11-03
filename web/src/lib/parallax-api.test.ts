@@ -107,3 +107,43 @@ describe("mockApi.paths", () => {
     await expect(mockApi.paths({ fields: { business: "Catering" }, assumed: [] })).rejects.toThrow("Choose a kind of decision first");
   });
 });
+
+describe("mockApi.intake, the F4 checks", () => {
+  it("passes the server's checks through, so the Heard screen can stop an under-18 founder", async () => {
+    const { POST } = await import("../../../api/intake");
+    stub(async (_url?: unknown, init?: RequestInit) =>
+      POST(new Request("http://x/api/intake", { method: "POST", headers: { "content-type": "application/json" }, body: init!.body })),
+    );
+    const res = await mockApi.intake("I'm 16 and a client wants me to take a big contract for my lunch business.");
+    expect(res.issues).toContainEqual(expect.objectContaining({ kind: "under-age", blocking: true }));
+  });
+
+  it("keeps only well-formed checks, and blocks only on an exact true", async () => {
+    stub(async () =>
+      reply({
+        ok: true,
+        mode: "fixture",
+        fields: {},
+        missing: [],
+        dropped: [],
+        issues: [
+          { kind: "outlier", message: "Did you mean R9,000?", field: "revenue", blocking: false },
+          { kind: "under-age", message: "Parallax is for people aged 18 and over.", blocking: "yes" },
+          { kind: "x", message: "", blocking: true },
+          null,
+          42,
+        ],
+      }),
+    );
+    const res = await mockApi.intake("anything");
+    expect(res.issues).toEqual([
+      { kind: "outlier", message: "Did you mean R9,000?", field: "revenue", blocking: false },
+      { kind: "under-age", message: "Parallax is for people aged 18 and over.", blocking: false },
+    ]);
+  });
+
+  it("answers no checks when an older deploy sends none", async () => {
+    stub(async () => reply({ ok: true, mode: "fixture", fields: {}, missing: [], dropped: [] }));
+    expect((await mockApi.intake("anything")).issues).toEqual([]);
+  });
+});

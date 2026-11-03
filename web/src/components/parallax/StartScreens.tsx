@@ -101,6 +101,11 @@ export function IntakeScreen() {
 export function HeardScreen() {
   const { missing, intake, set, go } = useParallax();
   const current = missing[0];
+  // F4: a blocking check (under 18, out of scope, not supported yet) stops the paths until the founder changes what
+  // they wrote. The others are questions to confirm; they never stop anything.
+  const issues = intake?.issues ?? [];
+  const blocking = issues.filter((i) => i.blocking);
+  const checks = issues.filter((i) => !i.blocking);
   const [answer, setAnswer] = useState("");
   const [err, setErr] = useState("");
 
@@ -135,7 +140,33 @@ export function HeardScreen() {
       </div>
       {intake?.notice && <p className="notice">{intake.notice}</p>}
 
-      {current && (
+      {blocking.length > 0 && (
+        <div className="issue-box blocking" role="alert">
+          <div className="caps">Parallax can't go on with this</div>
+          <ul>
+            {[...new Set(blocking.map((i) => i.message))].map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+          <div className="row-btns">
+            <Button variant="primary" onClick={() => go("intake")}>
+              Change what I wrote
+            </Button>
+          </div>
+        </div>
+      )}
+      {checks.length > 0 && (
+        <div className="issue-box">
+          <div className="caps">Please check</div>
+          <ul>
+            {[...new Set(checks.map((i) => i.message))].map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {current && blocking.length === 0 && (
         <form key={current} className="followup-box" onSubmit={submit}>
           <div className="caps">
             One more thing{missing.length > 1 ? ` · ${missing.length} left` : ""}
@@ -196,11 +227,15 @@ export function HeardScreen() {
         <Button variant="ghost" onClick={() => go("intake")}>
           Back
         </Button>
-        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current} onClick={() => go("generating")}>
+        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current || blocking.length > 0} onClick={() => go("generating")}>
           This is right
         </Button>
       </div>
-      {current && <p className="hint">Answer the question above first.</p>}
+      {blocking.length > 0 ? (
+        <p className="hint">Change what you wrote to go on.</p>
+      ) : (
+        current && <p className="hint">Answer the question above first.</p>
+      )}
     </section>
   );
 }

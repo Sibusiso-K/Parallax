@@ -12,7 +12,7 @@ import { decisionLabels, type DecisionType, type Extraction } from "../../../sha
 import { templatePaths } from "../../../shared/paths/templates";
 import { buildProfile } from "../../../shared/profile/profile";
 import { isMoneyField } from "./format";
-import type { ChatChunk, FieldKey, IntakeResponse, PathCard, Profile, Simulation } from "./types";
+import type { ChatChunk, FieldKey, IntakeIssue, IntakeResponse, PathCard, Profile, Simulation } from "./types";
 
 export const DEMO_STORY = DEMO_TEXT;
 export { parseDecisionAnswer };
@@ -111,6 +111,17 @@ export function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKe
   return { fields, quotes };
 }
 
+// The F4 checks as the screens read them. An older deploy may send none, and a malformed entry is skipped rather than
+// shown; a blocking flag must be exactly true, so nothing is blocked by accident.
+function readIssues(raw: unknown): IntakeIssue[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((i) =>
+    i && typeof i === "object" && typeof i.message === "string" && i.message.trim()
+      ? [{ kind: String(i.kind ?? ""), message: i.message, blocking: i.blocking === true, ...(typeof i.field === "string" ? { field: i.field as FieldKey } : {}) }]
+      : [],
+  );
+}
+
 async function intake(text: string): Promise<IntakeResponse> {
   try {
     const res = await fetch("/api/intake", {
@@ -132,6 +143,7 @@ async function intake(text: string): Promise<IntakeResponse> {
       mode: data.mode,
       fields: screen.fields,
       quotes: screen.quotes,
+      issues: readIssues(data.issues),
       missing: data.missing.filter((k) => k !== "decision"),
       notice:
         data.notice ?? (data.mode === "fixture" ? "Demo mode: no model is connected yet, so only the demo story is read for you." : undefined),

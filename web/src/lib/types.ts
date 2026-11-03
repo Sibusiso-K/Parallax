@@ -72,6 +72,15 @@ export interface IntakeResponse {
   /** The founder's own words for each text field, kept beside the value. */
   quotes?: Partial<Record<FieldKey, string>>;
   notice?: string;
+  /** The server's F4 checks on what the founder wrote. A blocking one stops the paths until the text is changed. */
+  issues?: IntakeIssue[];
+}
+
+export interface IntakeIssue {
+  kind: string;
+  message: string;
+  field?: FieldKey;
+  blocking: boolean;
 }
 
 export interface ChatChunk {
