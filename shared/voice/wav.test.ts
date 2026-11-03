@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_SECONDS, MAX_WAV_BYTES, SAMPLE_RATE, checkWav, encodeWav, toMono16k } from './wav.js';
+import { MAX_SECONDS, MAX_UPLOAD_BYTES, MAX_WAV_BYTES, SAMPLE_RATE, checkWav, encodeWav, toMono16k } from './wav.js';
 
 const silence = (seconds: number) => new Int16Array(Math.round(SAMPLE_RATE * seconds));
 
@@ -13,7 +13,14 @@ describe('encodeWav and checkWav', () => {
     const full = encodeWav(silence(MAX_SECONDS));
     expect(full.length).toBe(MAX_WAV_BYTES);
     expect(checkWav(full).ok).toBe(true);
-    expect(checkWav(encodeWav(new Int16Array(SAMPLE_RATE * MAX_SECONDS + 2)))).toMatchObject({ ok: false });
+    expect(checkWav(encodeWav(new Int16Array(SAMPLE_RATE * MAX_SECONDS + 2)))).toMatchObject({ ok: false, tooLong: true });
+  });
+
+  it('accepts the same 60 seconds at Meta\'s other rate, 24 kHz', () => {
+    const full = encodeWav(new Int16Array(24_000 * MAX_SECONDS), 24_000);
+    expect(full.length).toBe(MAX_UPLOAD_BYTES);
+    expect(checkWav(full)).toEqual({ ok: true, sampleRate: 24000, durationMs: 60_000 });
+    expect(checkWav(encodeWav(new Int16Array(24_000 * MAX_SECONDS + 2), 24_000))).toMatchObject({ ok: false, tooLong: true });
   });
 
   it('refuses what Meta would refuse', () => {

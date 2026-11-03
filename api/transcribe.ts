@@ -1,7 +1,7 @@
 import { DEMO_TEXT } from '../shared/intake/fixture.js';
 import { ModelError } from '../shared/providers/meta.js';
 import { transcribeWav, voiceConfigOrNull } from '../shared/providers/asr.js';
-import { MAX_WAV_BYTES, checkWav } from '../shared/voice/wav.js';
+import { MAX_UPLOAD_BYTES, checkWav } from '../shared/voice/wav.js';
 
 // Vercel Function: POST /api/transcribe, the body is a WAV file. Voice is on only when META_VOICE_ENABLED is "true" and a
 // key is set (see shared/providers/asr.ts). Otherwise the demo story is returned and labelled as such. The audio and the
@@ -12,11 +12,13 @@ const json = (body: unknown, status: number) => Response.json(body, { status, he
 const tooLarge = () => json({ ok: false, error: 'That recording is too long. Keep it under 60 seconds.' }, 413);
 
 export async function POST(request: Request): Promise<Response> {
-  if (Number(request.headers.get('content-length') ?? 0) > MAX_WAV_BYTES) return tooLarge();
+  // The byte cap covers the largest WAV checkWav accepts (60 s at 24 kHz), so a valid 24 kHz file reaches the check
+  // instead of being refused for its size. Anything longer is caught below and still answers 413.
+  if (Number(request.headers.get('content-length') ?? 0) > MAX_UPLOAD_BYTES) return tooLarge();
   const wav = new Uint8Array(await request.arrayBuffer());
-  if (wav.byteLength > MAX_WAV_BYTES) return tooLarge();
+  if (wav.byteLength > MAX_UPLOAD_BYTES) return tooLarge();
   const checked = checkWav(wav);
-  if (!checked.ok) return json({ ok: false, error: checked.error }, 400);
+  if (!checked.ok) return json({ ok: false, error: checked.error }, checked.tooLong ? 413 : 400);
 
   const cfg = voiceConfigOrNull(process.env);
   if (!cfg) {

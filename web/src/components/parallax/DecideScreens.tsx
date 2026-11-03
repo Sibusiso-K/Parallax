@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { FIELD_LABELS } from "@/lib/parallax-api";
 import { useParallax, type Letter } from "@/lib/parallax-store";
-import { formatField, formatMoney } from "@/lib/format";
+import { formatField, formatMoney, memoQuestion } from "@/lib/format";
 import type { FieldKey, PathCard } from "@/lib/types";
 import { pathFigures, type Figures } from "@/lib/stress";
 import { Avatar, Badge, Button, NoPaths, Src, type Kind } from "./shared";
@@ -9,7 +9,6 @@ import { RangeBar, domainOf } from "./charts";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 const at = (a: number[], month: number) => a[month] ?? 0;
-const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The three paths side by side, with the comfort check beside them. */
 export function CompareScreen() {
@@ -220,7 +219,7 @@ export function SummaryScreen() {
   if (paths.length === 0) return <NoPaths />;
 
   const chosenPath = chosen ? pathOf(chosen) : undefined;
-  const question = typeof fields.decision === "string" && fields.decision ? fields.decision : "Your decision";
+  const question = memoQuestion(fields.decision);
   const pick = (l: Letter) => set({ chosen: l, decision: "decided" });
 
   const choice =
@@ -259,7 +258,7 @@ export function SummaryScreen() {
     <div className="memowrap">
       <article className="memo">
         <div className="caps">Decision memo · printed from Parallax</div>
-        <h1>{capitalise(question)}?</h1>
+        <h1>{question}</h1>
         <div className="choice">
           <span className="caps">Choice</span>
           {choice}

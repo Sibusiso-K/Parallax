@@ -10,6 +10,39 @@ export type VoiceState = "idle" | "recording" | "working";
 export const voiceSupported = () =>
   typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== "undefined";
 
+export interface TranscribeReply {
+  /** What the founder said, when there is anything to put in the text box. */
+  transcript?: string;
+  /** The plain-English line under the button; empty when the transcript speaks for itself. */
+  message: string;
+}
+
+const TRANSCRIBE_FAILED = "We couldn't turn that into text. Please type instead.";
+
+/**
+ * Reads whatever /api/transcribe answered, for every shape the route or a proxy can produce. Never throws: a reply
+ * that is not the expected object becomes the same plain message as a network failure, so no response shape can lose
+ * the founder's typed text or leave them without an explanation.
+ */
+export function readTranscribeReply(data: unknown): TranscribeReply {
+  const d = (typeof data === "object" && data !== null ? data : {}) as {
+    ok?: unknown;
+    transcript?: unknown;
+    notice?: unknown;
+    error?: unknown;
+  };
+  const transcript = typeof d.transcript === "string" && d.transcript ? d.transcript : undefined;
+  if (d.ok !== true) {
+    const error = typeof d.error === "string" && d.error.trim() ? d.error : TRANSCRIBE_FAILED;
+    return { message: error };
+  }
+  const notice = typeof d.notice === "string" && d.notice.trim() ? d.notice : undefined;
+  return {
+    ...(transcript ? { transcript } : {}),
+    message: notice ?? (transcript ? "Check the words below, fix anything wrong, then continue." : ""),
+  };
+}
+
 const MIN_SAMPLES = SAMPLE_RATE / 4; // under a quarter of a second is a mis-tap
 
 export function useVoiceInput(onText: (text: string) => void) {
@@ -36,10 +69,9 @@ export function useVoiceInput(onText: (text: string) => void) {
         const samples = toMono16k(channels, audio.sampleRate).subarray(0, SAMPLE_RATE * MAX_SECONDS);
         if (samples.length < MIN_SAMPLES) return setMessage("That was too short. Hold the button while you speak.");
         const res = await fetch("/api/transcribe", { method: "POST", headers: { "content-type": "audio/wav" }, body: new Blob([encodeWav(samples) as BlobPart], { type: "audio/wav" }) });
-        const data = (await res.json()) as { ok: boolean; transcript?: string; notice?: string; error?: string };
-        if (!data.ok) return setMessage(data.error ?? "We couldn't turn that into text. Please type instead.");
-        if (data.transcript) onText(data.transcript);
-        setMessage(data.notice ?? (data.transcript ? "Check the words below, fix anything wrong, then continue." : ""));
+        const reply = readTranscribeReply(await res.json());
+        if (reply.transcript) onText(reply.transcript);
+        setMessage(reply.message);
       } catch {
         setMessage("We couldn't turn that into text. Please type instead.");
       } finally {

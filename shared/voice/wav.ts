@@ -4,7 +4,10 @@
 
 export const SAMPLE_RATE = 16_000;
 export const MAX_SECONDS = 60;
+/** The 16 kHz file the browser encodes: 44 + 16,000 x 2 x 60 = about 1.9 MB. */
 export const MAX_WAV_BYTES = 44 + SAMPLE_RATE * 2 * MAX_SECONDS;
+/** The largest file checkWav accepts: the same 60 seconds at Meta's other rate, 24 kHz. */
+export const MAX_UPLOAD_BYTES = 44 + 24_000 * 2 * MAX_SECONDS;
 
 const ascii = (b: Uint8Array, at: number, len: number) => String.fromCharCode(...b.subarray(at, at + len));
 
@@ -30,7 +33,7 @@ export function encodeWav(samples: Int16Array, rate = SAMPLE_RATE): Uint8Array {
   return out;
 }
 
-export type WavCheck = { ok: true; sampleRate: number; durationMs: number } | { ok: false; error: string };
+export type WavCheck = { ok: true; sampleRate: number; durationMs: number } | { ok: false; error: string; tooLong?: boolean };
 
 /** Fail-closed check of a WAV file: only what Meta accepts, and no longer than MAX_SECONDS. Never throws. */
 export function checkWav(bytes: Uint8Array): WavCheck {
@@ -54,7 +57,7 @@ export function checkWav(bytes: Uint8Array): WavCheck {
       if (rate === 0) return { ok: false, error: 'The recording header is damaged.' };
       if (size === 0 || size % 2 !== 0 || body + size > bytes.length) return { ok: false, error: 'The recording is empty or cut short.' };
       const durationMs = Math.round((size / 2 / rate) * 1000);
-      if (size / 2 > rate * MAX_SECONDS) return { ok: false, error: `Recordings can be at most ${MAX_SECONDS} seconds.` };
+      if (size / 2 > rate * MAX_SECONDS) return { ok: false, error: `Recordings can be at most ${MAX_SECONDS} seconds.`, tooLong: true };
       return { ok: true, sampleRate: rate, durationMs };
     }
     at = body + size + (size % 2);

@@ -52,8 +52,10 @@ const PERCENT = /\d+(?:\.\d+)?\s?(?:%|percent\b|per cent\b)/gi;
 const SUFFIXED = /\b\d+(?:\.\d+)?\s?(?:k|m)\b/gi;
 const BIG_NUMBER = /\b\d{1,3}(?:[ ,]\d{3})+\b|\b\d{4,}\b/g;
 
-// Keys whose value is a month number, not rand: PR #8 names them lowestMonth, milestone.<id>.<case>, setback.<id>.runsOut.
-const MONTH_KEY = /\.(?:worstMonth|lowestMonth|milestone\.[^.]+|runway)(?:\.|$)|\.setback\.[^.]+\.runsOut$/;
+// Keys whose value is a month number, not rand: lowestMonth, milestone.<id>.<case>, runway, setback.<id>.runsOut and
+// setback.late-payment.paidFromMonth. A month printed as rand ("R5" instead of "month 5") is a figure the engine did
+// not compute, so every month-valued key must be named here.
+const MONTH_KEY = /\.(?:worstMonth|lowestMonth|milestone\.[^.]+|runway)(?:\.|$)|\.setback\.[^.]+\.(?:runsOut|paidFromMonth)$/;
 
 const groupThousands = (n: number): string => Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 

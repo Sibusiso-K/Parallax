@@ -95,7 +95,8 @@ export const FIELD_DEFAULTS: Partial<Record<FieldKey, unknown>> = {
 };
 
 // /api/intake returns { value, quote } for text fields; the screens show plain values and keep each quote beside them.
-function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKey, unknown>>; quotes: Partial<Record<FieldKey, string>> } {
+// Exported so the end-to-end test drives the same mapping the screens do, not a copy of it.
+export function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKey, unknown>>; quotes: Partial<Record<FieldKey, string>> } {
   const fields: Partial<Record<FieldKey, unknown>> = {};
   const quotes: Partial<Record<FieldKey, string>> = {};
   for (const [key, field] of Object.entries(ex) as [FieldKey, Extraction[FieldKey]][]) {
@@ -117,8 +118,14 @@ async function intake(text: string): Promise<IntakeResponse> {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ text }),
     });
-    const data = (await res.json()) as ApiIntake;
-    if (!data.ok) return { ok: true, mode: "fixture", fields: {}, missing: [...ASK_WHEN_UNREAD], notice: data.error };
+    const data = (await res.json()) as ApiIntake | null;
+    if (!data || data.ok !== true) {
+      // The route always sends a plain-English error, but a proxy or an older deploy may not. Never show no message,
+      // and never leave the founder without a way forward: the text stays in the box and the answers open below.
+      const raw = data as { error?: unknown } | null;
+      const error = raw && typeof raw.error === "string" && raw.error.trim() ? raw.error : "We couldn't read that. Your text is kept; please fill in the answers.";
+      return { ok: true, mode: "fixture", fields: {}, missing: [...ASK_WHEN_UNREAD], notice: error };
+    }
     const screen = toScreenFields(data.fields);
     return {
       ok: true,
@@ -141,8 +148,8 @@ async function intake(text: string): Promise<IntakeResponse> {
 }
 
 // Screens hold plain values; the engine's profile builder wants intake fields. Assumed answers are
-// left out so the profile builder fills them from za.json and marks them as defaults.
-function toExtraction(p: Profile): Extraction {
+// left out so the profile builder fills them from za.json and marks them as defaults. Exported for the end-to-end test.
+export function toExtraction(p: Profile): Extraction {
   const ex: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(p.fields) as [FieldKey, unknown][]) {
     if (p.assumed.includes(key) || value === undefined) continue;

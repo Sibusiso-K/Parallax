@@ -27,6 +27,9 @@ describe('figure guard', () => {
     expect(formatFigure('A.milestone.cash-covers-3-months.likely', 14)).toBe('month 14');
     expect(formatFigure('A.runway', 5.4)).toBe('5 months');
     expect(formatFigure('A.start', -3000)).toBe('-R3,000');
+    // The figure table names the month a held-back late payment is paid again; printing it as rand said "R5".
+    expect(formatFigure('A.setback.late-payment.paidFromMonth', 5)).toBe('month 5');
+    expect(formatFigure('A.setback.late-payment.paidFromMonth', 8)).toBe('month 8');
   });
 
   it('refuses unknown keys and other paths (isolation)', () => {
@@ -134,10 +137,11 @@ describe('figure guard', () => {
         { id: 'A2', label: 'Rent', kind: 'cost', low: 15000, base: 16000, high: 18000, role: 'overhead' },
       ],
     });
-    const months = Object.keys(real).filter(k => /lowestMonth|milestone|runway|runsOut/.test(k));
+    const months = Object.keys(real).filter(k => /lowestMonth|milestone|runway|runsOut|paidFromMonth/.test(k));
     expect(months.length).toBeGreaterThan(0);
     for (const key of months) expect(formatFigure(key, real[key]!), key).not.toMatch(/^-?R/);
     expect(formatFigure('A.setback.late-payment.runsOut', 4)).toBe('month 4');
+    expect(formatFigure('A.setback.late-payment.paidFromMonth', 5)).toBe('month 5');
   });
 
   it('lets the advisor quote an allowed second path and still refuses a third', () => {

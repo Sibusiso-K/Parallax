@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { DECISION_LABELS, DECISION_TYPES, FIELD_LABELS, MONEY_FIELDS, NUMBER_FIELDS, parseDecisionAnswer } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
-import { formatField, formatMoney, isMoneyField, parseAmount } from "@/lib/format";
+import { formatField, formatMoney, isMoneyField, moneyDraft, parseAmount } from "@/lib/format";
 import type { FieldKey, MoneyField } from "@/lib/types";
 import { Button, Src, cx, type Kind } from "./shared";
 
@@ -150,7 +150,9 @@ function FieldCard({ card, editable }: { card: Card; editable: boolean }) {
   const toggle = () => {
     const v = fields[card.k];
     const m = money(v);
-    setDraft(m ? m.quote : String(v ?? ""));
+    // Start from the figures, not the sentence they were read from: a quote such as "about R90,000 a month, anywhere
+    // from R75k to R105k" cannot be saved back through readValue without retyping it.
+    setDraft(m ? moneyDraft(m) : String(v ?? ""));
     setErr("");
     setEditing((open) => !open);
   };
