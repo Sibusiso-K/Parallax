@@ -94,7 +94,13 @@ export default function PhotoWorld({readout,place,selected,onSelect,reduced,tran
   if(!manifest)return <div className="photo-unavailable" role="status"><p>{error||'Opening the baked photo world…'}</p><p>Your engine figures and advisor remain available in the panel.</p></div>;
   const active=manifest.objects.find(o=>o.id===(hover??selected));
   const target=selected?manifest.objects.find(o=>o.id===selected):null;
-  const camera=speaking?[.5,.36,1.62]:target?[target.rect[0]+target.rect[2]/2,target.rect[1]+target.rect[3]/2,1.32]:PLACES[place];
+  const founder=manifest.people[readout.pathLetter as 'A'|'B'|'C']??manifest.people.B;
+  const focusId=place==='offer'?'contract':place==='intake'?'intake_desk':place==='memo'?'memo':null;
+  const focus=focusId?manifest.objects.find(o=>o.id===focusId)?.rect:place==='bridge'?founder.rect:null;
+  const generatedCamera=focus?[focus[0]+focus[2]/2,focus[1]+focus[3]/2,1.32]:[.5,.5,1];
+  const placeCamera=manifest.mode==='baked'?PLACES[place]:generatedCamera;
+  const speakingCamera=manifest.mode==='baked'?[.5,.36,1.62]:[founder.rect[0]+founder.rect[2]/2,founder.rect[1]+founder.rect[3]*.3,1.4];
+  const camera=speaking?speakingCamera:target?[target.rect[0]+target.rect[2]/2,target.rect[1]+target.rect[3]/2,1.32]:placeCamera;
   // The photo covers the stage. The camera centres its subject, then stops before an edge of the photo could show.
   const aspect=manifest.width/manifest.height,frameW=Math.max(stage.w,stage.h*aspect),frameH=frameW/aspect;
   const [camU,camV,camZ]=camera as [number,number,number];
@@ -119,8 +125,8 @@ export default function PhotoWorld({readout,place,selected,onSelect,reduced,tran
         {manifest.foreground&&<img className="photo-layer photo-foreground" src={assetSource(manifest.foreground,base)} alt="" draggable={false}/>}
         <canvas className="photo-layer photo-atmosphere" ref={atmosphere} width={640} height={320} aria-hidden="true"/>
         {active?.mask&&<div className="photo-highlight" style={{maskImage:`url("${assetSource(active.mask,base)}")`,WebkitMaskImage:`url("${assetSource(active.mask,base)}")`}}/>}
-        <div className="photo-paper photo-paper--contract" style={contractPaper?rectStyle(contractPaper):undefined}><small>Cash · month {readout.month}</small><strong>{readout.cash}</strong>{readout.stressed&&<b className="photo-stamp">PAYING LATE</b>}</div>
-        <div className="photo-paper photo-paper--memo" style={memoPaper?rectStyle(memoPaper):undefined}><small>Lowest cash</small><strong>{readout.lowest}</strong><small>Month {readout.lowestMonth}</small></div>
+        {(contractPaper||manifest.mode==='baked')&&<div className="photo-paper photo-paper--contract" style={contractPaper?rectStyle(contractPaper):undefined}><small>Cash · month {readout.month}</small><strong>{readout.cash}</strong>{readout.stressed&&<b className="photo-stamp">PAYING LATE</b>}</div>}
+        {(memoPaper||manifest.mode==='baked')&&<div className="photo-paper photo-paper--memo" style={memoPaper?rectStyle(memoPaper):undefined}><small>Lowest cash</small><strong>{readout.lowest}</strong><small>Month {readout.lowestMonth}</small></div>}
         {active&&<span className="photo-object-label" style={{...rectStyle(active.rect),width:'auto',height:'auto'}}>{active.label}</span>}
       </div>
     </div>

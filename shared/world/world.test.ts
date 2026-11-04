@@ -103,3 +103,21 @@ describe('routes', () => {
     expect((await worldPost(req({ action: 'draw', prompt: 'A workshop' }, 'https://other.test'))).status).toBe(403); expect(request).not.toHaveBeenCalled();
   });
 });
+
+import { findWorldObjects, visibleObjectsSchema } from './objects';
+describe('visible object grounding', () => {
+  const objects = ['contract','pan','fridge','intake_desk','memo'].map(id=>({id,label:'Work surface',concept:'wooden counter',box:[10,20,300,400]}));
+  it('requires five distinct slots, safe labels and ordered boxes',()=>{
+    expect(visibleObjectsSchema.safeParse({objects}).success).toBe(true);
+    expect(visibleObjectsSchema.safeParse({objects:objects.map(o=>({...o,id:'contract'}))}).success).toBe(false);
+    expect(visibleObjectsSchema.safeParse({objects:objects.map(o=>({...o,label:'R500 profit'}))}).success).toBe(false);
+    expect(visibleObjectsSchema.safeParse({objects:objects.map(o=>({...o,box:[900,0,100,100]}))}).success).toBe(false);
+  });
+  it('uses image input with minimal reasoning and bounded output',async()=>{
+    const request=vi.fn(async()=>Response.json({output:[{content:[{text:JSON.stringify({objects})}]}]}));
+    expect((await findWorldObjects(cfg,image,'A salon',request)).objects).toHaveLength(5);
+    const [url,init]=request.mock.calls[0] as unknown as [string,RequestInit];
+    expect(url).toContain('/responses');
+    expect(JSON.parse(String(init.body))).toMatchObject({reasoning:{effort:'minimal'},max_output_tokens:3000,input:[{content:[{type:'input_text'},{type:'input_image',image_url:image}]}]});
+  });
+});

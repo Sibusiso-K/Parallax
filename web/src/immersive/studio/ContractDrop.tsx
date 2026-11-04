@@ -25,6 +25,16 @@ export function ContractDrop({ onApply }: ContractDropProps) {
       setSource(image.dataUrl); setDimensions(image); setName(file.name); setSelected(0);
     } catch { if (revision === fileRevision.current) setMessage('That file could not be opened.'); }
   };
+  const sample = async () => {
+    const revision = fileRevision.current;
+    try {
+      const response = await fetch('/samples/sample-contract.png');
+      if (!response.ok) throw new Error('Sample unavailable');
+      const blob = await response.blob();
+      if (revision !== fileRevision.current) return;
+      await choose(new File([blob], 'sample-contract.png', { type: 'image/png' }));
+    } catch { setMessage('The sample could not load. Choose a document instead.'); }
+  };
   const read = async () => {
     const current = new AbortController(); controller.current?.abort(); controller.current = current; setBusy(true); setMessage('Reading the clauses…');
     try {
@@ -56,6 +66,7 @@ export function ContractDrop({ onApply }: ContractDropProps) {
     <div className="px-drop" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); void choose(event.dataTransfer.files[0]); }}>
       <label>Drop a document or choose a file<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={event => void choose(event.target.files?.[0])} /></label>
       <label>Photograph a page<input type="file" accept="image/*" capture="environment" onChange={event => void choose(event.target.files?.[0])} /></label>
+      <button className="secondary" disabled={busy} onClick={() => void sample()}>Try a sample contract</button>
       <span>{name}</span>
     </div>
     {source && <><label className="px-consent"><input type="checkbox" checked={consent} disabled={busy} onChange={event => setConsent(event.target.checked)} />Send this document to Meta for reading. It is not saved by this studio.</label>

@@ -35,6 +35,7 @@ import type { AdvisorSegment } from '../../../shared/scene/advisor-model';
 import { repaintRoom } from './swarm/repaint';
 import { WorldStudio } from './studio/WorldStudio';
 import { ContractDrop } from './studio/ContractDrop';
+import { DocumentConsequence } from './studio/DocumentConsequence';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
 const FilmStudio = lazy(() => import('./studio/FilmStudio').then((m) => ({ default: m.FilmStudio })));
@@ -636,12 +637,9 @@ function World({ binding }: { binding?: ExploreBinding }) {
               <>
                 <ContractDrop onApply={setDocumentProposal} />
                 {documentProposal && (
-                  <aside className="px-studio studio-proposal" aria-label="Document assumption proposal">
-                    <p>Check this against the original, then enter it on the object it belongs to. Nothing has changed yet.</p>
-                    <blockquote>{documentProposal.quote}</blockquote>
-                    <p>{documentProposal.kind === 'paymentDays' ? 'Payment delay in days' : 'Amount in rand'}: {documentProposal.value.toLocaleString('en-ZA')} · source page {documentProposal.page}</p>
-                    <button className="secondary" onClick={() => setDocumentProposal(null)}>Dismiss</button>
-                  </aside>
+                  <DocumentConsequence proposal={documentProposal} path={swarmEntry.path} lagMonths={snapshot.terms.paymentLagMonths}
+                    onLever={() => { if (!stressed[snapshot.ref.pathId]) toggleLever(); setStudio(null); }}
+                    onDismiss={() => setDocumentProposal(null)} />
                 )}
               </>
             )}
