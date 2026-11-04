@@ -14,7 +14,8 @@ export interface WorldContext {
 }
 
 export interface World {
-  dressing: SceneDressing;
+  /** Null when the scene was refused but the portrait was still drawn; the room keeps its built labels. */
+  dressing: SceneDressing | null;
   /** A small JPEG data URL, so it can be saved with the decision. Null when no portrait could be drawn. */
   portrait: string | null;
 }
@@ -40,10 +41,12 @@ async function shrink(dataUrl: string, size = 320): Promise<string | null> {
 export async function buildWorld(context: WorldContext): Promise<World | null> {
   try {
     const res = await fetch("/api/scene", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ context }) });
-    const data = (await res.json()) as { ok?: boolean; mode?: string; dressing?: SceneDressing; portrait?: unknown } | null;
-    if (!data?.ok || data.mode !== "model" || !data.dressing) return null;
+    const data = (await res.json()) as { ok?: boolean; mode?: string; dressing?: SceneDressing | null; portrait?: unknown } | null;
+    if (!data?.ok || data.mode !== "model") return null;
     const portrait = typeof data.portrait === "string" && data.portrait.startsWith("data:image/") ? await shrink(data.portrait) : null;
-    return { dressing: data.dressing, portrait };
+    const dressing = data.dressing && typeof data.dressing === "object" ? data.dressing : null;
+    if (!dressing && !portrait) return null;
+    return { dressing, portrait };
   } catch {
     return null;
   }

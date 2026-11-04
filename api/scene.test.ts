@@ -53,6 +53,22 @@ describe('POST /api/scene', () => {
     expect(res.dressing.title).toBe('The depot');
   });
 
+  it("still draws the founder's portrait from their business and place when the scene is refused", async () => {
+    on();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const prompts: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: RequestInit) => {
+      if (!url.endsWith('/images/generations')) return Response.json({ error: { message: 'not found' } }, { status: 404 });
+      prompts.push((JSON.parse(String(init.body)) as { prompt: string }).prompt);
+      return Response.json({ data: [{ b64_json: 'AAAA' }], output_format: 'webp' });
+    }));
+    const res = await (await post({ context: { business: 'Hair salon', location: 'Soweto' } })).json();
+    expect(res).toMatchObject({ ok: true, mode: 'model', dressing: null, portrait: 'data:image/webp;base64,AAAA' });
+    expect(prompts[0]).toContain('Hair salon in Soweto');
+    // The refusal is logged with the API's own reason, so it can be diagnosed.
+    expect(warn.mock.calls.flat().join(' ')).toMatch(/"status":404.*not found/);
+  });
+
   it('answers 502 when the scene fails, and 400 for a request it cannot read', async () => {
     on();
     vi.spyOn(console, 'warn').mockImplementation(() => {});
