@@ -15,6 +15,8 @@ const SYSTEM = [
   'For business, the value is a short plain description of the business, such as "Bakery" or "Logistics company".',
   'Risk comfort is low, medium or high. Goals are up to three of: cash safety, growth, profit, control, time.',
   'Leave out anything they did not say.',
+  // South African founders may write in their own language, or mix languages (the language picker, 4 Nov).
+  'The founder may write in English or any South African language (isiZulu, isiXhosa, Afrikaans, Sesotho, Setswana), or mix them. Each quote is their exact words in the language they used; the decision and business values are written in English.',
 ].join(' ');
 
 /** An Extractor for handle.ts that asks the Meta model. It throws on any failure, and handleIntake turns that into fixture mode. */

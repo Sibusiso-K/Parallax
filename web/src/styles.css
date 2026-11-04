@@ -709,3 +709,14 @@ button.chip:hover { background: #e6ecf8; }
   .board-seats > :nth-child(3) { animation-delay: .16s; }
   .moderator { animation: rise .5s cubic-bezier(.2, .7, .2, 1) backwards; }
 }
+
+/* ---------- Self-check and the language picker ---------- */
+.selfcheck { margin: 4px 0 16px; padding: 14px 18px; border-radius: 16px; background: #fff; box-shadow: inset 4px 0 0 #0866ff; font-size: 14px; }
+.selfcheck p { margin: 6px 0 0; }
+.selfcheck ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.selfcheck-field { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: var(--panel); font-size: 12px; font-weight: 700; }
+.selfcheck--done.selfcheck { box-shadow: inset 4px 0 0 var(--good); }
+.lang-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 14px; }
+.lang-pick .caps { margin-right: 4px; }
+.lang-pick .chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.lang-note { flex-basis: 100%; margin: 4px 0 0; }
