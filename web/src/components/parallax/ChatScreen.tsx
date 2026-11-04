@@ -6,6 +6,7 @@ import { Avatar, Badge, Button, Drawer, NoPaths, Src, cx } from "./shared";
 import { speak, setReadAloud, useSpeech } from "@/lib/speech";
 import { Listen } from "./Listen";
 import { CashChart } from "./charts";
+import { StepNav } from "./StepNav";
 
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
 const end = (a: number[]) => a[a.length - 1] ?? 0;
@@ -37,7 +38,7 @@ function Typing() {
 
 /** The future founder on the active path: the chat, with the cash chart and the stress test beside it. */
 export function ChatScreen() {
-  const { active, chats, pathOf, send, set, go, traceOpen } = useParallax();
+  const { active, chats, pathOf, send, set, traceOpen } = useParallax();
   const path = pathOf(active);
   const figures = useMemo(() => (path ? pathFigures(path) : null), [path]);
   const [text, setText] = useState("");
@@ -77,6 +78,7 @@ export function ChatScreen() {
   };
 
   return (
+    <>
     <div className="row pagecols">
       <section className="panel chat">
         <header className="chat-head">
@@ -91,20 +93,11 @@ export function ChatScreen() {
             </h2>
             <div className="sub">{path.summary}</div>
             <div className="quietrow">
-              <button type="button" onClick={() => go("paths")}>
-                All paths
-              </button>
               <button type="button" onClick={() => set({ panel: { letter: active } })}>
                 Assumptions
               </button>
               <button type="button" aria-expanded={traceOpen} onClick={() => set({ traceOpen: true })}>
                 Trace
-              </button>
-              <button type="button" onClick={() => go("compare")}>
-                Compare
-              </button>
-              <button type="button" onClick={() => go("compare")}>
-                Comfort check
               </button>
               {speech.supported && (
                 <button type="button" aria-pressed={speech.readAloud} onClick={() => setReadAloud(!speech.readAloud)}>
@@ -288,5 +281,7 @@ export function ChatScreen() {
         </ol>
       </Drawer>
     </div>
+    <StepNav />
+    </>
   );
 }

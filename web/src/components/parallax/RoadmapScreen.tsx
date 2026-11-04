@@ -6,6 +6,7 @@ import { useParallax, type Letter } from "@/lib/parallax-store";
 import { buildRoadmap, type RoadmapNode, type RoadmapQuestion } from "@/lib/roadmap";
 import { pathFigures, type Figures } from "@/lib/stress";
 import { Badge, NoPaths, PATH_COLOR, cx } from "./shared";
+import { StepNav } from "./StepNav";
 
 function Item({ node, onOpen }: { node: RoadmapNode; onOpen: (node: RoadmapNode) => void }) {
   const body = (
@@ -110,6 +111,7 @@ export function RoadmapScreen() {
           </section>
         ))}
       </div>
+      <StepNav />
     </section>
   );
 }

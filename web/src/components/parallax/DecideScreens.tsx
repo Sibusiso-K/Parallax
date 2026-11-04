@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { FIELD_LABELS } from "@/lib/parallax-api";
 import { useParallax, type Letter } from "@/lib/parallax-store";
 import { formatField, formatMoney, memoQuestion } from "@/lib/format";
@@ -6,6 +6,7 @@ import type { FieldKey, PathCard } from "@/lib/types";
 import { pathFigures, type Figures } from "@/lib/stress";
 import { Avatar, Badge, Button, NoPaths, Src, type Kind } from "./shared";
 import { RangeBar, domainOf } from "./charts";
+import { StepNav } from "./StepNav";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 const at = (a: number[], month: number) => a[month] ?? 0;
@@ -188,21 +189,12 @@ export function CompareScreen() {
             onChange={(e) => set({ bothering: e.target.value })}
             placeholder="Whether the client will really pay on 30-day terms."
           />
-          <div className="actions-row">
-            <Button variant="ghost" onClick={() => go("chat")}>
-              Back to chat
-            </Button>
-            <Button
-              variant="primary"
-              className="ml-auto"
-              onClick={() => {
-                set((s) => ({ questions: s.questions || s.bothering }));
-                go("summary");
-              }}
-            >
-              Decision memo
-            </Button>
-          </div>
+          <StepNav
+            onNext={() => {
+              set((s) => ({ questions: s.questions || s.bothering }));
+              go("summary");
+            }}
+          />
         </section>
       </div>
     </div>
@@ -213,9 +205,8 @@ const BASIS: FieldKey[] = ["revenue", "directCosts", "overheads", "payroll", "fo
 
 /** The decision memo the founder leaves with. It names no choice the founder has not made. */
 export function SummaryScreen() {
-  const { paths, fields, assumed, followed, chosen, decision, reasons, questions, set, go, reset, pathOf } = useParallax();
+  const { paths, fields, assumed, followed, chosen, decision, reasons, questions, set, pathOf } = useParallax();
   const figures = useMemo(() => paths.map((p) => pathFigures(p)), [paths]);
-  const [confirming, setConfirming] = useState(false);
   if (paths.length === 0) return <NoPaths />;
 
   const chosenPath = chosen ? pathOf(chosen) : undefined;
@@ -378,28 +369,11 @@ export function SummaryScreen() {
             <textarea className="field-area" rows={3} value={questions} onChange={(e) => set({ questions: e.target.value })} />
           </label>
         </div>
-        <div className="actions-row">
-          <Button variant="ghost" onClick={() => go("compare")}>
-            Back to side by side
-          </Button>
+        <StepNav>
           <Button variant="outline" onClick={() => window.print()}>
             Print memo
           </Button>
-          {confirming ? (
-            <>
-              <Button variant="outline" onClick={() => setConfirming(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={reset}>
-                Yes, delete everything
-              </Button>
-            </>
-          ) : (
-            <Button variant="ghost" className="ml-auto" onClick={() => setConfirming(true)}>
-              Delete everything
-            </Button>
-          )}
-        </div>
+        </StepNav>
       </div>
     </div>
   );

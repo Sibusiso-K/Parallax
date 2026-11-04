@@ -5,6 +5,7 @@ import { Avatar, Button, Src } from "./shared";
 import { Listen } from "./Listen";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
 import { MicButton } from "./MicButton";
+import { StepNav } from "./StepNav";
 
 // The four steps of a run, for a founder (or a judge) opening Parallax for the first time.
 const HOW_TO: [string, string][] = [
@@ -197,15 +198,12 @@ export function IntakeScreen() {
         onChange={(e) => set({ story: e.target.value })}
         placeholder="A client has offered us a contract, but…"
       />
-      <div className="actions-row">
+      <StepNav nextLabel={busy ? "Reading…" : undefined} onNext={next} nextDisabled={!story.trim() || busy}>
         <Button variant="outline" onClick={() => set({ story: DEMO_STORY })}>
-          Use the demo story (fictional founder)
+          Use the demo story
         </Button>
         <MicButton onText={(text) => set((s) => ({ story: s.story.trim() ? `${s.story.trimEnd()} ${text}` : text }))} />
-        <Button variant="primary" className="ml-auto" onClick={next} disabled={!story.trim() || busy}>
-          {busy ? "Reading…" : "Continue"}
-        </Button>
-      </div>
+      </StepNav>
       <p className="hint" aria-live="polite">
         {busy ? "Reading your situation" : ""}
       </p>
@@ -340,19 +338,10 @@ export function HeardScreen() {
         <Src kind="placeholder" /> Behind the three paths, not yet sourced: the cost shares, the rented-equipment share and the setback
         sizes come from the defaults file. Each is marked on the path pages.
       </div>
-      <div className="actions-row">
-        <Button variant="ghost" onClick={() => go("intake")}>
-          Back
-        </Button>
-        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current || blocking.length > 0} onClick={() => go("generating")}>
-          This is right
-        </Button>
-      </div>
-      {blocking.length > 0 ? (
-        <p className="hint">Change what you wrote to go on.</p>
-      ) : (
-        current && <p className="hint">Answer the question above first.</p>
-      )}
+      <StepNav
+        nextDisabled={!!current || blocking.length > 0}
+        hint={blocking.length > 0 ? "Change what you wrote to go on." : "Answer the question above first."}
+      />
     </section>
   );
 }

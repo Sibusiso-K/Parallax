@@ -8,6 +8,7 @@ import { LETTERS, useParallax, type Letter } from "@/lib/parallax-store";
 import { exploreSession, reviseCards } from "@/immersive/session-adapter";
 import type { ExploreBinding, ExploreSelection } from "@/immersive/World";
 import { Button, NoPaths } from "./shared";
+import { StepNav } from "./StepNav";
 
 const World = lazy(() => import("@/immersive/World"));
 
@@ -113,6 +114,7 @@ export function ExploreScreen() {
       }
     >
       <World key={sessionId} binding={binding} />
+      <StepNav />
     </Suspense>
   );
 }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { mockApi } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
-import { Button, cx } from "./shared";
+import { cx } from "./shared";
 import { FieldGrid } from "./FieldGrid";
+import { StepNav } from "./StepNav";
 
 const STEPS = ["Reading your business", "Computing 36 months of cash in code", "Drawing the founder you could become"];
 
@@ -42,7 +43,7 @@ export function GeneratingScreen() {
       if (!alive) return;
       setReady(3);
       await new Promise((r) => setTimeout(r, 700));
-      if (alive) go("profile");
+      if (alive) go("paths");
     })();
     return () => {
       alive = false;
@@ -79,14 +80,7 @@ export function ProfileScreen() {
         <div className="sub">Every future starts here. Anything marked “assumed” is a default you can change.</div>
       </div>
       <FieldGrid editable={false} />
-      <div className="actions-row">
-        <Button variant="ghost" onClick={() => go("heard")}>
-          Edit what I heard
-        </Button>
-        <Button variant="primary" size="lg" className="ml-auto" onClick={() => go("paths")}>
-          Meet your three futures
-        </Button>
-      </div>
+      <StepNav nextLabel="See my futures" onNext={() => go("paths")} />
     </section>
   );
 }

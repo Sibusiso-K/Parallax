@@ -594,3 +594,20 @@ button.chip:hover { background: #e6ecf8; }
   .cmp .v { font-size: 14px; }
   .cmp .r { font-size: 9.5px; white-space: normal; }
 }
+
+/* ---------- Frame without a sidebar: logo, decision, Tools ---------- */
+.topbar .logo { width: 40px; height: 40px; margin: 0; flex: none; }
+.topbar .tools-btn { flex: none; }
+.tools-group { display: grid; gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+.tools-group:last-child { border-bottom: 0; }
+.tools-group .sub { margin: 0; }
+.tools-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tools-row .btn { display: inline-flex; align-items: center; gap: 8px; }
+.btn.danger { background: var(--warn); border-color: var(--warn); }
+.stepnav { margin-top: 24px; }
+.stepnav-hint { text-align: right; }
+@media (max-width: 760px) {
+  .topbar { gap: 10px 12px; flex-wrap: nowrap; }
+  .decision-block { flex: 1 1 auto; }
+  .decision-title { font-size: 16px; }
+}

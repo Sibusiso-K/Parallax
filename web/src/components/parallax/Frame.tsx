@@ -1,91 +1,9 @@
-// The workspace frame: a slim icon sidebar, the decision heading and the three path tabs above each screen.
+// The workspace frame: the decision heading and a small Tools drawer above each screen, then the journey strip, which
+// is the only flow navigation. Tools holds what is not a step: the assumptions, the model trace, export and delete.
 import { useState, type ReactNode } from "react";
-import { useParallax, type Step } from "@/lib/parallax-store";
-import { Avatar, Footer, ParallaxMark, cx } from "./shared";
+import { useParallax } from "@/lib/parallax-store";
+import { Badge, Button, Drawer, Footer, ParallaxMark } from "./shared";
 import { RoadmapStrip } from "./RoadmapStrip";
-
-type NavId = "Profile" | "Roadmap" | "Paths" | "Explore" | "Assumptions" | "Compare" | "Trace";
-const NAV: NavId[] = ["Profile", "Roadmap", "Paths", "Explore", "Assumptions", "Compare", "Trace"];
-
-const ICON: Record<NavId, ReactNode> = {
-  Roadmap: (
-    <>
-      <circle cx="4" cy="4" r="1.9" />
-      <circle cx="16" cy="4" r="1.9" />
-      <circle cx="10" cy="16" r="1.9" />
-      <path d="M4 5.9V9c0 2.4 6 2.4 6 5.2M16 5.9V9c0 2.4-6 2.4-6 5.2" />
-    </>
-  ),
-  Profile: (
-    <>
-      <circle cx="10" cy="7" r="3.2" />
-      <path d="M3.5 17c.6-3.2 3.1-4.8 6.5-4.8s5.9 1.6 6.5 4.8" />
-    </>
-  ),
-  Paths: (
-    <>
-      <path d="M10 3l7 3.6-7 3.6-7-3.6z" />
-      <path d="M3 10.2l7 3.6 7-3.6" />
-      <path d="M3 13.6l7 3.6 7-3.6" />
-    </>
-  ),
-  Explore: (
-    <>
-      <path d="M10 2.8l6.5 3.6v7.2L10 17.2l-6.5-3.6V6.4z" />
-      <path d="M3.5 6.4L10 10l6.5-3.6M10 10v7.2" />
-    </>
-  ),
-  Assumptions: (
-    <>
-      <path d="M3 6h14M3 10h14M3 14h14" />
-      <circle cx="7" cy="6" r="1.7" />
-      <circle cx="13" cy="10" r="1.7" />
-      <circle cx="8" cy="14" r="1.7" />
-    </>
-  ),
-  Compare: (
-    <>
-      <rect x="3" y="4" width="5.5" height="12" rx="1.2" />
-      <rect x="11.5" y="4" width="5.5" height="12" rx="1.2" />
-    </>
-  ),
-  Trace: (
-    <>
-      <path d="M7 5h10M7 10h10M7 15h10" />
-      <circle cx="3.5" cy="5" r=".9" />
-      <circle cx="3.5" cy="10" r=".9" />
-      <circle cx="3.5" cy="15" r=".9" />
-    </>
-  ),
-};
-
-const EXPORT_ICON = (
-  <>
-    <path d="M10 3v9" />
-    <path d="M6.5 8.5 10 12l3.5-3.5" />
-    <path d="M4 15.5V17h12v-1.5" />
-  </>
-);
-
-const TRASH_ICON = (
-  <>
-    <path d="M4 6h12" />
-    <path d="M8 6V4.5h4V6" />
-    <path d="M5.5 6l.8 10.2h7.4L14.5 6" />
-  </>
-);
-
-/** The nav item each screen sits under. The printed memo has none. */
-const CURRENT: Partial<Record<Step, NavId>> = {
-  heard: "Profile",
-  profile: "Profile",
-  paths: "Paths",
-  chat: "Paths",
-  explore: "Explore",
-  compare: "Compare",
-  comfort: "Compare",
-  roadmap: "Roadmap",
-};
 
 /** Downloads what the founder has entered and the paths built from it. Nothing is sent anywhere. */
 function exportJson(s: ReturnType<typeof useParallax>) {
@@ -111,103 +29,94 @@ function exportJson(s: ReturnType<typeof useParallax>) {
   URL.revokeObjectURL(url);
 }
 
-export function ControlRoom({ children }: { children: ReactNode }) {
+function Tools({ open, onClose }: { open: boolean; onClose: () => void }) {
   const s = useParallax();
-  const { step, paths, active, fields, set, go, reset } = s;
+  const { paths, set, go, reset, step } = s;
   const [confirming, setConfirming] = useState(false);
-  const here = CURRENT[step];
-  const ready = paths.length > 0;
-  const decision = typeof fields.decision === "string" ? fields.decision : "";
+  const close = () => {
+    setConfirming(false);
+    onClose();
+  };
+  return (
+    <Drawer open={open} onClose={close} title="Tools">
+      {paths.length > 0 && (
+        <div className="tools-group">
+          <div className="caps">Assumptions</div>
+          <p className="sub">The numbers behind each future. Edit any one and every screen updates.</p>
+          <div className="tools-row">
+            {paths.map((p) => (
+              <Button
+                key={p.id}
+                onClick={() => {
+                  close();
+                  set({ panel: { letter: p.letter } });
+                }}
+              >
+                <Badge letter={p.letter} /> {p.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      {paths.length > 0 && (
+        <div className="tools-group">
+          <div className="caps">Model trace</div>
+          <p className="sub">Which model answered, how fast, and the checks on each reply.</p>
+          <Button
+            onClick={() => {
+              close();
+              set({ traceOpen: true });
+              if (step !== "chat") go("chat");
+            }}
+          >
+            Show the trace
+          </Button>
+        </div>
+      )}
+      <div className="tools-group">
+        <div className="caps">Your data</div>
+        <p className="sub">Download everything as a file, or erase it here and in the saved copy.</p>
+        <div className="tools-row">
+          <Button onClick={() => exportJson(s)}>Export (JSON)</Button>
+          {confirming ? (
+            <>
+              <Button variant="primary" className="danger" onClick={() => { close(); reset(); }}>
+                Yes, delete everything
+              </Button>
+              <Button variant="ghost" onClick={() => setConfirming(false)}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" onClick={() => setConfirming(true)}>
+              Delete everything
+            </Button>
+          )}
+        </div>
+      </div>
+    </Drawer>
+  );
+}
 
-  function open(id: NavId) {
-    if (id === "Profile") go(ready ? "profile" : "heard");
-    if (id === "Roadmap") go("roadmap");
-    if (id === "Paths") go("paths");
-    if (id === "Explore") go("explore");
-    if (id === "Assumptions") set({ panel: { letter: active } });
-    if (id === "Compare") go("compare");
-    if (id === "Trace") {
-      set({ traceOpen: true });
-      if (step !== "chat") go("chat");
-    }
-  }
+export function ControlRoom({ children }: { children: ReactNode }) {
+  const { fields } = useParallax();
+  const [tools, setTools] = useState(false);
+  const decision = typeof fields.decision === "string" ? fields.decision : "";
 
   return (
     <div className="cr">
-      <aside className="sidebar no-print">
-        <div className="logo">
-          <ParallaxMark size={26} />
-        </div>
-        <nav className="nav" aria-label="Main">
-          {NAV.map((id) => (
-            <button
-              key={id}
-              type="button"
-              className={cx(here === id && "on")}
-              aria-label={id}
-              title={id}
-              aria-current={here === id ? "page" : undefined}
-              disabled={id !== "Profile" && !ready}
-              onClick={() => open(id)}
-            >
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                {ICON[id]}
-              </svg>
-            </button>
-          ))}
-        </nav>
-        <div className="side-foot">
-          <button type="button" title="Export JSON" aria-label="Export JSON" onClick={() => exportJson(s)}>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              {EXPORT_ICON}
-            </svg>
-          </button>
-          {confirming ? (
-            <>
-              <button type="button" className="confirm" onClick={reset}>
-                Yes, delete
-              </button>
-              <button type="button" onClick={() => setConfirming(false)}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button type="button" title="Delete everything" aria-label="Delete everything" onClick={() => setConfirming(true)}>
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                {TRASH_ICON}
-              </svg>
-            </button>
-          )}
-        </div>
-      </aside>
       <div className="main">
         <header className="topbar no-print">
+          <div className="logo" aria-hidden="true">
+            <ParallaxMark size={24} />
+          </div>
           <div className="decision-block">
-            <div className="eyebrow">{step === "explore" ? "Explore" : decision ? "Your decision" : "Parallax"}</div>
-            <div className="decision-title">{decision || "Describe a business decision to begin"}</div>
+            <div className="eyebrow">Your decision</div>
+            <div className="decision-title">{decision || "Your decision"}</div>
           </div>
-          <div className="tabs">
-            {/* Explore has its own path selector inside the room; two selectors that disagree would confuse. */}
-            {ready &&
-              step !== "explore" &&
-              paths.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={cx("tab", `p-${p.letter}`, step === "chat" && p.letter === active && "sel")}
-                  aria-pressed={step === "chat" && p.letter === active}
-                  title={`${p.letter} · ${p.name}`}
-                  aria-label={`${p.letter} · ${p.name}`}
-                  onClick={() => {
-                    set({ active: p.letter });
-                    if (step !== "chat") go("chat");
-                  }}
-                >
-                  <Avatar letter={p.letter} src={p.avatarUrl} size={44} />
-                  <span className="tab-letter">{p.letter}</span>
-                </button>
-              ))}
-          </div>
+          <Button variant="outline" className="tools-btn" aria-haspopup="dialog" aria-expanded={tools} onClick={() => setTools(true)}>
+            Tools
+          </Button>
         </header>
         <main className="content">
           <RoadmapStrip />
@@ -215,6 +124,7 @@ export function ControlRoom({ children }: { children: ReactNode }) {
         </main>
         <Footer />
       </div>
+      <Tools open={tools} onClose={() => setTools(false)} />
     </div>
   );
 }

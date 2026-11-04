@@ -5,6 +5,7 @@ import { pathFigures } from "@/lib/stress";
 import type { Assumption, PathCard } from "@/lib/types";
 import { Avatar, Button, Drawer, NoPaths, SOURCE_KIND, Src, cx } from "./shared";
 import { Spark } from "./charts";
+import { StepNav } from "./StepNav";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 
@@ -68,11 +69,7 @@ export function PathsScreen() {
           );
         })}
       </div>
-      <div className="actions-row">
-        <Button variant="ghost" onClick={() => go("profile")}>
-          Back to your business today
-        </Button>
-      </div>
+      <StepNav />
     </section>
   );
 }
