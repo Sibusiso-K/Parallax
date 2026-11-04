@@ -1,3 +1,4 @@
+import { formatRand } from '../../../../shared/guard/figures';
 import type { RoomSnapshot } from '../../../../shared/scene/room-model';
 
 export type StoryObject = 'contract' | 'fridge' | 'pan' | 'memo' | 'intake_desk';
@@ -8,20 +9,20 @@ export type ReelPlan = {
   pathId: string;
   month: number;
   object: StoryObject;
-  /** Timeline data only. No audio, video or image has been generated. */
+  /** What the reel says and for how long; reel.ts draws it. */
   scenes: readonly { kind: 'context' | 'cash' | 'qualification'; durationSeconds: number; text: string }[];
 };
 
 const labels: Record<StoryObject, string> = { contract: 'Contract', fridge: 'Equipment', pan: 'Production', memo: 'Decision memo', intake_desk: 'Confirmed figures' };
 
-/** Freeze facts and copy used by a future reel renderer; never accepts model-authored figures. */
+/** Freezes the facts and words the reel uses; never accepts model-authored figures. */
 export function buildReelPlan(snapshot: RoomSnapshot, month: number, object: StoryObject, label?: string): ReelPlan {
   const row = snapshot.active.rows[month - 1];
   const baseline = snapshot.baseline.rows[month - 1];
   if (!Object.hasOwn(labels, object) || !Number.isInteger(month) || month < 1 || !row || !baseline || row.month !== month || baseline.month !== month || !Number.isFinite(row.cash) || !Number.isFinite(baseline.cash)) {
     throw new RangeError('Invalid object, month or snapshot values');
   }
-  const money = (n: number) => new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 }).format(n);
+  const money = formatRand;
   const stressed = snapshot.ref.setback !== null;
   const cash = stressed
     ? `At the end of month ${month}, baseline cash is ${money(baseline.cash)} and cash with the selected stress is ${money(row.cash)}.`

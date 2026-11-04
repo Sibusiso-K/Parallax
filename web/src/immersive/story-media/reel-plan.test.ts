@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatRand } from '../../../../shared/guard/figures';
 import { createSession } from '../session';
 import { buildReelPlan } from './reel-plan';
 
@@ -6,7 +7,7 @@ describe('snapshot-backed reel plan', () => {
   it('preserves snapshot identity, engine numbers and the shortfall warning', () => {
     const snapshot = createSession('reel-test').snapshotFor('B', true);
     const plan = buildReelPlan(snapshot, 4, 'contract');
-    const money = (n: number) => new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 }).format(n);
+    const money = formatRand;
     expect(plan.snapshotKey).toBe(snapshot.key);
     expect(plan.profileRevision).toBe(snapshot.ref.profileRevision);
     expect(plan.scenes[1]!.text).toContain(money(snapshot.active.rows[3]!.cash));

@@ -126,7 +126,7 @@
 .world .ask { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
 .world .ask input, .world .field input, .world .field textarea, .world .field select { min-height: 44px; border-radius: 12px; border: 1px solid #d6d0c4; padding: 8px 12px; font: inherit; background: #fff; width: 100%; }
 .world .voice { display: grid; gap: 4px; }
-.world .btn { min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 600; cursor: pointer; }
+.world .btn { min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 600; cursor: pointer; text-transform: none; letter-spacing: 0; }
 .world .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .world .btn--ghost { background: #fff; color: var(--ink); border-color: #d6d0c4; }
 .world .btn--round { width: 44px; padding: 0; font-size: 20px; border-radius: 50%; }
@@ -199,6 +199,19 @@
 .world .answer__next { margin-top: 8px; }
 .world .ask__mic { flex: none; min-width: 70px; }
 .world .ask__mic.is-on { background: var(--neg); border-color: var(--neg); color: #fff; }
+
+/* ---- what the founder can make ---- */
+.world .studio { display: grid; gap: 10px; }
+.world .studio__make { display: flex; flex-wrap: wrap; gap: 6px; }
+.world .studio__make .btn { min-height: 40px; padding: 4px 12px; font-size: 13px; }
+.world .studio p { margin: 0; }
+.world .studio__progress { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; font-size: 12.5px; }
+.world .studio__progress progress { grid-column: 1 / -1; width: 100%; height: 8px; accent-color: var(--lav-ink); }
+.world .studio__library { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.world .studio__library li { display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 13px; }
+.world .studio__library video, .world .studio__library img { width: 96px; max-height: 170px; object-fit: cover; border-radius: 8px; background: #2a2530; }
+.world .studio__library .btn { display: inline-flex; align-items: center; margin-top: 6px; text-decoration: none; }
+.world .studio__library .chip { display: block; margin-top: 4px; white-space: normal; }
 
 /* ---- walking ---- */
 .world .walk-prompt { position: absolute; z-index: 3; left: 50%; bottom: 150px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px 8px 10px; border: 1px solid var(--lav-edge); border-radius: 14px; background: var(--paper); color: var(--lav-ink); font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 8px 28px rgba(30, 22, 60, 0.22); }

@@ -14,6 +14,7 @@ import { FIXTURE_LABEL, LIVE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorA
 import { DemoVoice, answerTranscript } from './DemoVoice';
 import { actionLabel, askLive, serverAbilities, type AdvisorContext, type ServerAbilities } from './live-advisor';
 import { CashStory } from './story-media/CashStory';
+import { MediaStudio, type MediaOutput } from './story-media/MediaStudio';
 import { buildReelPlan, listenScript } from './story-media/reel-plan';
 import { EMPTY_MEMO, choiceLabel, evidenceAppendix, memoFooter, type Choice, type Memo } from './memo';
 import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type CameraStation, type Replay } from './replay';
@@ -155,6 +156,14 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const advisorRef = useRef<HTMLElement>(null);
   const objectRef = useRef<HTMLElement>(null);
   const [objectTab, setObjectTab] = useState<ObjectTab>('explore');
+  // What the founder has made. Kept while they stay in the room, and freed when they leave.
+  const [outputs, setOutputs] = useState<MediaOutput[]>([]);
+  const outputUrls = useRef<string[]>([]);
+  const addOutput = useCallback((output: MediaOutput) => {
+    outputUrls.current.push(output.url);
+    setOutputs((list) => [...list, output]);
+  }, []);
+  useEffect(() => () => outputUrls.current.forEach((url) => URL.revokeObjectURL(url)), []);
   const [question, setQuestion] = useState('');
   const [evidence, setEvidence] = useState<ResolvedClaim | null>(null);
   const [sheet, setSheet] = useState<null | 'memo'>(null);
@@ -700,13 +709,17 @@ function World({ binding }: { binding?: ExploreBinding }) {
             )}
             {objectTab === 'create' && (
               <div role="tabpanel" aria-label="Create">
-                <details className="table" open>
-                  <summary>Reel storyboard</summary>
-                  <p className="muted small">A preview based on this scenario and month. Video and audio have not been generated.</p>
-                  <ol>{buildReelPlan(snapshot, shownMonth, focus, focusInfo.label).scenes.map((scene, index) => (
-                    <li key={`${scene.kind}-${index}`}>{scene.text} <span className="muted small">({scene.durationSeconds} seconds)</span></li>
-                  ))}</ol>
-                </details>
+                <MediaStudio
+                  snapshot={snapshot}
+                  month={shownMonth}
+                  objectId={focus}
+                  objectLabel={focusInfo.label}
+                  stillUrl={`${WORLD_BASE}stills/${focusInfo.place}.jpg`}
+                  outputs={outputs}
+                  onOutput={addOutput}
+                  revision={session.profileRevision}
+                  disabled={inReplay}
+                />
               </div>
             )}
             {objectTab === 'explore' && <div role="tabpanel" aria-label="Explore" className="object__explore">

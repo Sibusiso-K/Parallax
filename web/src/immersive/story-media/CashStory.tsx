@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { createCashInfographic } from './infographic';
+import { formatRand } from '../../../../shared/guard/figures';
 import type { RoomSnapshot } from '../../../../shared/scene/room-model';
 
 /** A deterministic view of one existing snapshot. It does not calculate the scenario. */
@@ -24,7 +24,7 @@ export function CashStory({ snapshot, selectedMonth, onSelectMonth, disabled = f
   const x = (i: number) => 30 + (active.length === 1 ? 0 : i / (active.length - 1) * 540);
   const y = (v: number) => 180 - (v - min) / span * 150;
   const points = (rows: typeof active) => rows.map((row, i) => `${x(i)},${y(row.cash)}`).join(' ');
-  const money = (value: number) => new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 }).format(value);
+  const money = formatRand;
   const changed = snapshot.ref.setback !== null;
   return <section aria-labelledby={`${id}-title`}>
     <h3 id={`${id}-title`}>Cash over {active.length} months</h3>
@@ -39,15 +39,6 @@ export function CashStory({ snapshot, selectedMonth, onSelectMonth, disabled = f
     <p>Month {selectedMonth}: {changed ? 'with stress ' : ''}{money(active[selectedMonth - 1]!.cash)}{changed ? `; baseline ${money(baseline[selectedMonth - 1]!.cash)}` : ''}.</p>
     {active.length > 1 && <label>Month <input type="range" disabled={disabled} min="1" max={active.length} value={selectedMonth} onChange={e => onSelectMonth(Number(e.currentTarget.value))} /></label>}
     {snapshot.active.firstShortfall !== null && <p>First shortfall: month {snapshot.active.firstShortfall}. Later projections assume the business continues; funding and survival are not modelled.</p>}
-    <button type="button" onClick={() => {
-      const data = createCashInfographic(snapshot, selectedMonth);
-      const url = URL.createObjectURL(new Blob([data], { type: 'image/svg+xml;charset=utf-8' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `parallax-path-${snapshot.ref.pathId}-month-${selectedMonth}.svg`;
-      link.click();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }}>Download this cash snapshot</button>
     <details><summary>Show monthly values</summary><table><caption>Month-end cash for {snapshot.pathName}</caption><thead><tr><th scope="col">Month</th>{changed && <th scope="col">Baseline</th>}<th scope="col">{changed ? 'With stress' : 'Cash'}</th></tr></thead><tbody>{active.map((row, i) => <tr key={row.month}><th scope="row">{row.month}</th>{changed && <td>{money(baseline[i]!.cash)}</td>}<td>{money(row.cash)}</td></tr>)}</tbody></table></details>
   </section>;
 }
