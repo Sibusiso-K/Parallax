@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi, type Health } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
 import { Avatar, Button, Src } from "./shared";
@@ -119,9 +119,22 @@ function useReadStory() {
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
   const { busy, read } = useReadStory();
+  // The faces lean a little towards the pointer. Only CSS variables change, so no re-render; motion.css applies them.
+  const art = useRef<HTMLDivElement>(null);
+  const lean = (e: PointerEvent<HTMLElement>) => {
+    const el = art.current;
+    if (!el || e.pointerType === "touch") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    el.style.setProperty("--mx", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+    el.style.setProperty("--my", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+  };
+  const settle = () => {
+    art.current?.style.setProperty("--mx", "0");
+    art.current?.style.setProperty("--my", "0");
+  };
   return (
     <>
-      <section className="hero">
+      <section className="hero" onPointerMove={lean} onPointerLeave={settle}>
         <div className="hero-copy">
           <div className="eyebrow">Parallax · for founders</div>
           <h1>Rehearse a big decision before you make it</h1>
@@ -141,7 +154,12 @@ export function StartScreen() {
           </div>
           <p className="start-sub">The demo is a fictional caterer weighing a big contract. About two minutes.</p>
         </div>
-        <div className="hero-art" aria-hidden="true">
+        <div className="hero-art" aria-hidden="true" ref={art}>
+          <span className="hero-orbit o1" />
+          <span className="hero-orbit o2" />
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <span key={n} className={`hero-speck s${n}`} />
+          ))}
           <Avatar letter="B" src="/avatars/B.png" size={210} className="hero-face hero-b" />
           <Avatar letter="A" src="/avatars/A.png" size={168} className="hero-face hero-a" />
           <Avatar letter="C" src="/avatars/C.png" size={168} className="hero-face hero-c" />

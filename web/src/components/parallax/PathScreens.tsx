@@ -101,16 +101,16 @@ export function PathsScreen() {
                 <div>
                   <dt>Lowest cash</dt>
                   <dd>
-                    {formatMoney(s.lowest.cash)} <small>month {s.lowest.month}</small>
+                    <span key={s.lowest.cash} className="tick">{formatMoney(s.lowest.cash)}</span> <small>month {s.lowest.month}</small>
                   </dd>
                 </div>
                 <div>
                   <dt>Cash runs out</dt>
-                  <dd>{s.runsOut ? <span className="chipwarn">Month {s.runsOut}</span> : <span className="chipok">Never</span>}</dd>
+                  <dd>{s.runsOut ? <span key={s.runsOut} className="chipwarn tick">Month {s.runsOut}</span> : <span className="chipok tick">Never</span>}</dd>
                 </div>
                 <div>
                   <dt>Month 36</dt>
-                  <dd>{formatMoney(s.endCash)}</dd>
+                  <dd><span key={s.endCash} className="tick">{formatMoney(s.endCash)}</span></dd>
                 </div>
               </dl>
               <div className="nft-actions">
