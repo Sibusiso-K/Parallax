@@ -21,13 +21,22 @@ holds only a `.gitignore`.
     (`shared/chat/future-self.ts`).
   - Muse Spark dresses the 3D room for the founder's own business, and Muse Image draws the founder there
     (`shared/scene/dressing.ts`, `shared/providers/image.ts`, and [docs/scene-from-prompt.md](docs/scene-from-prompt.md)).
-  - Muse Voice Transcribe turns **Speak instead** into text.
+  - Muse Spark answers as the advisor inside the 3D room (`shared/scene/advisor-model.ts`, `POST /api/advisor`). It
+    may suggest what to look at next (a month, the late payment, an object, another path), and each suggestion only
+    moves the view.
+  - Muse Voice Transcribe turns **Speak instead** into text, and lets the founder ask the room out loud.
   - Muse Image made the demo founder's three portraits.
 - **No model produces a figure.** Every number comes from the cash engine in `shared/engine/`, and `shared/guard/`
-  keeps figures out of model replies.
+  keeps figures out of model replies. The room's advisor is checked sentence by sentence, and the browser checks each
+  figure again against its own engine run, withholding the answer if any figure differs.
 - **The UI** was first generated with Lovable on 30 Oct, then reworked by hand into the Control Room design.
 - **The 3D courtyard** is built from CC0 sources (Poly Haven and MakeHuman) by `assets/blender/build_courtyard.py`.
-  Each source and its licence is listed in `assets/provenance.json`.
+  Each source and its licence is listed in `assets/provenance.json`, and the CC BY garments in `assets/CREDITS.md`.
+  In the room the founder can walk the courtyard (Rapier physics, loaded only when **Walk** is pressed), press a place
+  to walk there, and make a vertical reel or a PNG of one month in the browser. Nothing is uploaded.
+- **Who built what (team Sonar):** Sibusiso (`Sibusiso-K`) wrote the cash engine, intake, and the chat and session
+  routes. Lethabo (`LethaboMH14`) wrote most of the 3D room: walk mode, the room's advisor, the reel and PNG, and the
+  draft characters. The commit history shows each change.
 
 ## Using it for the first time
 
@@ -77,7 +86,11 @@ Copy `.env.example` to `.env.local` and fill it in. Never commit `.env.local`: t
 | `META_VOICE_ENABLED` | `true` turns on Meta speech-to-text for **Speak instead**. Off by default. |
 | `META_MODELS`, `META_ASR_MODEL`, `META_IMAGE_MODEL`, `META_API_BASE_URL` | Optional overrides. The defaults live in `shared/providers/`. |
 
-With `META_MODEL_ENABLED` on, the chat and the founder's own room and portrait use the same key.
+With `META_MODEL_ENABLED` on, the chat, the room's advisor, and the founder's own room and portrait use the same key.
+
+Every route that spends credits (`intake`, `chat`, `advisor`, `scene`, `transcribe`) refuses browser calls from other
+sites and allows each network address a burst of calls per ten minutes (`shared/http/guard.ts`). The count is kept per function
+instance, so it slows floods but is not a quota. Set a spend limit on the Meta billing page as well.
 
 ### Saving decisions (optional)
 
@@ -113,7 +126,7 @@ npm run build
 ## Layout
 
 - `web/`: the React app (Vite).
-- `api/`: Vercel Functions: `intake`, `transcribe`, `chat`, `scene`, `session` and `health`.
+- `api/`: Vercel Functions: `intake`, `transcribe`, `chat`, `advisor`, `scene`, `session` and `health`.
 - `supabase/migrations/`: the database table and its row-level security.
 - `shared/`: the logic both sides run:
   - `intake/`: reading the story, and the checks on it.
@@ -122,8 +135,24 @@ npm run build
   - `engine/`: the cash simulation.
   - `guard/`: keeps figures out of model replies.
   - `chat/`: the future-self agent.
-  - `scene/`: the 3D room's claims, and its dressing for each founder's business.
+  - `scene/`: the 3D room's claims, its dressing for each founder's business, and its advisor.
   - `session/`: saved decisions in Supabase.
   - `voice/`: WAV handling for speech-to-text.
+  - `http/`: the guard on the routes that spend credits.
+  - `immersive-server/`: offline building blocks for a future room server. Nothing in it is deployed.
+- `web/src/immersive/`: the 3D courtyard, walk mode, the room's advisor and the reel.
 
-Open `/?world` for the 3D demo room on its own.
+Open `/?world` for the 3D demo room on its own. Add `?people` to see the draft characters.
+
+## Known limits
+
+- The default assumptions in `shared/defaults/za.json` are placeholders, not sourced figures. The app marks each one.
+- There are no accounts. A saved decision belongs to one browser's private code.
+- Without a Meta key, the chat and the room's advisor use scripted answers, and the app says so.
+- The characters behind `?people` are drafts, not photoreal.
+- The reel has no sound: the browser's speech voices cannot be recorded.
+- The reel and read aloud were checked only in Chromium-based browsers. Safari, Android voices and real phones are not
+  yet checked.
+- Limits count by network address, so visitors who share one connection share the limit.
+- The draft characters use two CC BY garments. One garment's exact licence version is not confirmed, and its credit is
+  in `assets/CREDITS.md`, not on screen. Resolve both before the characters are shown publicly.
