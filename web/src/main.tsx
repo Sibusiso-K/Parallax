@@ -1,9 +1,9 @@
-// UI generated with Lovable on 30 Oct 2026; redesigned on 2 Nov 2026 to the Control Room mockup (Mockup 5 v2).
+// UI generated with Lovable on 30 Oct 2026; restyled on 2 Nov 2026 in the marketplace-style preview branch.
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { ParallaxProvider, useParallax } from "@/lib/parallax-store";
-import { Footer, ParallaxMark } from "@/components/parallax/shared";
+import { Footer, ParallaxMark, cx } from "@/components/parallax/shared";
 import { ControlRoom } from "@/components/parallax/Frame";
 import { HeardScreen, IntakeScreen, StartScreen } from "@/components/parallax/StartScreens";
 import { GeneratingScreen, ProfileScreen } from "@/components/parallax/ProfileScreens";
@@ -41,7 +41,7 @@ function Shell() {
     );
   }
   return (
-    <div className="plain">
+    <div className={cx("plain", step === "start" && "plain-start")}>
       {step !== "start" && (
         <header className="plain-head">
           <button type="button" className="brand" onClick={reset} aria-label="Parallax, start over">

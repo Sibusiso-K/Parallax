@@ -1,36 +1,52 @@
 import { useState, type FormEvent } from "react";
 import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
-import { Button, ParallaxMark, Src } from "./shared";
+import { Avatar, Button, Src } from "./shared";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
 
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
   return (
-    <section className="hero">
-      <ParallaxMark size={56} />
-      <div className="eyebrow">PARALLAX · FOR FOUNDERS</div>
-      <h1>Rehearse the decision before you bet the business</h1>
-      <p className="lead">
-        Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the founder
-        you would become.
-      </p>
-      <ul className="bullets">
-        <li>A reflection aid, not financial advice.</li>
-        <li>What you type stays in this browser and can be deleted.</li>
-        <li>Your words are sent to Meta's AI to write replies.</li>
-        <li>Every figure is computed in code from assumptions you can see and change.</li>
-      </ul>
-      <label className="agree">
-        <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
-        <span>I am 18 or older</span>
-      </label>
-      <div className="actions-row">
-        <Button variant="primary" size="lg" disabled={!agreed} onClick={() => go("intake")}>
-          Begin
-        </Button>
-      </div>
-    </section>
+    <>
+      <section className="hero">
+        <div className="hero-copy">
+          <div className="eyebrow">Parallax · for founders</div>
+          <h1>Rehearse the decision before you bet the business</h1>
+          <p className="lead">
+            Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the founder
+            you would become.
+          </p>
+          <label className="agree">
+            <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
+            <span>I am 18 or older</span>
+          </label>
+          <div className="actions-row">
+            <Button variant="primary" size="lg" disabled={!agreed} onClick={() => go("intake")}>
+              Begin
+            </Button>
+          </div>
+        </div>
+        <div className="hero-art" aria-hidden="true">
+          <Avatar letter="B" src="/avatars/B.png" size={210} className="hero-face hero-b" />
+          <Avatar letter="A" src="/avatars/A.png" size={168} className="hero-face hero-a" />
+          <Avatar letter="C" src="/avatars/C.png" size={168} className="hero-face hero-c" />
+        </div>
+      </section>
+      <section className="start-notes">
+        <div className="note">
+          <b>A reflection aid</b>
+          <span>Not financial advice. One possible future, not a prediction.</span>
+        </div>
+        <div className="note">
+          <b>Not stored</b>
+          <span>Your text goes only to Parallax's own server, to be read. The server does not keep it.</span>
+        </div>
+        <div className="note">
+          <b>No model connected yet</b>
+          <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
+        </div>
+      </section>
+    </>
   );
 }
 

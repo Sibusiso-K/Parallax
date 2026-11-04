@@ -3,17 +3,16 @@ import { useParallax, type Letter } from "@/lib/parallax-store";
 import { describeAssumption, formatMoney, parseAmount } from "@/lib/format";
 import { pathFigures } from "@/lib/stress";
 import type { Assumption, PathCard } from "@/lib/types";
-import { Avatar, Badge, Button, Drawer, NoPaths, SOURCE_KIND, Src, cx } from "./shared";
-import { RangeBar, domainOf } from "./charts";
+import { Avatar, Button, Drawer, NoPaths, SOURCE_KIND, Src, cx } from "./shared";
+import { Spark } from "./charts";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 
-/** The three paths side by side: what each does to the business's cash, and where to go next. */
+/** The three paths as cards: each path's cash curve, its end value, and whether its bad case runs out of cash. */
 export function PathsScreen() {
   const { paths, set, go } = useParallax();
   const figures = useMemo(() => paths.map((p) => pathFigures(p)), [paths]);
   if (paths.length === 0) return <NoPaths />;
-  const domain = domainOf(figures);
   return (
     <section className="screen">
       <div className="pagehead">
@@ -25,45 +24,35 @@ export function PathsScreen() {
         {paths.map((p, i) => {
           const f = figures[i]!;
           return (
-            <article key={p.id} className={cx("pcard", `p-${p.letter}`)}>
-              <div className="pname">
-                <Avatar letter={p.letter} src={p.avatarUrl} size={64} />
-                <div>
-                  <div className="ptitle">
-                    <Badge letter={p.letter} /> <b>{p.name}</b>
-                  </div>
-                  <div className="psub">{p.summary}</div>
-                </div>
+            <article key={p.id} className={cx("nft", `p-${p.letter}`)}>
+              <div className="nft-media">
+                <Spark letter={p.letter} values={f.likely} />
+                <span className="nft-letter">{p.letter}</span>
+                <Avatar letter={p.letter} src={p.avatarUrl} size={84} className="nft-avatar" />
               </div>
-              <div className="pband">
-                <div className="caps">Cash in the business at month 36</div>
-                <div className="v">{formatMoney(end(f.likely))}</div>
-                <div className="r">
-                  Bad {formatMoney(end(f.bad))} · Good {formatMoney(end(f.good))}
-                </div>
-                <RangeBar letter={p.letter} bad={end(f.bad)} likely={end(f.likely)} good={end(f.good)} domain={domain} />
+              <div className="nft-body">
+                <h2 className="nft-title">{p.name}</h2>
+                <p className="nft-sub">{p.summary}</p>
               </div>
-              <div>
-                {f.runsOutBad ? (
-                  <span className="chipwarn">Runs out in month {f.runsOutBad} in the bad case</span>
-                ) : (
-                  <span className="chipok">Stays above zero in every case</span>
-                )}
+              <div className="nft-meta">
+                <span>Likely, month 36</span>
+                <b>{formatMoney(end(f.likely))}</b>
               </div>
-              <div className="pact">
-                <Button variant="outline" onClick={() => set({ panel: { letter: p.letter } })}>
-                  Show assumptions
-                </Button>
+              <div className="nft-meta">
+                <span>Bad case</span>
+                {f.runsOutBad ? <span className="chipwarn">Runs out in month {f.runsOutBad}</span> : <span className="chipok">Stays above zero</span>}
+              </div>
+              <div className="nft-actions">
                 <Button
-                  variant="path"
-                  className={`p-${p.letter}`}
+                  variant="primary"
                   onClick={() => {
                     set({ active: p.letter });
                     go("chat");
                   }}
                 >
-                  Talk to your future self
+                  Open path
                 </Button>
+                <Button onClick={() => set({ panel: { letter: p.letter } })}>Assumptions</Button>
               </div>
             </article>
           );

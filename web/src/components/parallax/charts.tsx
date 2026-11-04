@@ -114,6 +114,32 @@ export function CashChart({
   );
 }
 
+const SPARK_TINT: Record<Letter, string> = { A: "#9cb8f4", B: "#f2b595", C: "#bba6f0" };
+
+/** A path's cash curve over 36 months, drawn as the picture on its card. The line is the engine's likely case. */
+export function Spark({ letter, values }: { letter: Letter; values: number[] }) {
+  const w = 300;
+  const h = 240;
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const span = hi - lo || 1;
+  const xs = values.map((_, i) => (i / (values.length - 1)) * w);
+  const ys = values.map((v) => h - 40 - ((v - lo) / span) * (h - 80));
+  return (
+    <svg className="nft-spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <path
+        d={linePath(xs, ys)}
+        fill="none"
+        stroke={SPARK_TINT[letter]}
+        strokeWidth="3"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
 /** One range bar: bad to good at month 36 on a scale shared by the paths, with the likely case as a dot. */
 export function RangeBar({
   letter,
