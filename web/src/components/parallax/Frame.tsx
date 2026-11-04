@@ -4,6 +4,49 @@ import { useState, type ReactNode } from "react";
 import { useParallax } from "@/lib/parallax-store";
 import { Badge, Button, Drawer, Footer, ParallaxMark } from "./shared";
 import { RoadmapStrip } from "./RoadmapStrip";
+import { useMetaCalls, type MetaCall } from "@/lib/meta-log";
+
+const MODE_LABEL: Record<MetaCall["mode"], string> = { model: "Meta model", fixture: "Demo, in code", error: "Failed" };
+
+/** Every call this tab made to a route that can use Meta's models: what it was for, which model, how long. */
+function MetaInside() {
+  const calls = useMetaCalls();
+  const byModel = calls.filter((c) => c.mode === "model").length;
+  return (
+    <div className="tools-group meta-inside">
+      <div className="caps">Meta inside</div>
+      <p className="sub">
+        {calls.length === 0
+          ? "No model calls yet. Each one shows here: what it did, which Meta model, and how long it took."
+          : `${byModel} of ${calls.length} calls answered by Meta models in this tab. Figures always come from code, never a model.`}
+      </p>
+      {calls.length > 0 && (
+        <ol className="meta-calls">
+          {[...calls].reverse().map((c) => (
+            <li key={c.id} className={`mc mc--${c.mode}`}>
+              <b>{c.feature}</b>
+              <span>{c.mode === "model" ? (c.model ?? "Meta model") : MODE_LABEL[c.mode]}</span>
+              <span className="mc-ms">{(c.ms / 1000).toFixed(1)} s</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+/** The top bar's count of Meta model calls; opens Tools, where they are listed. */
+function MetaPill({ onOpen }: { onOpen: () => void }) {
+  const calls = useMetaCalls();
+  const n = calls.filter((c) => c.mode === "model").length;
+  return (
+    <button type="button" className="meta-pill" onClick={onOpen} title="Which Meta models ran in this tab">
+      <span className="meta-dot" aria-hidden="true" />
+      Meta <b>{n}</b>
+      <span className="sr-only"> model calls. Show them.</span>
+    </button>
+  );
+}
 
 /** Downloads what the founder has entered and the paths built from it. Nothing is sent anywhere. */
 function exportJson(s: ReturnType<typeof useParallax>) {
@@ -39,6 +82,7 @@ function Tools({ open, onClose }: { open: boolean; onClose: () => void }) {
   };
   return (
     <Drawer open={open} onClose={close} title="Tools">
+      <MetaInside />
       {paths.length > 0 && (
         <div className="tools-group">
           <div className="caps">Assumptions</div>
@@ -114,6 +158,7 @@ export function ControlRoom({ children }: { children: ReactNode }) {
             <div className="eyebrow">Your decision</div>
             <div className="decision-title">{decision || "Your decision"}</div>
           </div>
+          <MetaPill onOpen={() => setTools(true)} />
           <Button variant="outline" className="tools-btn" aria-haspopup="dialog" aria-expanded={tools} onClick={() => setTools(true)}>
             Tools
           </Button>

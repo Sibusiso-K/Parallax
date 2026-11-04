@@ -8,6 +8,8 @@ import { Spark } from "./charts";
 import { NO_LENS, applyLens, safest, summarise, type Lens } from "../../../../shared/engine/compare";
 import { SETBACK_LABELS } from "../../../../shared/engine/analysis";
 import { StepNav } from "./StepNav";
+import { MicButton } from "./MicButton";
+import { readWhatIf, type WhatIfRead } from "@/lib/whatif";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 
@@ -20,6 +22,72 @@ function usualSales(v: unknown): number {
 const LATE = SETBACK_LABELS["late-payment"].slice(SETBACK_LABELS["late-payment"].indexOf(": ") + 2);
 const pct = (n: number) => `${n > 0 ? "+" : ""}${n}%`;
 
+/** What a read what-if changed, said in code from the levers, never in the model's words. */
+function describeChanges(r: WhatIfRead): string {
+  const parts: string[] = [];
+  if (r.changes.latePayment !== undefined) parts.push(r.changes.latePayment ? "late payment on" : "late payment off");
+  if (r.changes.contractScale !== undefined) parts.push(`contract at ${Math.round(r.changes.contractScale * 100)}%`);
+  if (r.changes.pricePercent !== undefined) parts.push(`prices ${pct(r.changes.pricePercent)}`);
+  return parts.join(" · ");
+}
+
+/** A what-if in the founder's own words, typed or spoken, read into the levers. */
+function AskWhatIf({ lens, onChange }: { lens: Lens; onChange: (l: Lens) => void }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<{ text: string; by: string } | null>(null);
+  const run = async (words: string) => {
+    const t = words.trim();
+    if (t.length < 3 || busy) return;
+    setBusy(true);
+    const r = await readWhatIf(t);
+    setBusy(false);
+    const said = describeChanges(r);
+    const by = r.by === "model" ? `Read by ${r.model ?? "Muse Spark"}` : r.fallback ? `Read in code (${r.fallback.replace(/\.$/, "")})` : "Read in code (demo mode)";
+    if (said) onChange({ ...lens, ...r.changes });
+    const extra = [r.clamped && "set to the nearest end of the slider", r.outOfScope && "part of it is beyond these three levers"].filter(Boolean).join("; ");
+    setNote({
+      text: said ? `${said}${extra ? `. Also: ${extra}.` : ""}` : r.outOfScope ? "That is beyond these three levers. Try late payment, contract size or prices." : "No what-if matched. Try: “what if they pay late and I raise prices 10%?”",
+      by,
+    });
+  };
+  return (
+    <form
+      className="wi-ask"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void run(text);
+      }}
+    >
+      <label htmlFor="wi-text" className="sr-only">
+        Ask a what-if in your own words
+      </label>
+      <input
+        id="wi-text"
+        className="field-input"
+        value={text}
+        maxLength={300}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Say it: “what if they pay late and I raise prices 10%?”"
+      />
+      <Button type="submit" variant="primary" disabled={busy || text.trim().length < 3}>
+        {busy ? "Reading…" : "Try it"}
+      </Button>
+      <MicButton
+        onText={(spoken) => {
+          setText(spoken);
+          void run(spoken);
+        }}
+      />
+      {note && (
+        <p className="wi-note" role="status">
+          <b>{note.text}</b> <span className="wi-by">{note.by}</span>
+        </p>
+      )}
+    </form>
+  );
+}
+
 /** The what-ifs: each one reruns the engine on all three futures at once, so they stay comparable. */
 function WhatIf({ lens, onChange, hasContract }: { lens: Lens; onChange: (l: Lens) => void; hasContract: boolean }) {
   const changed = lens.latePayment || lens.contractScale !== 1 || lens.pricePercent !== 0;
@@ -28,6 +96,7 @@ function WhatIf({ lens, onChange, hasContract }: { lens: Lens; onChange: (l: Len
       <h2 id="whatif-title" className="caps">
         What if…
       </h2>
+      <AskWhatIf lens={lens} onChange={onChange} />
       <label className="wi-toggle">
         <input type="checkbox" checked={lens.latePayment} onChange={(e) => onChange({ ...lens, latePayment: e.target.checked })} />
         <span>{LATE.charAt(0).toUpperCase() + LATE.slice(1)}</span>
