@@ -335,6 +335,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
         goals: Array.isArray(f.goals) ? f.goals.map(String) : str(f.goals)?.split(/,\s*/),
         story: str(cur.story)?.slice(0, 4000),
         language: cur.language !== "en" ? cur.language : undefined,
+        decisionType: str(f.decisionType),
       };
       const history = cur.chats[letter].filter((m) => !m.streaming).map((m) => ({ role: m.role, text: m.text }));
       const user: Msg = { id: nid(), role: "user", text, citations: [], askedFrom };

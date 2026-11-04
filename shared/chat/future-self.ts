@@ -87,10 +87,14 @@ function describe(key: string, pathId: string, labels: Map<string, string>): str
 export function buildPrompt(req: ChatRequest, table: Record<string, number>): { system: string; user: string } {
   const { path, context: c } = req;
   const labels = new Map(path.assumptions.map((a) => [a.id, a.label]));
+  // When the lowest point is still above the starting cash, cash never dipped: say so, or the model calls a rise a dip
+  // ("dipping toward R121,500" from R120,000, seen in a live test on 4 Nov).
+  const start = table[`${path.id}.start`];
+  const neverDipped = (key: string) => /\.lowest\.(likely|bad)$/.test(key) && start !== undefined && (table[key] ?? -Infinity) >= start;
   const figures = Object.keys(table)
     .map((key) => [key, describe(key, path.id, labels)] as const)
     .filter((e): e is readonly [string, string] => e[1] !== null)
-    .map(([key, what]) => `{{fig:${key}}}: ${what}`);
+    .map(([key, what]) => `{{fig:${key}}}: ${what}${neverDipped(key) ? ' (cash never fell below where it started on this case; do not call this a dip)' : ''}`);
   const business = c.business?.trim() || 'the business';
   const system = [
     `You are the founder of ${business}${c.location ? ` in ${c.location}` : ''}, speaking 36 months from now. Three years ago you faced this decision: "${c.decision?.trim() || 'a big business decision'}". You chose path ${path.letter}: "${path.name}". ${path.summary}`,
