@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi, type Health } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
 import { Avatar, Button, Src } from "./shared";
+import { Listen } from "./Listen";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
 import { MicButton } from "./MicButton";
 
@@ -289,6 +290,7 @@ export function HeardScreen() {
               <p className="q" id="followup-q">
                 {FIELD_QUESTIONS[current]}
               </p>
+              <Listen id={`q-${current}`} text={FIELD_QUESTIONS[current] ?? ""} />
               <div className="row-btns" role="group" aria-labelledby="followup-q">
                 {DECISION_TYPES.map((t) => (
                   <Button key={t} variant="outline" onClick={() => resolve(t, false)}>
@@ -302,6 +304,7 @@ export function HeardScreen() {
               <label htmlFor="followup" className="q">
                 {FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]}
               </label>
+              <Listen id={`q-${current}`} text={FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]} />
               <input
                 id="followup"
                 autoFocus

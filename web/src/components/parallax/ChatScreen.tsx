@@ -3,6 +3,8 @@ import { LETTERS, useParallax, type Letter } from "@/lib/parallax-store";
 import { formatMoney } from "@/lib/format";
 import { pathFigures, type Setback } from "@/lib/stress";
 import { Avatar, Badge, Button, Drawer, NoPaths, Src, cx } from "./shared";
+import { speak, setReadAloud, useSpeech } from "@/lib/speech";
+import { Listen } from "./Listen";
 import { CashChart } from "./charts";
 
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
@@ -32,6 +34,22 @@ export function ChatScreen() {
   const [picked, setPicked] = useState("late-payment");
   const list = useRef<HTMLDivElement>(null);
   const msgs = chats[active];
+  const speech = useSpeech();
+  // The replies already seen, so opening the chat never reads an old one aloud: only a reply that arrives now is read.
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const finished = Object.values(chats)
+      .flat()
+      .filter((m) => m.role === "self" && !m.streaming && m.text);
+    if (seen.current === null) {
+      seen.current = new Set(finished.map((m) => m.id));
+      return;
+    }
+    const fresh = finished.filter((m) => !seen.current!.has(m.id));
+    for (const m of fresh) seen.current.add(m.id);
+    const latest = fresh[fresh.length - 1];
+    if (speech.readAloud && latest) speak(latest.id, latest.text);
+  }, [chats, speech.readAloud]);
 
   useEffect(() => {
     list.current?.lastElementChild?.scrollIntoView({ block: "end", behavior: "smooth" });
@@ -77,6 +95,11 @@ export function ChatScreen() {
               <button type="button" onClick={() => go("compare")}>
                 Comfort check
               </button>
+              {speech.supported && (
+                <button type="button" aria-pressed={speech.readAloud} onClick={() => setReadAloud(!speech.readAloud)}>
+                  Read replies aloud
+                </button>
+              )}
             </div>
           </div>
         </header>
@@ -116,6 +139,7 @@ export function ChatScreen() {
                 {!m.streaming && (
                   <>
                     <div className="acts">
+                      <Listen id={m.id} text={m.text} />
                       <button type="button" aria-expanded={menu === m.id} onClick={() => setMenu(menu === m.id ? null : m.id)}>
                         Ask this on another path
                       </button>

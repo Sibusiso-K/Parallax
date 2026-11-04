@@ -2,6 +2,7 @@
 import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import "./motion.css";
 import { ParallaxProvider, useParallax } from "@/lib/parallax-store";
 import { Footer, ParallaxMark, cx } from "@/components/parallax/shared";
 import { ControlRoom } from "@/components/parallax/Frame";

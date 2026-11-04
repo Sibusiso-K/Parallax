@@ -1,0 +1,12 @@
+/* Motion and read aloud. Anything that moves is wrapped in no-preference further down, so a reader who asks for less
+   motion gets the still screens. The read-aloud controls are not motion, and show wherever the browser can speak. */
+
+.listen {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink-2);
+  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.listen svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.listen:hover { border-color: var(--ink-2); color: var(--ink); }
+.listen.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+.quietrow button[aria-pressed="true"] { color: var(--accent); font-weight: 700; }
