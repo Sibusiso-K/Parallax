@@ -122,9 +122,9 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
     const rate = options.rates?.[trace.model];
     trace.costUsd = rate ? (trace.inputTokens * rate.input + trace.outputTokens * rate.output) / 1e6 : null;
   };
-  const chat = async (trace: Trace, messages: Message[], tools = false) => {
+  const chat = async (trace: Trace, messages: Message[], tools = false, effort: 'minimal' | 'low' = 'minimal') => {
     trace.context = { messages: structuredClone(messages), tools: tools ? toolDefinitions : [], responseFormat: tools ? 'tool calls or text' : 'json_object' }; publish(trace);
-    const data = completion.parse(await post('chat/completions', { model: trace.model, messages, reasoning_effort: 'minimal', max_completion_tokens: 1600, ...(tools ? { tools: toolDefinitions, tool_choice: 'auto' } : { response_format: { type: 'json_object' } }) }));
+    const data = completion.parse(await post('chat/completions', { model: trace.model, messages, reasoning_effort: effort, max_completion_tokens: 1600, ...(tools ? { tools: toolDefinitions, tool_choice: 'auto' } : { response_format: { type: 'json_object' } }) }));
     account(trace, data.usage);
     return data.choices[0]!.message;
   };
@@ -239,12 +239,12 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
     result.findings.sort((a, b) => a.agent.localeCompare(b.agent));
     result.proposals.sort((a, b) => a.id.localeCompare(b.id));
     const synthBegan = now();
-    const synth = newTrace('synthesiser', { findings: result.findings, figures: figures.table }); publish(synth);
+    const synth = newTrace('synthesiser', { findings: result.findings, figures: figures.table }); if (cfg) synth.model = WONDER; publish(synth);
     try {
       const scenario = req.stressed ? 'active' : 'baseline';
       let text = `In this future, the hardest month took me to {{fig:${req.path.letter}.room.${scenario}.lowest}}. Before you sign, get the payment date in writing.`;
       if (cfg) {
-        const message = await chat(synth, [{ role: 'system', content: 'You are the fictional future self of this founder, on this path, talking to your past self across a kitchen counter. You lived it. Start with "In this future," and then speak in the first person and past tense, warm and direct, like one person telling another what happened. Use only what these checked findings show. Two or three short sentences, at most 45 words. Say the one amount that mattered, using only a supplied {{fig:key}} placeholder. Never type any other amount. longestDelayMonths is how late the client could have paid before your cash went below zero. It is not how late they did pay, so only use it in those words. End with the one thing you would check first. Avoid the words might, could, would have, projection, assumptions. No promises. Return JSON {"reply":"..."}.' }, { role: 'user', content: JSON.stringify({ findings: result.findings, figures: Object.keys(figures.table).map(k => `{{fig:${k}}}`), pathName: req.path.name, longestDelayMonths: survivable[0] ?? null }) }]);
+        const message = await chat(synth, [{ role: 'system', content: 'You are the fictional future self of this founder, on this path, talking to your past self across a kitchen counter. You lived it. Start with "In this future," and then speak in the first person and past tense, warm and direct, like one person telling another what happened to them. Name real things from their story: the client, the work, the equipment. Use only what these checked findings show about money. Three short sentences, at most 45 words. Say the one amount that mattered, using only a supplied {{fig:key}} placeholder. Never type any other amount. Example of the voice, for a different business: "In this future, I said yes to the school contract. By the third month I was at {{fig:X}}, paying my staff from my savings while the invoice sat unpaid. Get the payment date in writing before you buy a thing." longestDelayMonths is how late the client could have paid before your cash went below zero. It is not how late they did pay, so only use it in those words. End with what you wish you had got in writing or checked before you said yes, about payment dates or terms, never about a metric. Avoid the words might, could, would have, projection, assumptions, gross profit. No promises. Return JSON {"reply":"..."}.' }, { role: 'user', content: JSON.stringify({ findings: result.findings, figures: Object.keys(figures.table).map(k => `{{fig:${k}}}`), pathName: req.path.name, longestDelayMonths: survivable[0] ?? null, business: req.context.business ?? '', yourStory: (req.context.story ?? '').slice(0, 900) }) }], false, 'low');
         text = agentReply.parse(JSON.parse(message.content ?? '')).reply;
       }
       result.speech = accept('synthesiser', text);

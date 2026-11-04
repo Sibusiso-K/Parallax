@@ -75,7 +75,7 @@ export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger,
         if (s.stage === 'unavailable') setTraces(old => ({ ...old, painter: step('painter', 'failed', 'No key here, so the room stays as it is', { instruction: op.prompt }) }));
       }, signal);
       if (!done && live()) setTraces(old => old.painter?.status === 'running' ? { ...old, painter: step('painter', 'failed', 'The room stays as it is', { instruction: op.prompt }) } : old);
-    } catch { if (live()) setTraces(old => ({ ...old, painter: step('painter', 'failed', 'Repaint unavailable. The room stays as it is', { instruction: op.prompt }) })); }
+    } catch { if (live()) setTraces(old => ({ ...old, painter: step('painter', 'failed', 'Repaint unavailable. The room stays as it is', { instruction: op.prompt }), ...(old.art?.status === 'running' ? { art: step('art', 'failed', 'Could not check it, so it was not shown', look) } : {}) })); }
   };
   const run = async () => {
     abort.current?.abort(); const controller = new AbortController(); abort.current = controller;

@@ -19,8 +19,12 @@ export async function repaintRoom(src: string, prompt: string, onStep: (step: Re
     const paintedMs = Math.round(performance.now() - began);
     onStep({ stage: 'reviewing', attempt, ms: paintedMs });
     const compact = (await compactImage(painted.dataUrl, signal)).dataUrl;
-    const checked = await callWorld({ action: 'inspect', image: compact, change: prompt }, signal);
-    const review = checked.review as { pass: boolean; seen: { note: string } } | undefined;
+    // One flaky look should not cost a good painting, so the look gets a second try. An image never passes unchecked.
+    let review: { pass: boolean; seen: { note: string } } | undefined;
+    for (let look = 0; look < 2 && !review; look++) {
+      try { review = (await callWorld({ action: 'inspect', image: compact, change: prompt }, signal)).review as typeof review; }
+      catch (error) { if (signal.aborted) throw error; }
+    }
     if (review?.pass) {
       onStep({ stage: 'done', attempt, note: review.seen.note, ms: paintedMs });
       return { src: painted.dataUrl, note: review.seen.note, attempts: attempt };

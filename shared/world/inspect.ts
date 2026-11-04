@@ -21,7 +21,7 @@ export async function reviewRepaint(cfg: MetaConfig, image: string, change: stri
     'Look closely at paper, screens, boxes and walls. Return JSON only: {"readableText":boolean,"numerals":boolean,"logos":boolean,"changeVisible":boolean,"note":"under 15 words on what you saw"}.',
   ].join(' ');
   const result = await providerPost(cfg, '/responses', {
-    model: 'muse-spark-1.3', stream: false, reasoning: { effort: 'low' }, max_output_tokens: 700,
+    model: 'muse-spark-1.3', stream: false, reasoning: { effort: 'minimal' }, max_output_tokens: 1400,
     input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }, { type: 'input_image', image_url: image }] }],
   }, request);
   const text = responseText(result);
