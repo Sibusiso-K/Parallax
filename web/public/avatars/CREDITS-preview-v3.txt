@@ -1,9 +1,7 @@
 Parallax fictional character preview v3 — asset credits
 
-Ayanda's olive shirt adapts `mens_shirt_untuck_elvbhp1f` by Elvaerwyn. The source .mhclo identifies the licence as `CC_by` and gives http://www.makehuman.org/ as homepage. Obtained in the MakeHuman shirts02 CC-BY asset pack: https://files.makehumancommunity.org/asset_packs/shirts02/shirts02_ccby.zip. Modifications include recolouring and fitting to the character. The source .mhclo and official pack listing (https://www.makehumancommunity.org/assets/assetpacks/shirts02.html) identify CC-BY without a version; confirm the original asset's exact terms before distribution.
+Ayanda's olive top is the casual suit from MakeHuman's CC0 system assets (female_casualsuit01, CC0-1.0), recoloured for the character.
 
 The advisor's navy overshirt adapts `F_Cardigan_Long_Open_Front` by Mindfront (Sweden), CC BY 4.0, https://creativecommons.org/licenses/by/4.0/. Source homepage http://www.makehumancommunity.org/; obtained in the MakeHuman shirts02 CC-BY asset pack: https://files.makehumancommunity.org/asset_packs/shirts02/shirts02_ccby.zip. Modifications include recolouring, shortening and fitting.
 
 Other character base assets were obtained from the previously approved MakeHuman CC0 system, eyebrow, eyelash and glasses packs; source downloads and hashes are recorded in assets/provenance.json. The fictional character assembly, apron and animations were made for Parallax. The preview has not been accepted as photoreal.
-
-

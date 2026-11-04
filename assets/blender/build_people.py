@@ -1,5 +1,5 @@
 """Parallax people v1: realistic rigged Ayanda and advisor, built with MPFB 2.0.18 from MakeHuman assets
-(CC0 system assets and Mindfront brows/lashes; CC-BY shirts credited in assets/CREDITS.md).
+(CC0 system assets and Mindfront brows/lashes; the CC-BY overshirt is credited in assets/CREDITS.md).
 
 Run with Blender 5.2 from the repository root, WITHOUT --factory-startup (the MPFB extension must load):
   blender -b --python-exit-code 1 --python assets/blender/build_people.py -- [--preview] [--export]
@@ -10,7 +10,7 @@ Outputs
   web/public/avatars/<id>-preview-v3.glb, avatar-manifest.json  skinned characters for the courtyard (--export)
 
 Identity targets (PRODUCT-SPEC, design/photoreal-courtyard-v1/03-ayanda-sheet.png and 04-advisor-portrait.png):
-  Ayanda: woman about 40, deep brown skin, short natural coils, olive work shirt, oatmeal apron, dark trousers, boots.
+  Ayanda: woman about 40, deep brown skin, short natural coils, olive top, oatmeal apron, dark trousers, boots.
   Advisor: woman about 58, medium-brown skin, salt-and-pepper curls, tortoiseshell glasses, navy overshirt, cream tee.
 Both are fictional. Blender is Z-up and MakeHuman figures face -Y.
 """
@@ -50,12 +50,13 @@ PEOPLE = {
         'hair': 'afro01/afro01.mhclo',
         'eyebrows': 'mindfront_eyebrows_03/mindfront_eyebrows_03.mhclo',
         'eyelashes': 'mindfront_eyelashes_02/mindfront_eyelashes_02.mhclo',
-        'clothes': ['female_casualsuit01/female_casualsuit01.mhclo', 'elvs_male_shirt_untucked_bd1/elvs_male_shirt_untucked_bd1.mhclo',
-                    'shoes03/shoes03.mhclo'],
-        # Colours from the reference sheet (sRGB): olive shirt, near-black trousers, dark brown boots, black coils.
-        'tone': {'shirt': (0.30, 0.33, 0.20), 'casualsuit': {'rgb': (0.07, 0.07, 0.08), 'contrast': 0.15},
+        # No work shirt: the casual suit's own top is the olive layer (MakeHuman CC0 system asset). The shirt that was here
+        # is CC BY with an unconfirmed licence version, and its delete-verts cut the body where only it covered.
+        'clothes': ['female_casualsuit01/female_casualsuit01.mhclo', 'shoes03/shoes03.mhclo'],
+        # Colours from the reference sheet (sRGB): olive top, near-black trousers, dark brown boots, black coils.
+        'tone': {'casualsuit': {'rgb': (0.07, 0.07, 0.08), 'contrast': 0.15},
                  'shoes': (0.22, 0.14, 0.09), 'afro': {'coils': ((0.018, 0.013, 0.011), (0.20, 0.13, 0.09))}},
-        'suit_top': 'delete',
+        'suit_top': (0.074, 0.088, 0.033),  # olive, sRGB (0.30, 0.33, 0.20); plain materials take linear values
         'apron': (0.70, 0.65, 0.55),  # oatmeal linen
         'hair_volume': 1.12,
     },
@@ -73,6 +74,7 @@ PEOPLE = {
         'tone': {'cardigan': {'rgb': (0.07, 0.09, 0.18), 'contrast': 0.5}, 'casualsuit': {'rgb': (0.09, 0.09, 0.11), 'contrast': 0.15},
                  'optical': (0.28, 0.17, 0.10), 'afro': {'coils': ((0.025, 0.025, 0.025), (0.45, 0.44, 0.42))}},
         'suit_top': (0.88, 0.84, 0.74),  # the casual suit's tee becomes a plain cream tee
+        'hide_outer_sleeves': True,  # under the overshirt the long tee's outer sleeves poke through, so they are hidden
         'cardigan_hem': 0.47,  # cut the long cardigan to hip length: keep faces above this fraction of body height
         'hair_volume': 1.08,
     },
@@ -515,19 +517,22 @@ def build(person, spec):
                     obj.data.polygons[i].material_index = slot
                 # The long-sleeved tee protrudes through the overshirt when the
                 # arm rises. Remove its hidden outer sleeves, retain front tee.
-                obj.data.update()
-                hidden_sleeves = [p.index for p in obj.data.polygons
-                                  if p.center.z > height * 0.585 and abs(p.center.x) > 0.15]
-                delete_faces(obj, hidden_sleeves)
+                if spec.get('hide_outer_sleeves'):
+                    obj.data.update()
+                    hidden_sleeves = [p.index for p in obj.data.polygons
+                                      if p.center.z > height * 0.585 and abs(p.center.x) > 0.15]
+                    delete_faces(obj, hidden_sleeves)
         if 'cardigan' in name and 'cardigan_hem' in spec:
             delete_faces(obj, split_by_height(obj, height * spec['cardigan_hem'], False))
     if 'apron' in spec:
         apron = add_apron(person, basemesh, rig, height, spec['apron'])
         # Fit the bib to the actual shirt, not the hidden body. Keep the hanging
         # skirt untouched; pulling it inward causes trouser and shirt clipping.
-        shirt = next((o for o in parts_of(rig) if 'elvs_male_shirt' in o.name.lower()), None)
+        # It fits to the top the person wears: the work shirt where there is one, else the casual suit's own top.
+        shirt = (next((o for o in parts_of(rig) if 'elvs_male_shirt' in o.name.lower()), None)
+                 or next((o for o in parts_of(rig) if 'casualsuit' in o.name.lower()), None))
         if shirt is None:
-            raise RuntimeError(f'{person}: apron fitting requires the work shirt')
+            raise RuntimeError(f'{person}: apron fitting requires a top to fit to')
         arm_names = ('upperarm', 'lowerarm', 'hand', 'thumb', 'index', 'middle', 'ring', 'pinky', 'clavicle')
         arm_groups = {g.index for g in shirt.vertex_groups if g.name.startswith(arm_names)}
         points = np.array([tuple(v.co) for v in shirt.data.vertices

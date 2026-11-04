@@ -31,7 +31,7 @@ holds only a `.gitignore`.
   figure again against its own engine run, withholding the answer if any figure differs.
 - **The UI** was first generated with Lovable on 30 Oct, then reworked by hand into the Control Room design.
 - **The 3D courtyard** is built from CC0 sources (Poly Haven and MakeHuman) by `assets/blender/build_courtyard.py`.
-  Each source and its licence is listed in `assets/provenance.json`, and the CC BY garments in `assets/CREDITS.md`.
+  Each source and its licence is listed in `assets/provenance.json`, and the CC BY overshirt's credit is in `assets/CREDITS.md`.
   In the room the founder can walk the courtyard (Rapier physics, loaded only when **Walk** is pressed), press a place
   to walk there, and make a vertical reel or a PNG of one month in the browser. Nothing is uploaded.
 - **Who built what (team Sonar):** Sibusiso (`Sibusiso-K`) wrote the cash engine, intake, and the chat and session
@@ -154,5 +154,5 @@ Open `/?world` for the 3D demo room on its own. Add `?people` to see the draft c
 - The reel and read aloud were checked only in Chromium-based browsers. Safari, Android voices and real phones are not
   yet checked.
 - Limits count by network address, so visitors who share one connection share the limit.
-- The draft characters use two CC BY garments. One garment's exact licence version is not confirmed, and its credit is
-  in `assets/CREDITS.md`, not on screen. Resolve both before the characters are shown publicly.
+- The draft characters use one CC BY garment, the advisor's overshirt (CC BY 4.0). Its credit is in `assets/CREDITS.md`,
+  not on screen. Add it on screen before the characters are shown publicly.
