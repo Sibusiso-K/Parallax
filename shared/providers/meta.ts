@@ -44,6 +44,8 @@ export class ModelError extends Error {
   readonly retryAfterMs?: number;
   /** The start of the API's own error reply (never the request), for diagnosing a refusal. The key is redacted. */
   detail?: string;
+  /** Every model tried before giving up, in order, so a refusal by the first model is not hidden by the last. */
+  attempts?: { model: string; kind: ErrorKind; status: number | null; detail: string | null }[];
 
   constructor(kind: ErrorKind, message: string, status?: number, retryAfterMs?: number) {
     super(message);
@@ -151,6 +153,7 @@ export async function chatJson<S extends z.ZodType>(
     { role: 'user', content: call.user },
   ];
   let last: ModelError | undefined;
+  const attempts: NonNullable<ModelError['attempts']> = [];
   for (const model of cfg.models) {
     try {
       const out = await callModel(cfg, model, call, format, start, counter, deps, deadline);
@@ -159,9 +162,11 @@ export async function chatJson<S extends z.ZodType>(
     } catch (err) {
       if (!(err instanceof ModelError)) throw err;
       last = err;
+      attempts.push({ model, kind: err.kind, status: err.status ?? null, detail: err.detail ?? err.message });
       if (STOP_KINDS.has(err.kind) || deps.now() >= deadline) break;
     }
   }
+  if (last) last.attempts = attempts;
   throw last ?? new ModelError('config', 'no model is configured');
 }
 

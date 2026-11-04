@@ -33,7 +33,7 @@ export async function POST(request: Request): Promise<Response> {
     ({ dressing, model } = await dressScene(cfg, req.data));
   } catch (err) {
     const m = err instanceof ModelError ? err : null;
-    console.warn(JSON.stringify({ event: 'scene.failed', kind: m?.kind ?? 'unknown', status: m?.status ?? null, detail: m?.detail ?? null }));
+    console.warn(JSON.stringify({ event: 'scene.failed', kind: m?.kind ?? 'unknown', status: m?.status ?? null, attempts: m?.attempts ?? null }));
   }
   let portrait: string | null = null;
   let imageModel: string | null = null;
@@ -42,7 +42,7 @@ export async function POST(request: Request): Promise<Response> {
     portrait = out.dataUrl;
     imageModel = out.model;
   } catch (err) {
-    console.warn(JSON.stringify({ event: 'portrait.failed', status: err instanceof ImageError ? (err.status ?? null) : null }));
+    console.warn(JSON.stringify({ event: 'portrait.failed', status: err instanceof ImageError ? (err.status ?? null) : null, detail: err instanceof ImageError ? (err.detail ?? null) : null }));
   }
   if (!dressing && !portrait) return json({ ok: false, error: "We couldn't build your scene just now. The demo room is shown instead." }, 502);
   return json({ ok: true, mode: 'model', dressing, portrait, models: { scene: model, portrait: imageModel } }, 200);

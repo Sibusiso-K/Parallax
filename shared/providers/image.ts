@@ -14,6 +14,8 @@ const liveDeps: ImageDeps = { fetch: (url, init) => fetch(url, init) };
 
 export class ImageError extends Error {
   readonly status?: number;
+  /** The start of the API's own error reply, the key redacted. */
+  detail?: string;
   constructor(message: string, status?: number) {
     super(message);
     this.name = 'ImageError';
@@ -56,7 +58,9 @@ export async function generatePortrait(cfg: MetaConfig, setting: string, env: Re
     }
     if (!res.ok) {
       if (attempt < 2 && (res.status === 429 || res.status >= 500)) continue;
-      throw new ImageError(`the image API answered ${res.status}`, res.status);
+      const err = new ImageError(`the image API answered ${res.status}`, res.status);
+      err.detail = (await res.text().catch(() => '')).slice(0, 240).split(cfg.apiKey).join('<key>');
+      throw err;
     }
     const data = (await res.json().catch(() => null)) as { data?: { b64_json?: unknown }[]; output_format?: unknown } | null;
     const b64 = data?.data?.[0]?.b64_json;

@@ -59,6 +59,17 @@ describe('chatJson', () => {
     });
   });
 
+  it('keeps every model attempt on the error, so a first refusal is not hidden by the last', async () => {
+    const w = world([{ status: 503 }, { status: 503 }, { status: 404, body: { error: { code: 'model_not_found' } } }]);
+    const err = (await chatJson(cfg, call, w.deps).catch((e: unknown) => e)) as ModelError;
+    expect(err.kind).toBe('notfound');
+    expect(err.attempts?.map((a) => [a.model, a.kind, a.status])).toEqual([
+      ['muse-spark-1.3', 'overloaded', 503],
+      ['muse-spark-1.2', 'notfound', 404],
+    ]);
+    expect(err.attempts?.[1]?.detail).toContain('model_not_found');
+  });
+
   it('says when a reply ran out of tokens before any text, then tries the next model', async () => {
     const spent: Reply = { status: 200, body: { choices: [{ finish_reason: 'length', message: { content: null } }] } };
     const w = world([spent, spent]);
