@@ -310,8 +310,84 @@ const REPLIES: Record<DecisionType, Record<"A" | "B" | "C", Reply[]>> = {
 };
 const counters: Record<string, number> = {};
 
-async function* chat(pathId: string, message: string): AsyncIterable<ChatChunk> {
-  void message;
+export interface ChatContext {
+  business?: string;
+  location?: string;
+  decision?: string;
+  goals?: string[];
+  story?: string;
+}
+
+type ModelReply = { ok?: boolean; mode?: string; text?: unknown; citations?: unknown; clean?: unknown; checks?: unknown; model?: unknown; error?: unknown };
+
+/** Types a reply out word by word, as the scripted replies do, so both read the same way on screen. */
+async function* typeOut(text: string): AsyncIterable<ChatChunk> {
+  const words = text.split(" ");
+  for (let w = 0; w < words.length; w++) {
+    await wait(18);
+    yield { type: "token", text: (w ? " " : "") + words[w] };
+  }
+}
+
+/**
+ * One question to a future self. With Muse Spark connected, /api/chat answers from this path's own figures and the
+ * founder's own story, through the figure guard; the path sent is the one on screen, edits and all. With no model
+ * connected the route says so and the scripted replies below are used.
+ */
+async function* chat(
+  path: PathCard,
+  message: string,
+  history: { role: "user" | "self"; text: string }[] = [],
+  context: ChatContext = {},
+): AsyncIterable<ChatChunk> {
+  let data: ModelReply | null = null;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        path: { id: path.id, letter: path.letter, name: path.name, summary: path.summary, startingCash: path.startingCash, assumptions: path.assumptions },
+        context,
+        history: history.filter((h) => h.text.trim()).slice(-8).map((h) => ({ role: h.role, text: h.text.slice(0, 2000) })),
+        message: message.slice(0, 1000),
+      }),
+    });
+    data = (await res.json()) as ModelReply | null;
+  } catch {
+    data = null;
+  }
+  if (data?.ok && data.mode === "model" && typeof data.text === "string" && data.text.trim()) {
+    yield* typeOut(data.text);
+    const cites = Array.isArray(data.citations) ? data.citations : [];
+    for (const c of cites as { id?: unknown; label?: unknown }[]) {
+      if (typeof c?.id === "string" && typeof c.label === "string") yield { type: "citation", citation: { id: c.id, label: c.label } };
+    }
+    const checks = Array.isArray(data.checks) ? (data.checks as { type?: unknown }[]).map((c) => String(c?.type ?? "")) : [];
+    yield {
+      type: "done",
+      trace: {
+        model: typeof data.model === "string" ? data.model : "muse-spark",
+        checks: [
+          { name: "Figures come from code, not the model", ok: !checks.some((t) => ["scrubbed", "unknown_key", "wrong_path", "bad_value"].includes(t)) },
+          { name: "Cites at least one assumption on this path", ok: cites.length > 0 },
+          { name: "Makes no promises", ok: !checks.includes("certainty") },
+          { name: "Speaks in first person, 36 months on", ok: null },
+          { name: "Does not tell you what to choose", ok: null },
+        ],
+      },
+    };
+    return;
+  }
+  if (data && data.mode !== "fixture" && !(data.ok && data.mode === "model")) {
+    // The model is connected but this answer failed: say so, rather than pass a scripted reply off as an answer.
+    yield* typeOut(typeof data.error === "string" && data.error ? data.error : "Your future self couldn't answer just now. Please ask again.");
+    yield { type: "done", trace: { model: "none (the answer failed)", checks: [] } };
+    return;
+  }
+  yield* scripted(path.id);
+}
+
+async function* scripted(pathId: string): AsyncIterable<ChatChunk> {
   const path = lastPaths.get(pathId);
   const letter = path?.letter ?? "A";
   const list = REPLIES[lastDecision][letter];

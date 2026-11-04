@@ -10,6 +10,9 @@ const SYSTEM = [
   'Never invent a number or a fact. A rough amount ("about 60k", "70 to 100k") becomes a low and a high figure.',
   'Give base only when they say what is usual. Amounts are per month, except cash in the business and the one-off upfront cost.',
   'decisionType is contract (a big contract, order or new client), hire (taking someone on) or pricing (raising prices).',
+  // The value is shown as the page title, so a quoted question ("Should I take it?") made a poor one (4 Nov live test).
+  'For decision, the value is a short title in plain words naming what is being decided, such as "Take on a 12-month hotel pastry contract": no question mark, at most 12 words. Its quote is still their own words about it.',
+  'For business, the value is a short plain description of the business, such as "Bakery" or "Logistics company".',
   'Risk comfort is low, medium or high. Goals are up to three of: cash safety, growth, profit, control, time.',
   'Leave out anything they did not say.',
 ].join(' ');

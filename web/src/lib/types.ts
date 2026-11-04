@@ -87,6 +87,8 @@ export interface ChatChunk {
   type: "token" | "citation" | "done";
   text?: string;
   citation?: { id: string; label: string };
+  /** On "done" from a real model: which model answered and what the code checked. Absent for scripted replies. */
+  trace?: { model: string; checks: { name: string; ok: boolean | null }[] };
 }
 
 /** The confirmed "Your business, today" profile passed to mockApi.paths. */

@@ -276,8 +276,20 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
 
   const send = useCallback(
     async (letter: Letter, text: string, askedFrom?: Letter) => {
-      const path = ref.current.paths.find((p) => p.letter === letter);
+      const cur = ref.current;
+      const path = cur.paths.find((p) => p.letter === letter);
       if (!path) return;
+      // What the future self needs to answer this founder, not the demo one: their own words and the turns so far.
+      const f = cur.fields;
+      const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+      const context = {
+        business: str(f.business),
+        location: str(f.location),
+        decision: str(f.decision),
+        goals: Array.isArray(f.goals) ? f.goals.map(String) : str(f.goals)?.split(/,\s*/),
+        story: str(cur.story)?.slice(0, 4000),
+      };
+      const history = cur.chats[letter].filter((m) => !m.streaming).map((m) => ({ role: m.role, text: m.text }));
       const user: Msg = { id: nid(), role: "user", text, citations: [], askedFrom };
       const replyId = nid();
       const reply: Msg = { id: replyId, role: "self", text: "", citations: [], streaming: true };
@@ -287,7 +299,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
         set((st) => ({
           chats: { ...st.chats, [letter]: st.chats[letter].map((m) => (m.id === replyId ? fn(m) : m)) },
         }));
-      for await (const chunk of mockApi.chat(path.id, text)) {
+      for await (const chunk of mockApi.chat(path, text, history, context)) {
         if (chunk.type === "token") patch((m) => ({ ...m, text: m.text + (chunk.text ?? "") }));
         else if (chunk.type === "citation" && chunk.citation)
           patch((m) => ({ ...m, citations: [...m.citations, chunk.citation!] }));
@@ -296,7 +308,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
           patch((m) => ({
             ...m,
             streaming: false,
-            trace: {
+            trace: chunk.trace ? { ...chunk.trace, latencyMs } : {
               model: "fixture (stand-in for muse-spark-1.3)",
               latencyMs,
               checks: [
