@@ -42,6 +42,8 @@ export class ModelError extends Error {
   readonly kind: ErrorKind;
   readonly status?: number;
   readonly retryAfterMs?: number;
+  /** The start of the API's own error reply (never the request), for diagnosing a refusal. The key is redacted. */
+  detail?: string;
 
   constructor(kind: ErrorKind, message: string, status?: number, retryAfterMs?: number) {
     super(message);
@@ -250,7 +252,11 @@ async function postOnce<S extends z.ZodType>(
       if (controller.signal.aborted) throw timedOut();
       throw new ModelError('network', 'could not reach the model API');
     }
-    if (!res.ok) throw httpError(res);
+    if (!res.ok) {
+      const err = httpError(res);
+      err.detail = (await res.text().catch(() => '')).slice(0, 240).split(cfg.apiKey).join('<key>');
+      throw err;
+    }
     let data: unknown;
     try {
       data = await res.json();

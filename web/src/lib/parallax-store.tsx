@@ -284,7 +284,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
     void buildWorld(context).then((world) => {
       // A reset or a new decision while it was drawing: this world belongs to the old one.
       if (!world || ref.current.sessionId !== sessionId) return;
-      setS((prev) => ({ ...prev, scene: world.dressing, portrait: world.portrait ?? prev.portrait }));
+      setS((prev) => ({ ...prev, scene: world.dressing ?? prev.scene, portrait: world.portrait ?? prev.portrait }));
     });
   }, []);
 
