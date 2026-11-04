@@ -162,6 +162,8 @@ async function intake(text: string): Promise<IntakeResponse> {
 export interface Health {
   modelReady: boolean;
   voiceReady: boolean;
+  /** Whether /api/session saves to Parallax's database. Off, a decision is kept in this browser only. */
+  savingReady: boolean;
 }
 
 /** What the server has switched on. Anything but a clear yes reads as off, so the screens never claim a model. */
@@ -169,9 +171,9 @@ async function health(): Promise<Health> {
   try {
     const res = await fetch("/api/health", { cache: "no-store" });
     const data = (await res.json()) as Partial<Record<keyof Health, unknown>> | null;
-    return { modelReady: data?.modelReady === true, voiceReady: data?.voiceReady === true };
+    return { modelReady: data?.modelReady === true, voiceReady: data?.voiceReady === true, savingReady: data?.savingReady === true };
   } catch {
-    return { modelReady: false, voiceReady: false };
+    return { modelReady: false, voiceReady: false, savingReady: false };
   }
 }
 

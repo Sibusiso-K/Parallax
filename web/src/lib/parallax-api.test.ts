@@ -152,20 +152,20 @@ describe("mockApi.intake, the F4 checks", () => {
 describe("mockApi.health", () => {
   it("reads what the server has switched on", async () => {
     stub(async () => reply({ ok: true, metaKeyConfigured: true, modelEnabled: true, modelReady: true, voiceReady: false }));
-    expect(await mockApi.health()).toEqual({ modelReady: true, voiceReady: false });
+    expect(await mockApi.health()).toEqual({ modelReady: true, voiceReady: false, savingReady: false });
   });
 
   it("counts only an exact true, so a string or a missing field never claims a model", async () => {
     stub(async () => reply({ modelReady: "true" }));
-    expect(await mockApi.health()).toEqual({ modelReady: false, voiceReady: false });
+    expect(await mockApi.health()).toEqual({ modelReady: false, voiceReady: false, savingReady: false });
   });
 
   it("reads as off when the route is down or answers something that is not JSON", async () => {
     stub(async () => {
       throw new TypeError("fetch failed");
     });
-    expect(await mockApi.health()).toEqual({ modelReady: false, voiceReady: false });
+    expect(await mockApi.health()).toEqual({ modelReady: false, voiceReady: false, savingReady: false });
     stub(async () => reply("<html>504</html>", 504));
-    expect(await mockApi.health()).toEqual({ modelReady: false, voiceReady: false });
+    expect(await mockApi.health()).toEqual({ modelReady: false, voiceReady: false, savingReady: false });
   });
 });

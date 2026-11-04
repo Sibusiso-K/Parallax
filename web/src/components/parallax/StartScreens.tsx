@@ -26,13 +26,29 @@ function ModelNotes() {
       live = false;
     };
   }, []);
-  if (!health?.modelReady && !health?.voiceReady) {
+  const meta = !!(health?.modelReady || health?.voiceReady);
+  const toMeta = meta ? ` To be read, your ${health?.modelReady ? "text" : "recording"} also goes to Meta's Model API, which does not keep it for Parallax.` : "";
+  const privacy = health?.savingReady ? (
+    <div className="note">
+      <b>Saved, privately</b>
+      <span>
+        Your decision is saved in Parallax's database under a private code only this browser holds, so you can come back to it.
+        Delete everything erases it.{toMeta}
+      </span>
+    </div>
+  ) : (
+    <div className="note">
+      <b>Kept on this device</b>
+      <span>
+        Parallax's server reads your text and keeps nothing; a copy stays in this browser so a reload picks up where you were. Delete
+        everything erases it.{toMeta}
+      </span>
+    </div>
+  );
+  if (!meta) {
     return (
       <>
-        <div className="note">
-          <b>Not stored</b>
-          <span>Your text goes only to Parallax's own server, to be read. The server does not keep it.</span>
-        </div>
+        {privacy}
         <div className="note">
           <b>No model connected yet</b>
           <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
@@ -40,23 +56,52 @@ function ModelNotes() {
       </>
     );
   }
-  const reads = [health.modelReady && "Muse Spark reads your story", health.voiceReady && "Muse Voice Transcribe turns your voice into text"]
+  const reads = [health?.modelReady && "Muse Spark reads your story and answers as each future you", health?.voiceReady && "Muse Voice Transcribe turns your voice into text"]
     .filter(Boolean)
     .join(", and ");
   return (
     <>
-      <div className="note">
-        <b>Not stored</b>
-        <span>
-          Your {health.modelReady ? "text" : "recording"} goes to Parallax's server and on to Meta's Model API, only to be read. Parallax
-          does not keep it.
-        </span>
-      </div>
+      {privacy}
       <div className="note">
         <b>Read by Meta's Muse models</b>
-        <span>{reads}. Every figure is still computed in code, and the future-self chat uses scripted replies.</span>
+        <span>{reads}. Every figure is still computed in code, never by the model.</span>
       </div>
     </>
+  );
+}
+
+const STEP_NAMES: Partial<Record<string, string>> = {
+  intake: "telling it your decision",
+  heard: "checking what it heard",
+  profile: "your business today",
+  paths: "the three paths",
+  chat: "talking to a future you",
+  explore: "the 3D room",
+  compare: "comparing the paths",
+  comfort: "comparing the paths",
+  summary: "the decision memo",
+};
+
+/** Offers the saved decision back. Nothing is restored until the founder says so. */
+function ResumeCard() {
+  const { resume, resumeSaved, dismissResume } = useParallax();
+  if (!resume) return null;
+  return (
+    <div className="resume-card" role="region" aria-label="Your saved decision">
+      <div className="eyebrow">Welcome back</div>
+      <b>{resume.decision || "Your saved decision"}</b>
+      <span>
+        {resume.business ? `${resume.business} · ` : ""}you were on {STEP_NAMES[resume.step] ?? "your decision"}.
+      </span>
+      <div className="actions-row">
+        <Button variant="primary" onClick={resumeSaved}>
+          Pick up where I left off
+        </Button>
+        <Button variant="ghost" className="on-navy" onClick={dismissResume}>
+          Start a new decision
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -72,6 +117,7 @@ export function StartScreen() {
             Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the founder
             you would become.
           </p>
+          <ResumeCard />
           <label className="agree">
             <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
             <span>I am 18 or older</span>
