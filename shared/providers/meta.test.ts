@@ -52,7 +52,18 @@ describe('chatJson', () => {
     const { value, trace } = await chatJson(cfg, call, w.deps);
     expect(value).toEqual(HAPPY);
     expect(trace).toMatchObject({ model: 'muse-spark-1.3', calls: 1, repaired: false });
-    expect(w.sent[0]).toMatchObject({ url: 'https://api.meta.ai/v1/chat/completions', auth: `Bearer ${KEY}`, body: { max_tokens: 1024 } });
+    expect(w.sent[0]).toMatchObject({
+      url: 'https://api.meta.ai/v1/chat/completions',
+      auth: `Bearer ${KEY}`,
+      body: { max_tokens: 8192, reasoning_effort: 'minimal' },
+    });
+  });
+
+  it('says when a reply ran out of tokens before any text, then tries the next model', async () => {
+    const spent: Reply = { status: 200, body: { choices: [{ finish_reason: 'length', message: { content: null } }] } };
+    const w = world([spent, spent]);
+    await expect(chatJson(cfg, call, w.deps)).rejects.toMatchObject({ kind: 'schema', message: 'the reply ran out of tokens before any text' });
+    expect(w.sent.map((s) => s.model)).toEqual(['muse-spark-1.3', 'muse-spark-1.2']);
   });
 
   it('accepts a reply wrapped in a code fence', async () => {

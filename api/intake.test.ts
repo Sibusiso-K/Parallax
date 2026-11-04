@@ -7,7 +7,7 @@ import { POST } from './intake.js';
 
 // Offline: the model path only ever meets a fetch stub, and the blocked-network guard catches anything else.
 const KEY = 'test-key-not-real';
-const MODEL_VARS = ['META_MODEL_ENABLED', 'META_API_KEY', 'META_API_BASE_URL'] as const;
+const MODEL_VARS = ['META_MODEL_ENABLED', 'META_VOICE_ENABLED', 'META_API_KEY', 'META_API_BASE_URL', 'META_ASR_MODEL'] as const;
 
 beforeEach(() => {
   for (const k of MODEL_VARS) delete process.env[k]; // no test starts with a model configured
@@ -86,7 +86,13 @@ describe('GET /api/health', () => {
   });
 
   it('reports the model as not ready when nothing is set', async () => {
-    expect(await GET().json()).toMatchObject({ metaKeyConfigured: false, modelEnabled: false, modelReady: false });
+    expect(await GET().json()).toMatchObject({ metaKeyConfigured: false, modelEnabled: false, modelReady: false, voiceReady: false });
+  });
+
+  it('reports voice apart from the model: each has its own switch', async () => {
+    process.env.META_API_KEY = KEY;
+    process.env.META_VOICE_ENABLED = 'true';
+    expect(await GET().json()).toMatchObject({ modelReady: false, voiceReady: true });
   });
 
   it('does not count a blank key as configured', async () => {

@@ -119,11 +119,20 @@ export function isLite() {
 /** Runs a DOM update inside a View Transition when supported, else a plain swap (CSS crossfades in). */
 export function withTransition(fn: () => void) {
   const d = document as Document & { startViewTransition?: (cb: () => void) => { ready?: Promise<void> } };
-  if (d.startViewTransition && !isLite()) {
-    // The browser skips the animation when another screen change starts first or the tab is hidden. The update still
-    // runs, but `ready` rejects with "Transition was skipped", which showed as an uncaught error in the console.
-    d.startViewTransition(() => flushSync(fn)).ready?.catch(() => {});
-  } else fn();
+  // A hidden tab gets no animation, and its transition update can be held back: a founder who switched tabs while the
+  // model read their story came back to the intake screen, with Continue doing nothing visible.
+  if (!d.startViewTransition || isLite() || document.visibilityState !== "visible") return fn();
+  let done = false;
+  const update = () => {
+    if (done) return;
+    done = true;
+    flushSync(fn);
+  };
+  // The browser skips the animation when another screen change starts first. The update still runs, but `ready`
+  // rejects with "Transition was skipped", which showed as an uncaught error in the console.
+  d.startViewTransition(update).ready?.catch(() => {});
+  // Never let a screen change wait on the animation: if the browser has not run the update within a second, run it.
+  setTimeout(update, 1000);
 }
 
 let uid = 0;

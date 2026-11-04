@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi } from "@/lib/parallax-api";
+import { useEffect, useState, type FormEvent } from "react";
+import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi, type Health } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
 import { Avatar, Button, Src } from "./shared";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
@@ -12,6 +12,53 @@ const HOW_TO: [string, string][] = [
   ["Meet three futures", "Paths A, B and C, each with 36 months of cash computed in code. Stress-test them and ask each future you why."],
   ["Compare and decide", "Put the paths side by side, check how much risk you are comfortable with, and print a decision memo."],
 ];
+
+/**
+ * The privacy and model notes say what is really switched on, from /api/health. Until it answers, they describe demo
+ * mode, where nothing leaves Parallax's own server.
+ */
+function ModelNotes() {
+  const [health, setHealth] = useState<Health | null>(null);
+  useEffect(() => {
+    let live = true;
+    mockApi.health().then((h) => live && setHealth(h));
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!health?.modelReady && !health?.voiceReady) {
+    return (
+      <>
+        <div className="note">
+          <b>Not stored</b>
+          <span>Your text goes only to Parallax's own server, to be read. The server does not keep it.</span>
+        </div>
+        <div className="note">
+          <b>No model connected yet</b>
+          <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
+        </div>
+      </>
+    );
+  }
+  const reads = [health.modelReady && "Muse Spark reads your story", health.voiceReady && "Muse Voice Transcribe turns your voice into text"]
+    .filter(Boolean)
+    .join(", and ");
+  return (
+    <>
+      <div className="note">
+        <b>Not stored</b>
+        <span>
+          Your {health.modelReady ? "text" : "recording"} goes to Parallax's server and on to Meta's Model API, only to be read. Parallax
+          does not keep it.
+        </span>
+      </div>
+      <div className="note">
+        <b>Read by Meta's Muse models</b>
+        <span>{reads}. Every figure is still computed in code, and the future-self chat uses scripted replies.</span>
+      </div>
+    </>
+  );
+}
 
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
@@ -65,14 +112,7 @@ export function StartScreen() {
           <b>A reflection aid</b>
           <span>Not financial advice. One possible future, not a prediction.</span>
         </div>
-        <div className="note">
-          <b>Not stored</b>
-          <span>Your text goes only to Parallax's own server, to be read. The server does not keep it.</span>
-        </div>
-        <div className="note">
-          <b>No model connected yet</b>
-          <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
-        </div>
+        <ModelNotes />
       </section>
     </>
   );

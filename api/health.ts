@@ -1,3 +1,4 @@
+import { voiceConfigOrNull } from '../shared/providers/asr.js';
 import { modelConfigOrNull } from '../shared/providers/meta.js';
 
 const json = (body: unknown, status: number) => Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
@@ -10,5 +11,6 @@ export function GET(): Response {
     metaKeyConfigured: Boolean(process.env.META_API_KEY?.trim()),
     modelEnabled: process.env.META_MODEL_ENABLED?.trim().toLowerCase() === 'true',
     modelReady: modelConfigOrNull(process.env) !== null,
+    voiceReady: voiceConfigOrNull(process.env) !== null,
   }, 200);
 }

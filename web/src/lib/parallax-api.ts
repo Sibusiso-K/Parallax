@@ -159,6 +159,22 @@ async function intake(text: string): Promise<IntakeResponse> {
   }
 }
 
+export interface Health {
+  modelReady: boolean;
+  voiceReady: boolean;
+}
+
+/** What the server has switched on. Anything but a clear yes reads as off, so the screens never claim a model. */
+async function health(): Promise<Health> {
+  try {
+    const res = await fetch("/api/health", { cache: "no-store" });
+    const data = (await res.json()) as Partial<Record<keyof Health, unknown>> | null;
+    return { modelReady: data?.modelReady === true, voiceReady: data?.voiceReady === true };
+  } catch {
+    return { modelReady: false, voiceReady: false };
+  }
+}
+
 // Screens hold plain values; the engine's profile builder wants intake fields. Assumed answers are
 // left out so the profile builder fills them from za.json and marks them as defaults. Exported for the end-to-end test.
 export function toExtraction(p: Profile): Extraction {
@@ -314,4 +330,4 @@ async function* chat(pathId: string, message: string): AsyncIterable<ChatChunk> 
   yield { type: "done" };
 }
 
-export const mockApi = { intake, paths, simulate, chat };
+export const mockApi = { intake, health, paths, simulate, chat };

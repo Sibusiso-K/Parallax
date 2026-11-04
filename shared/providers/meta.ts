@@ -11,7 +11,13 @@ export const DEFAULT_MODELS = ['muse-spark-1.3', 'muse-spark-1.2'] as const;
 const TIMEOUT_MS = 20_000; // first-token budget (ARCHITECTURE §12)
 const DEADLINE_MS = 90_000; // no new attempt after this, so one call stays well inside the function time limit
 const MAX_RETRY_AFTER_MS = 10_000;
-export const MAX_TOKENS = 1024; // a hard cap on what one reply can cost
+// A hard cap on what one reply can cost. Muse Spark reasons before it answers, and the reasoning counts against this cap:
+// at 1,024 a full intake spent it all on reasoning and came back with no text (finish_reason "length"). A two-figure
+// test answer alone used about 300 reasoning tokens.
+export const MAX_TOKENS = 8192;
+// Copying figures and quotes out of a founder's story needs little reasoning. On a live 4 Nov test, "minimal" read the
+// same fields and quotes as "low" in about 10 s instead of 18 s.
+export const REASONING_EFFORT = 'minimal';
 
 export type ErrorKind =
   | 'config' // bad settings: nothing was sent
@@ -235,6 +241,7 @@ async function postOnce<S extends z.ZodType>(
           messages: convo,
           temperature: 0,
           max_tokens: MAX_TOKENS,
+          reasoning_effort: REASONING_EFFORT,
           response_format: { type: 'json_schema', json_schema: { name: call.name, schema: format, strict: false } },
         }),
         signal: controller.signal,
@@ -252,7 +259,10 @@ async function postOnce<S extends z.ZodType>(
       throw new ModelError('schema', 'the reply was not JSON');
     }
     const content = (data as { choices?: { message?: { content?: unknown } }[] } | null)?.choices?.[0]?.message?.content;
-    if (typeof content !== 'string') throw new ModelError('schema', 'the reply had no text');
+    if (typeof content !== 'string') {
+      const finish = (data as { choices?: { finish_reason?: unknown }[] }).choices?.[0]?.finish_reason;
+      throw new ModelError('schema', finish === 'length' ? 'the reply ran out of tokens before any text' : 'the reply had no text');
+    }
     return content;
   } finally {
     clearTimeout(timer);
