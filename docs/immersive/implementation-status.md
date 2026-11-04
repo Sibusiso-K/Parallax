@@ -8,7 +8,7 @@ Evidence ledger: `progress.json` in that pack. This file records what the implem
 | Item | Value |
 |---|---|
 | Implementation checkout | `C:\Users\USER\Desktop\Parallax-photoreal` (git worktree of `Desktop\Parallax\.git`) |
-| Branch | `codex/photoreal-world` (local only, no upstream, nothing pushed) |
+| Branch | `codex/photoreal-world` (at the time of this phase: local only. Pushed since; see the 4 Nov section) |
 | Base | `1c255ea` = `origin/feat/ui-marketplace-style` (Sibusiso-K, 2 Nov 13:52) |
 | World work carried | merge of `feat/immersive-world` @ `900e6ec` (LethaboMH14, 12 commits incl. figure guard) |
 | Merge commit | `41486b8`, one conflict (`web/src/main.tsx`), resolved by keeping the Control Room shell and re-adding the `?world` entry |
@@ -99,8 +99,42 @@ Against the pack's desktop target (60 fps, p95 under 22 ms) this is not met on i
 
 Not done yet, honestly: no people in the courtyard (realistic Ayanda and advisor are next, with MPFB); no walking or collision (Rapier installed, not wired); the Joburg panorama has no sun disc, so the warm sun is an added light, not measured from the photo; light is real-time, without the bounced light of the Cycles renders, so the browser view is flatter than the stills; the environment download (18.7 MB) is above the 15 MB first-payload target.
 
-## Approvals still needed
+## 4 Nov 2026: Codex's work landed, checked in a browser, and finished
 
-- Spark, XR or other new runtime packages: none requested yet.
-- Cloud spending: none authorised; no job proposed.
-- Meta API calls: none made; needs a key and usage authorisation.
+Codex stopped at its usage limit on 3 Nov with its work uncommitted and never checked in a browser. Its "Edge WebGL failure" was the test setup: its check launched Edge with `--disable-gpu`, and a later shader error was `GL_OUT_OF_MEMORY` (`HRESULT 0x8007000E`) from the HLSL compiler on this 7.7 GB machine, not a fault in the shaders. Checks below ran in real Edge 156 with the Intel UHD GPU (headless, driven over the DevTools protocol) at 1440x900, on the production build unless noted.
+
+| Gate (NEXT-INTEGRATED-PASS) | Result | Evidence |
+|---|---|---|
+| Renders in Edge | Pass | `ANGLE (Intel UHD Direct3D11)`, no shader errors with memory available. Under severe memory pressure it falls back to the still image, as designed |
+| Walk to an object, inspect, resume, Guided still usable | Pass | Pressing Memo walked to (3.95, -7.39) through the real colliders, E selected the board. After selecting at Offer, S moved z from 5.2 to 2.23. Guided eased back to the place camera. `route.test.ts` walks every pair of places in Rapier |
+| Characters reviewed at ordinary distance | **Failed, so off by default** | Blank white eyes, hair cap with holes, apron through the collar, plastic skin (`evidence/people-ayanda-face.jpg`). Reachable with `?people` |
+| Object question: labelled answer, text fallback, truthful speech | Pass, except audio | Live Muse Spark in the room on the demo profile. Read-aloud reached `speaking: true` with 324 voices listed, in a headless browser, so **nobody has heard it yet** |
+| Graph and image use one selected scenario and month | Pass | SVG contains -R29,000, R91,000 and "First shortfall: month 4"; the PNG renders unclipped (`evidence/`) |
+| Reel | Real video, no longer a storyboard | H.264, 720x1280, 16.48 s of 16.5 s, 487 frames, steady 30 fps (ffprobe). All five scenes checked by eye (`evidence/reel-frames.jpg`). Silent by design |
+| Checks after integration | Pass | `tsc` clean, 69 files / 474 tests, `vite build` passes, 7 of 12 Vercel Functions |
+
+The confirmed path was run once, live, on the dev server: intake with the demo story and "I don't know" for wages, then paths, then Explore on path B. Muse Spark dressed it as "The Johannesburg Kitchen" ("Client Offer Table", "Corporate Lunch Agreement"). Late payment at month 4 showed -R5,000 against a R115,000 baseline, the same figure as the 2 Nov parity check. The advisor's three figures all matched the room.
+
+Frame cost by the same method as the 2 Nov table: **15.6 ms average, median 14, p95 17.2 ms**, 62 draw calls, 426k triangles, 993x868, production build with the characters off. One run on one machine. This meets the pack's 22 ms p95 target there; the 2 Nov figures (25.1 / 36.2 ms) were a development build, so the build type accounts for some of the gain.
+
+First load: the guided room's chunk is 275 kB gzipped, and Rapier (843 kB gzipped) now loads only when Walk starts. Not measured over a real network.
+
+### Live model use during this work
+
+Seven calls on the team's key: four to `/api/advisor` (demo path B), and one full intake with its scene and portrait. Answers took about 9 s each. There is no rate limit on `/api/advisor`, the same as `/api/chat`, so a public deployment can spend credits at the rate people ask.
+
+### Not verified
+
+- Hearing read-aloud, or **Speak** with a real microphone in the room. The transcribe route has its own tests; the two have never been run together.
+- A real phone. 390x844 was checked in Edge's device emulation: no sideways scroll, controls reachable, crowded. Touch input was not exercised, only the layout.
+- A discrete GPU, real network load times, Firefox and Safari. `MediaRecorder` MP4 is Chromium-tested; other browsers fall back to WebM or say they cannot record.
+- VR: still disabled, no headset.
+- Sign language: not implemented. Nothing here is sign support.
+
+### Known limits
+
+- No people in the room by default, so "ask a person" is a panel, not a character.
+- The real-time scene is still flatter than the Cycles stills; it reads as a good game, not a photograph.
+- The advisor sees figures only for the scenario on screen, so with the switch off it cannot quantify a late payment and offers to turn the switch on.
+- The CC BY version of one shirt is unconfirmed (`assets/CREDITS.md`), which only matters if the characters are shown.
+

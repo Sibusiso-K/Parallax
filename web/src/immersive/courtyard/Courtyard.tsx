@@ -44,7 +44,7 @@ const FILL_BOUND = /Intel|Mali|Adreno|PowerVR|SwiftShader|llvmpipe/i;
 
 export default function Courtyard(p: CourtyardProps) {
   const start = p.manifest.places[p.place];
-  const [walkNotice, setWalkNotice] = useState('Walk up to an object, or press a place to walk there.');
+  const [walkNotice, setWalkNotice] = useState('Getting ready to walk…');
   const [near, setNear] = useState<ObjectId | null>(null);
   // After a walk the guided camera eases back from where the walker stood, instead of jumping.
   const hasWalked = useRef(false);
@@ -239,7 +239,7 @@ function Environment({
 
   useEffect(() => {
     for (const [id, node] of interactive) {
-      const level = id === selected ? 0.6 : id === hovered ? 0.35 : 0;
+      const level = id === selected ? 0.28 : id === hovered ? 0.16 : 0;
       node.traverse((o) => {
         const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
         if (!m || !('emissive' in m)) return;

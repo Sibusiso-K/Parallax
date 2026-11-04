@@ -21,13 +21,16 @@ holds only a `.gitignore`.
     (`shared/chat/future-self.ts`).
   - Muse Spark dresses the 3D room for the founder's own business, and Muse Image draws the founder there
     (`shared/scene/dressing.ts`, `shared/providers/image.ts`, and [docs/scene-from-prompt.md](docs/scene-from-prompt.md)).
-  - Muse Voice Transcribe turns **Speak instead** into text.
+  - Muse Spark answers as the advisor in the 3D room and suggests what to look at next (`shared/scene/advisor-model.ts`).
+  - Muse Voice Transcribe turns **Speak instead** into text, and a spoken question in the room.
   - Muse Image made the demo founder's three portraits.
 - **No model produces a figure.** Every number comes from the cash engine in `shared/engine/`, and `shared/guard/`
   keeps figures out of model replies.
 - **The UI** was first generated with Lovable on 30 Oct, then reworked by hand into the Control Room design.
 - **The 3D courtyard** is built from CC0 sources (Poly Haven and MakeHuman) by `assets/blender/build_courtyard.py`.
-  Each source and its licence is listed in `assets/provenance.json`.
+  Each source and its licence is listed in `assets/provenance.json`. Its props and the figures on its paper are drawn in
+  the browser from the engine (`web/src/immersive/courtyard/dressing.ts`). Draft characters are off by default
+  (`/?world&people`): they are not accepted as realistic, and two garments are CC BY ([credits](assets/CREDITS.md)).
 
 ## Using it for the first time
 
@@ -40,7 +43,11 @@ holds only a `.gitignore`.
    founder is under 18), Parallax says why and asks you to change what you wrote.
 4. **Meet three futures.** Paths A, B and C each show 36 months of cash with a likely, bad and good case. Open the
    assumptions to see where every number comes from, and chat to each future self.
-5. **Compare and decide.** Put the paths side by side, check how much risk you are comfortable with, and print the
+5. **Step inside.** **Explore this path** opens the decision as a 3D courtyard for contract decisions. Press **Walk**,
+   then use WASD or the on-screen buttons, or press a place to walk there. Walk up to the contract, the pots or the memo
+   board and press **E**. Ask the advisor by typing or with **Speak**; pull the late-payment switch and watch the room
+   answer. **Create** makes a short video or an image of that month, in your browser, from your own figures.
+6. **Compare and decide.** Put the paths side by side, check how much risk you are comfortable with, and print the
    decision memo.
 
 Your decision is **saved as you go**, so a reload or a return visit offers to pick up where you left off. It is
@@ -113,7 +120,7 @@ npm run build
 ## Layout
 
 - `web/`: the React app (Vite).
-- `api/`: Vercel Functions: `intake`, `transcribe`, `chat`, `scene`, `session` and `health`.
+- `api/`: Vercel Functions: `intake`, `transcribe`, `chat`, `advisor`, `scene`, `session` and `health`.
 - `supabase/migrations/`: the database table and its row-level security.
 - `shared/`: the logic both sides run:
   - `intake/`: reading the story, and the checks on it.
@@ -122,7 +129,8 @@ npm run build
   - `engine/`: the cash simulation.
   - `guard/`: keeps figures out of model replies.
   - `chat/`: the future-self agent.
-  - `scene/`: the 3D room's claims, and its dressing for each founder's business.
+  - `scene/`: the 3D room's claims, its advisor, and its dressing for each founder's business.
+  - `immersive-server/`: fail-closed server contracts for a future signed-in room. Not deployed.
   - `session/`: saved decisions in Supabase.
   - `voice/`: WAV handling for speech-to-text.
 

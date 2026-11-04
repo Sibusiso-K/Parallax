@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { spokenText } from '../lib/speech';
+import { pickVoice, spokenText } from '../lib/speech';
 import type { AdvisorAnswer } from './advisor-fixture';
 import { createSpeechController, type PlaybackState } from './speech-controller';
 import './demo-voice.css';
@@ -65,7 +65,7 @@ export function DemoVoice({ transcript, resetKey, disabled, working, autoPlay = 
   useEffect(() => { controller.current?.stop(); }, [resetKey, disabled, working]);
 
   const play = () => {
-    if (transcript) controller.current?.play(spokenText(transcript), voices.find((voice) => voiceId(voice) === voiceKey) ?? null);
+    if (transcript) controller.current?.play(spokenText(transcript), voices.find((voice) => voiceId(voice) === voiceKey) ?? pickVoice(voices) ?? null);
   };
   // The founder asked out loud, so they hear the reply out loud, without a second press.
   const spokenTo = useRef(autoPlay);
@@ -88,7 +88,7 @@ export function DemoVoice({ transcript, resetKey, disabled, working, autoPlay = 
         </>}
         {discovery !== 'unsupported' && voices.length > 0 && <label className="demo-voice__choice"><span className="sr-only">Voice</span>
           <select value={voiceKey} disabled={active} onChange={(event) => setVoiceKey(event.target.value)}>
-            <option value="">Browser default voice</option>
+            <option value="">Best voice on this device</option>
             {voices.map((voice) => <option key={voiceId(voice)} value={voiceId(voice)}>{voice.name} · {voice.lang}</option>)}
           </select>
         </label>}
