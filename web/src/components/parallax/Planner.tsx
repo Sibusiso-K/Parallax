@@ -88,9 +88,15 @@ export function Planner({ lens, onApply }: { lens: Lens; onApply: (l: Lens, path
           <ol className="planner-steps" aria-label="What the agent tried">
             {answer.steps.map((s, i) => (
               <li key={i}>
-                <span className="step-tool">{s.tool === "compare_all" ? "Compared all three" : "Tried a plan"}</span>
+                <span className="step-tool">
+                  {s.tool === "compare_all"
+                    ? answer.mode === "fixture"
+                      ? `Searched ${String(s.args.searched ?? "every")} settings in code; the best three are shown`
+                      : "Compared all three"
+                    : "Tried a plan"}
+                </span>
                 {s.results.map((r) => (
-                  <span key={r.path} className={cx("step-res", r.meetsGoal ? "ok" : "no")}>
+                  <span key={`${r.path}${r.contractPercent}${r.pricePercent}`} className={cx("step-res", r.meetsGoal ? "ok" : "no")}>
                     <Badge letter={r.path} /> {settings(r)}: lowest {formatMoney(r.lowestCash)}
                     {r.runsOutMonth ? `, runs out month ${r.runsOutMonth}` : ""} {r.meetsGoal ? "✓" : "✗"}
                   </span>

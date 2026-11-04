@@ -288,15 +288,20 @@ export async function planWithModel(cfg: MetaConfig, req: PlanRequest, deps: Dep
   }
   let named: PlanSettings[] = [];
   let note = '';
+  let usable = false;
   try {
     const parsed = finalAnswer.safeParse(JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)));
     if (parsed.success) {
       named = parsed.data.plans;
       note = /\d/.test(parsed.data.note) ? '' : parsed.data.note.trim();
+      usable = true;
     }
   } catch {
-    /* no usable answer: fall back to the best the tools showed */
+    /* no usable answer */
   }
+  // With no usable answer and no engine run behind it, there is nothing to show: a failure, so the browser runs the
+  // search in code instead of presenting an empty result as the model's.
+  if (!usable && steps.length === 0) throw new ModelError('schema', 'the planner gave no usable answer and ran no tools');
   // Code reruns every plan the model named, and keeps only those that really meet the goal.
   const checked = rank(named.map((s) => runPlan(req, s))).filter((r) => r.meetsGoal);
   const tried = rank(steps.flatMap((s) => s.results));

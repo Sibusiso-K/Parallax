@@ -80,6 +80,7 @@ export function ChatScreen() {
 
   return (
     <>
+    <h1 className="sr-only">Ask future you</h1>
     <BoardMeeting />
     <div className="row pagecols">
       <section className="panel chat">
