@@ -1,4 +1,5 @@
 import type { MetaConfig } from './meta.js';
+import { imageInput, providerPost, type ProviderFetch } from '../world/provider.js';
 
 // Muse Image on the Meta Model API: POST /images/generations, answered with base64 image data (webp). One portrait
 // per decision, drawn from a setting line written by Muse Spark (shared/scene/dressing.ts). Uses the same key and
@@ -6,6 +7,25 @@ import type { MetaConfig } from './meta.js';
 
 export const DEFAULT_IMAGE_MODEL = 'muse-image-1.0';
 const TIMEOUT_MS = 45_000;
+
+/** One bounded wide plate or reference-preserving edit. Never retries a billed request. */
+export async function generateWorldImage(cfg: MetaConfig, prompt: string, references: string[] = [], request?: ProviderFetch): Promise<{ dataUrl: string; model: string }> {
+  if (!prompt.trim() || prompt.length > 2400 || references.length > 2) throw new ImageError('Invalid image request');
+  references.forEach(reference => imageInput.parse(reference));
+  const data = await providerPost(cfg, references.length ? '/images/edits' : '/images/generations', {
+    model: DEFAULT_IMAGE_MODEL, prompt: `${prompt} Photographic, cinematic natural light. Fictional adults only. No logos, real names, celebrities, readable text, numerals, currency or charts. Preserve reference composition and identity.`,
+    n: 1, size: '2048x1024', output_format: 'jpeg',
+    ...(references.length ? { images: references.map(image_url => ({ image_url })) } : {}),
+  }, request) as { data?: { b64_json?: unknown }[] };
+  const b64 = data.data?.[0]?.b64_json;
+  if (typeof b64 !== 'string' || !b64 || b64.length > 3_900_000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) throw new ImageError('Image reply was missing or too large');
+  return { dataUrl: `data:image/jpeg;base64,${b64}`, model: DEFAULT_IMAGE_MODEL };
+}
+
+export const editWorldImage = (cfg: MetaConfig, prompt: string, references: string[], request?: ProviderFetch) => {
+  if (!references.length) throw new ImageError('An edit needs a reference image');
+  return generateWorldImage(cfg, prompt, references, request);
+};
 
 export interface ImageDeps {
   fetch: (url: string, init: RequestInit) => Promise<Response>;

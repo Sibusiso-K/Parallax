@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-11-04T19:29:34.035Z",
+  "imageModel": "muse-image-1.0",
+  "maskModel": "sam-3.1",
+  "fictional": true,
+  "illustrative": true,
+  "shots": [
+    {
+      "focus": "workplace",
+      "image": "shot-workplace.jpg",
+      "mask": "mask-workplace.png",
+      "background": "background-workplace.jpg"
+    },
+    {
+      "focus": "founder",
+      "image": "shot-founder.jpg",
+      "mask": "mask-founder.png",
+      "background": "background-founder.jpg"
+    },
+    {
+      "focus": "offer",
+      "image": "shot-offer.jpg",
+      "mask": "mask-offer.png",
+      "background": "background-offer.jpg"
+    },
+    {
+      "focus": "work",
+      "image": "shot-work.jpg",
+      "mask": "mask-work.png",
+      "background": "background-work.jpg"
+    },
+    {
+      "focus": "pressure",
+      "image": "shot-pressure.jpg",
+      "mask": "mask-pressure.png",
+      "background": "background-pressure.jpg"
+    },
+    {
+      "focus": "choice",
+      "image": "shot-choice.jpg",
+      "mask": "mask-choice.png",
+      "background": "background-choice.jpg"
+    }
+  ],
+  "note": "Generated from existing Muse demo kitchen and fictional-person references. No financial figures in art direction. No browser playback acceptance."
+}
