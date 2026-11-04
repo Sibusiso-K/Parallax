@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RoomSnapshot } from '../../../../shared/scene/room-model';
 import { createCashInfographic, svgToPng } from './infographic';
-import { ReelError, recordReel, reelDuration, type ReelScene } from './reel';
+import { ReelError, recordReel, recordedInFull, reelDuration, type ReelScene } from './reel';
 import { buildReelPlan, type StoryObject } from './reel-plan';
 
 // Create: what a founder can take away from one month of one path. Made only when they press a button, in this browser,
@@ -21,17 +21,41 @@ export interface MediaOutput {
   seconds?: number;
 }
 
-const loadStill = (src: string): Promise<HTMLImageElement | null> =>
-  new Promise((resolve) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => resolve(null);
-    image.src = src;
+/** Decoded up front, so the first scene does not stutter while the browser decodes it mid-recording. */
+async function loadStill(src: string): Promise<ImageBitmap | null> {
+  try {
+    return await createImageBitmap(await (await fetch(src)).blob());
+  } catch {
+    return null;
+  }
+}
+
+/** How long the file really plays. WebM from a recorder reports no length until asked to seek past its end. */
+function measuredSeconds(url: string): Promise<number> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    const done = (value: number) => {
+      video.removeAttribute('src');
+      video.load();
+      resolve(value);
+    };
+    video.onerror = () => done(Number.NaN);
+    video.ontimeupdate = () => {
+      if (Number.isFinite(video.duration)) done(video.duration);
+    };
+    video.onloadedmetadata = () => {
+      if (Number.isFinite(video.duration)) done(video.duration);
+      else video.currentTime = 1e7;
+    };
+    video.src = url;
   });
+}
 
 const sizeText = (bytes: number) => (bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1000))} KB`);
 
-export function MediaStudio({ snapshot, month, objectId, objectLabel, stillUrl, outputs, onOutput, revision, disabled }: {
+export function MediaStudio({ snapshot, month, objectId, objectLabel, stillUrl, outputs, onOutput, onRecording, revision, disabled }: {
   snapshot: RoomSnapshot;
   month: number;
   objectId: StoryObject;
@@ -39,13 +63,21 @@ export function MediaStudio({ snapshot, month, objectId, objectLabel, stillUrl, 
   stillUrl: string;
   outputs: MediaOutput[];
   onOutput: (output: MediaOutput) => void;
+  /** True while a reel records, so the 3D room can stop drawing and leave the machine to the encoder. */
+  onRecording: (recording: boolean) => void;
   revision: number;
   disabled: boolean;
 }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [problem, setProblem] = useState('');
   const abort = useRef<AbortController | null>(null);
-  useEffect(() => () => abort.current?.abort(), []);
+  useEffect(
+    () => () => {
+      abort.current?.abort();
+      onRecording(false);
+    },
+    [onRecording],
+  );
   const plan = buildReelPlan(snapshot, month, objectId, objectLabel);
   const stem = `parallax-path-${snapshot.ref.pathId}-month-${month}`;
   const stressed = snapshot.ref.setback !== null;
@@ -56,15 +88,24 @@ export function MediaStudio({ snapshot, month, objectId, objectLabel, stillUrl, 
     setProgress(0);
     const controller = new AbortController();
     abort.current = controller;
+    onRecording(true);
     try {
       await document.fonts?.ready;
       const still = await loadStill(stillUrl);
       const scene: ReelScene = { plan, snapshot, month, objectLabel, still };
       const { blob, extension, seconds } = await recordReel(scene, { onProgress: setProgress, signal: controller.signal });
-      onOutput({ id: crypto.randomUUID(), kind: 'Reel', name: `${stem}-reel.${extension}`, url: URL.createObjectURL(blob), bytes: blob.size, seconds, ...provenance });
+      const url = URL.createObjectURL(blob);
+      const measured = await measuredSeconds(url);
+      // A short file has lost scenes, and the last ones carry the caveat, so it is not offered.
+      if (!recordedInFull(measured, seconds)) {
+        URL.revokeObjectURL(url);
+        throw new ReelError('The recording came out incomplete, so it was not kept. Close some other programs and try again.');
+      }
+      onOutput({ id: crypto.randomUUID(), kind: 'Reel', name: `${stem}-reel.${extension}`, url, bytes: blob.size, seconds: measured, ...provenance });
     } catch (err) {
       if (!controller.signal.aborted) setProblem(err instanceof ReelError ? err.message : 'The reel could not be made. Please try again.');
     } finally {
+      onRecording(false);
       setProgress(null);
     }
   };

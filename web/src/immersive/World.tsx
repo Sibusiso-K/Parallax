@@ -158,6 +158,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [objectTab, setObjectTab] = useState<ObjectTab>('explore');
   // What the founder has made. Kept while they stay in the room, and freed when they leave.
   const [outputs, setOutputs] = useState<MediaOutput[]>([]);
+  const [recording, setRecording] = useState(false);
   const outputUrls = useRef<string[]>([]);
   const addOutput = useCallback((output: MediaOutput) => {
     outputUrls.current.push(output.url);
@@ -504,6 +505,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 onWalkError={(message) => { setWalk(false); setWalkError(message); }}
                 onPlaceNear={setPlace}
                 people={people}
+                paused={recording}
                 selected={focus}
                 hovered={hoverObject}
                 onHover={setHoverObject}
@@ -717,6 +719,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                   stillUrl={`${WORLD_BASE}stills/${focusInfo.place}.jpg`}
                   outputs={outputs}
                   onOutput={addOutput}
+                  onRecording={setRecording}
                   revision={session.profileRevision}
                   disabled={inReplay}
                 />

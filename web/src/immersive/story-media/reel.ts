@@ -234,6 +234,10 @@ export function reelFormat(isSupported: (mime: string) => boolean): { mime: stri
 
 export class ReelError extends Error {}
 
+/** A recording shorter than this share of its plan has lost scenes, possibly the caveat, so it is not offered. */
+export const MIN_RECORDED_SHARE = 0.9;
+export const recordedInFull = (recorded: number, planned: number): boolean => Number.isFinite(recorded) && recorded >= planned * MIN_RECORDED_SHARE;
+
 /** Records the reel in real time. Rejects with a plain message if it cannot, and nothing about the decision changes. */
 export function recordReel(scene: ReelScene, options: { onProgress: (fraction: number) => void; signal: AbortSignal }): Promise<{ blob: Blob; extension: 'mp4' | 'webm'; seconds: number }> {
   return new Promise((resolve, reject) => {
@@ -268,7 +272,8 @@ export function recordReel(scene: ReelScene, options: { onProgress: (fraction: n
       resolve({ blob, extension: format.extension, seconds });
     };
     options.signal.addEventListener('abort', () => stop(new ReelError('Cancelled.')), { once: true });
-    recorder.start();
+    // In slices of a second: with one long slice, Edge's MP4 writer lost everything after about 8 seconds of 17.
+    recorder.start(1000);
     const started = performance.now();
     timer = window.setInterval(() => {
       // A hidden tab slows its timers to about one a second, which would ruin the video, so stop and say why.

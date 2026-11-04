@@ -22,6 +22,8 @@ export interface CourtyardProps {
   onPlaceNear: (id: PlaceId) => void;
   /** Whether the draft characters stand in the courtyard. */
   people: boolean;
+  /** Stops drawing while something else needs the machine, such as a reel recording. */
+  paused: boolean;
   selected: ObjectId | null;
   hovered: ObjectId | null;
   onHover: (id: ObjectId | null) => void;
@@ -46,6 +48,7 @@ export default function Courtyard(p: CourtyardProps) {
     <>
     <Canvas
       shadows={p.lowTier ? false : 'percentage'}
+      frameloop={p.paused ? 'never' : 'always'}
       dpr={1}
       camera={{ fov: 50, near: 0.05, far: 600, position: start.camera }}
       gl={{ antialias: !p.lowTier, toneMapping: THREE.AgXToneMapping, toneMappingExposure: p.manifest.lighting.exposure, powerPreference: 'high-performance' }}
