@@ -6,6 +6,15 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port", "5173", "--strictPort"],
       "port": 5173
+    },
+    {
+      "name": "web-offline",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "process.env.META_MODEL_ENABLED='false';require('node:child_process').spawn(process.execPath,['node_modules/vite/bin/vite.js','--port','5174','--strictPort'],{stdio:'inherit',env:process.env}).on('exit',(c)=>process.exit(c??0))"
+      ],
+      "port": 5174
     }
   ]
 }

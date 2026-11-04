@@ -1,15 +1,16 @@
 import { chatJson, type MetaConfig } from '../providers/meta.js';
 import { extraction } from './schema.js';
 
-// The intake agent (FEATURES F2): one structured call that reads what the person wrote and fills the intake fields
+// The intake agent (FEATURES F2): one structured call that reads what the founder wrote and fills the intake fields
 // with the exact words they used. Code keeps a field only if its quote is in the text (verify.ts), so the model cannot
-// fill a field the person did not write. This is a first draft of the prompt, for Lethabo to tune against SCOPE section 5.
+// fill a field the founder did not write. This is a first draft of the prompt, for Lethabo to tune against SCOPE section 5.
 const SYSTEM = [
-  "You read one person's description of a money decision and reply with JSON only.",
-  'Fill a field only when the person states it, and give as "quote" the exact words they wrote for it.',
-  'Never invent a number or a fact. A rough amount ("about 6k", "8 to 12k") becomes a low and a high figure.',
-  'Give base only when they say what is usual. Ages are bands: 18-24, 25-34, 35-44, 45-54, 55+.',
-  'Risk comfort is low, medium or high. Goals are up to three of: security, income, freedom, family time, growth.',
+  "You read a founder's description of a business decision and reply with JSON only.",
+  'Fill a field only when the founder states it, and give as "quote" the exact words they wrote for it.',
+  'Never invent a number or a fact. A rough amount ("about 60k", "70 to 100k") becomes a low and a high figure.',
+  'Give base only when they say what is usual. Amounts are per month, except cash in the business and the one-off upfront cost.',
+  'decisionType is contract (a big contract, order or new client), hire (taking someone on) or pricing (raising prices).',
+  'Risk comfort is low, medium or high. Goals are up to three of: cash safety, growth, profit, control, time.',
   'Leave out anything they did not say.',
 ].join(' ');
 

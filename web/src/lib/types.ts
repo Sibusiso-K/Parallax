@@ -17,7 +17,7 @@ export interface PathCard {
   letter: "A" | "B" | "C";
   name: string;
   summary: string;
-  startingSavings: number;
+  startingCash: number;
   assumptions: Assumption[];
   avatarUrl?: string;
 }
@@ -27,7 +27,7 @@ export interface MonthRow {
   income: number;
   costs: number;
   net: number;
-  savings: number;
+  cash: number;
 }
 
 export interface CaseResult {
@@ -46,22 +46,31 @@ export interface MoneyField {
 
 export type FieldKey =
   | "decision"
-  | "ageBand"
-  | "province"
-  | "takeHome"
-  | "essentialExpenses"
-  | "familySupportMonthly"
+  | "decisionType"
+  | "business"
+  | "location"
+  | "revenue"
+  | "directCosts"
+  | "overheads"
+  | "payroll"
+  | "founderPay"
   | "debtRepayments"
-  | "savings"
+  | "cash"
   | "riskComfort"
   | "goals"
-  | "sideIncome";
+  | "offerRevenue"
+  | "paymentDays"
+  | "hireCost"
+  | "upfrontCost"
+  | "priceRisePercent";
 
 export interface IntakeResponse {
   ok: true;
   mode: "model" | "fixture";
   fields: Partial<Record<FieldKey, unknown>>;
   missing: FieldKey[];
+  /** The founder's own words for each text field, kept beside the value. */
+  quotes?: Partial<Record<FieldKey, string>>;
   notice?: string;
 }
 
@@ -71,9 +80,9 @@ export interface ChatChunk {
   citation?: { id: string; label: string };
 }
 
-/** The confirmed "You, today" profile passed to mockApi.paths. */
+/** The confirmed "Your business, today" profile passed to mockApi.paths. */
 export interface Profile {
   fields: Partial<Record<FieldKey, unknown>>;
-  /** Fields filled with a default because the user said "I don't know". */
+  /** Fields filled with a default because the founder said "I don't know". */
   assumed: FieldKey[];
 }

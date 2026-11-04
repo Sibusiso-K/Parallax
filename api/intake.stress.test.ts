@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { NALEDI_EXTRACTION, NALEDI_TEXT } from '../shared/intake/fixture.js';
+import { DEMO_EXTRACTION, DEMO_TEXT } from '../shared/intake/fixture.js';
 import { pick, rng } from '../shared/testing/random.js';
 import { POST } from './intake.js';
 
@@ -24,8 +24,8 @@ describe('POST /api/intake under load', () => {
     const bodies = Array.from({ length: RUNS }, (_, k) => {
       if (k % 5 === 0) return 'not json {';
       if (k % 5 === 1) return JSON.stringify({ text: 'x'.repeat(4001 + (k % 1000)) });
-      if (k % 5 === 2) return JSON.stringify({ text: NALEDI_TEXT });
-      return JSON.stringify({ text: pick(r, ['I would like to think about it', '   ', 'Should I quit my job?', 'x'.repeat(9000)]) });
+      if (k % 5 === 2) return JSON.stringify({ text: DEMO_TEXT });
+      return JSON.stringify({ text: pick(r, ['I would like to think about it', '   ', 'Should I take the contract?', 'x'.repeat(9000)]) });
     });
     const responses = await Promise.all(bodies.map((b) => post(b)));
     const statuses = new Set(responses.map((res) => res.status));
@@ -39,13 +39,13 @@ describe('POST /api/intake under load', () => {
     const r = rng(2);
     // No 5xx in the mix: a 500 would make the client back off with real waits, which a stress run should not do.
     const replies = [
-      () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(NALEDI_EXTRACTION) } }] }), { status: 200 }),
+      () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(DEMO_EXTRACTION) } }] }), { status: 200 }),
       () => new Response(JSON.stringify({ choices: [{ message: { content: 'not json' } }] }), { status: 200 }),
       () => new Response('{}', { status: 402 }),
       () => new Response('{}', { status: 404 }),
     ];
     vi.stubGlobal('fetch', async () => pick(r, replies)());
-    const responses = await Promise.all(Array.from({ length: Math.ceil(RUNS / 4) }, () => post(JSON.stringify({ text: NALEDI_TEXT }))));
+    const responses = await Promise.all(Array.from({ length: Math.ceil(RUNS / 4) }, () => post(JSON.stringify({ text: DEMO_TEXT }))));
     for (const res of responses) expect(res.status).toBe(200);
     for (const res of responses) {
       const data = (await res.json()) as { ok: boolean; mode: string; fields: object };

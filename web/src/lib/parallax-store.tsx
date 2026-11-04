@@ -19,7 +19,8 @@ export type Step =
 export interface Trace {
   model: string;
   latencyMs: number;
-  checks: { name: string; ok: boolean }[];
+  // ok is null for a check the code does not run yet; the trace shows it as not run rather than as passed.
+  checks: { name: string; ok: boolean | null }[];
 }
 export interface Msg {
   id: string;
@@ -37,8 +38,11 @@ interface State {
   story: string;
   intake: IntakeResponse | null;
   fields: Partial<Record<FieldKey, unknown>>;
+  quotes: Partial<Record<FieldKey, string>>;
   assumed: FieldKey[];
   missing: FieldKey[];
+  /** Fields the founder answered as a follow-up question. */
+  followed: FieldKey[];
   paths: PathCard[];
   active: Letter;
   chats: Record<Letter, Msg[]>;
@@ -60,8 +64,10 @@ const initial: State = {
   story: "",
   intake: null,
   fields: {},
+  quotes: {},
   assumed: [],
   missing: [],
+  followed: [],
   paths: [],
   active: "A",
   chats: { A: [], B: [], C: [] },
@@ -155,11 +161,11 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
               model: "fixture (stand-in for muse-spark-1.3)",
               latencyMs,
               checks: [
-                { name: "Speaks in first person, from 2029", ok: true },
-                { name: "Figures come from code, not the model", ok: true },
+                { name: "Speaks in first person, 36 months on", ok: null },
+                { name: "Figures come from code, not the model", ok: null },
                 { name: "Cites at least one assumption", ok: m.citations.length > 0 },
-                { name: "Names a downside", ok: true },
-                { name: "Does not tell you what to choose", ok: true },
+                { name: "Names a downside", ok: null },
+                { name: "Does not tell you what to choose", ok: null },
               ],
             },
           }));
