@@ -858,7 +858,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
           </div>
           <p className="muted small">
-            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky{people ? '; the fictional characters are work-in-progress previews' : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
+            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky{people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
           </p>
         </footer>
       </aside>

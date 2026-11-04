@@ -59,10 +59,10 @@
     },
     {
       "path": "web/public/avatars/ayanda-preview-v3.glb",
-      "bytes": 6572380,
-      "sha256": "05a9716b697fa1e192fc576e7f071be401d34d43216b4a2e0a6465ad64dde9ba",
-      "how": "Built by assets/blender/build_people.py (Blender 5.2.3, MPFB 2.0.18) for Ayanda from MakeHuman CC0 packs plus one CC BY garment; see assets/CREDITS.md. Fictional draft, not accepted as photoreal.",
-      "licence": "CC0 base with a CC BY garment: credit required (assets/CREDITS.md)"
+      "bytes": 6387184,
+      "sha256": "185677c6b325443767131ef275ea93b0310d0e79c3057d3a521275885fa88941",
+      "how": "Built by assets/blender/build_people.py (Blender 5.2.3, MPFB 2.0.18) for Ayanda from MakeHuman CC0 packs only: her olive top is the casual suit from makehuman_system_assets_cc0.zip. See assets/CREDITS.md. Fictional draft, not accepted as photoreal.",
+      "licence": "CC0-1.0 (MakeHuman CC0 packs); no CC BY garment"
     },
     {
       "path": "web/public/avatars/advisor-preview-v3.glb",
