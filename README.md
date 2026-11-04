@@ -14,11 +14,15 @@ Parallax is a reflection aid, not financial advice. It is for people aged 18 and
 Everything here was built during the hackathon, between 29 Oct and 4 Nov 2026. The repository's first commit (20 Oct)
 holds only a `.gitignore`.
 
-- **Meta models:**
+- **Meta models, live in production:**
   - Muse Spark (`muse-spark-1.3`, falling back to `muse-spark-1.2`) reads the founder's story into figures, each with
     the words it came from.
+  - Muse Spark answers as each future self, from the founder's own story and that path's figures
+    (`shared/chat/future-self.ts`).
+  - Muse Spark dresses the 3D room for the founder's own business, and Muse Image draws the founder there
+    (`shared/scene/dressing.ts`, `shared/providers/image.ts`, and [docs/scene-from-prompt.md](docs/scene-from-prompt.md)).
   - Muse Voice Transcribe turns **Speak instead** into text.
-  - Muse Image made the three future-self portraits.
+  - Muse Image made the demo founder's three portraits.
 - **No model produces a figure.** Every number comes from the cash engine in `shared/engine/`, and `shared/guard/`
   keeps figures out of model replies.
 - **The UI** was first generated with Lovable on 30 Oct, then reworked by hand into the Control Room design.
@@ -39,8 +43,13 @@ holds only a `.gitignore`.
 5. **Compare and decide.** Put the paths side by side, check how much risk you are comfortable with, and print the
    decision memo.
 
-**Export JSON** in the sidebar downloads the session. **Delete everything** clears it. Nothing is stored on the
-server.
+Your decision is **saved as you go**, so a reload or a return visit offers to pick up where you left off. It is
+stored in Parallax's Supabase database under a private code that only your browser holds. Row-level security
+lets each request reach only its own row (`supabase/migrations/`). With no database configured, the copy stays in
+your browser instead.
+
+**Export JSON** in the sidebar downloads the session. **Delete everything** erases it, the saved copy included, and
+gives the browser a new code.
 
 ## Running it locally
 
@@ -66,7 +75,19 @@ Copy `.env.example` to `.env.local` and fill it in. Never commit `.env.local`: t
 | `META_API_KEY` | Your Meta Model API key. |
 | `META_MODEL_ENABLED` | `true` lets intake read any story with the model. Off by default. |
 | `META_VOICE_ENABLED` | `true` turns on Meta speech-to-text for **Speak instead**. Off by default. |
-| `META_MODELS`, `META_ASR_MODEL`, `META_API_BASE_URL` | Optional overrides. The defaults live in `shared/providers/`. |
+| `META_MODELS`, `META_ASR_MODEL`, `META_IMAGE_MODEL`, `META_API_BASE_URL` | Optional overrides. The defaults live in `shared/providers/`. |
+
+With `META_MODEL_ENABLED` on, the chat and the founder's own room and portrait use the same key.
+
+### Saving decisions (optional)
+
+Without these settings, a decision is kept in the browser only. To save decisions in Supabase, apply
+`supabase/migrations/20261104120000_parallax_sessions.sql` to a project, then set:
+
+| Variable | What it does |
+| --- | --- |
+| `SUPABASE_URL` | The project's API URL. |
+| `SUPABASE_PUBLISHABLE_KEY` | Its publishable key. It is used only on the server, and row-level security limits each request to its own row. |
 
 ## Checks
 
@@ -92,13 +113,17 @@ npm run build
 ## Layout
 
 - `web/`: the React app (Vite).
-- `api/`: Vercel Functions: `intake`, `transcribe` and `health`.
+- `api/`: Vercel Functions: `intake`, `transcribe`, `chat`, `scene`, `session` and `health`.
+- `supabase/migrations/`: the database table and its row-level security.
 - `shared/`: the logic both sides run:
   - `intake/`: reading the story, and the checks on it.
   - `profile/`: the business profile, with defaults from `defaults/za.json`.
   - `paths/`: the three paths.
   - `engine/`: the cash simulation.
   - `guard/`: keeps figures out of model replies.
+  - `chat/`: the future-self agent.
+  - `scene/`: the 3D room's claims, and its dressing for each founder's business.
+  - `session/`: saved decisions in Supabase.
   - `voice/`: WAV handling for speech-to-text.
 
 Open `/?world` for the 3D demo room on its own.
