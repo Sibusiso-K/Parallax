@@ -321,3 +321,29 @@
   .world .studio-dock { position: static; flex-direction: row; flex-wrap: wrap; margin: 8px; }
   .world .studio-sheet { left: 8px; right: 8px; top: 62px; bottom: 8px; width: auto; }
 }
+
+/* The photo always fills the stage. overflow: clip stops the browser scrolling the stage when a button inside takes focus. */
+.world .photo-world { overflow: clip; }
+.world .photo-scene { display: block; transform: translate(var(--cam-x,0px),var(--cam-y,0px)) scale(var(--photo-zoom,1)); transform-origin: 50% 50%; transition: transform 1100ms cubic-bezier(.22,1,.36,1); }
+.world .photo-frame { position: absolute; left: 50%; top: 50%; translate: -50% -50%; }
+.world .photo-repaint { animation: photo-repaint-in 2400ms ease-in-out both; }
+@keyframes photo-repaint-in { from { opacity: 0; } to { opacity: 1; } }
+.world .photo-world.is-aside .photo-object-nav, .world .photo-world.is-aside .photo-disclosure { display: none; }
+.world .photo-world.is-aside .photo-dialogue { left: 16px; top: auto; bottom: 92px; width: min(330px, 44%); }
+.world .studio-dock { left: 50%; top: 14px; translate: -50% 0; flex-direction: row; border-radius: 999px; padding: 4px; }
+.world .studio-dock button { border-radius: 999px; min-height: 36px; padding: 0 14px; white-space: nowrap; }
+@media (max-width: 1320px) { .world .studio-dock { left: 14px; top: 92px; translate: none; flex-direction: column; border-radius: 16px; } .world .studio-dock button { border-radius: 11px; } }
+@media (prefers-reduced-motion: reduce) { .world .photo-scene { transition: none; } .world .photo-repaint { animation: none; } }
+/* The board keeps to the right so the person and the room stay in view while it works. */
+.world .mc { width: min(600px, 52%); top: 66px; bottom: 16px; right: 16px; }
+.world .mc-workspace { grid-template-columns: 1fr; min-height: 0; }
+.world .mc-map { padding: 0 18px 6px; }
+.world .mc-inspector { margin: 0 28px 20px; padding: 16px 0 0; border-left: 0; border-top: 1px solid #d5dce5; }
+.world .mc-break { font: 400 26px/1.15 'Instrument Serif', Georgia, serif; letter-spacing: -.01em; color: var(--mc-ink); margin: 10px 0 12px; }
+.world .mc-sources { margin: 16px 0; padding: 14px 16px; border-radius: 14px; background: #eef2f7; }
+.world .mc-sources h4 { margin: 0 0 8px; font-size: 12px; font-weight: 600; }
+.world .mc-sources blockquote { margin: 0 0 10px; }
+.world .mc-sources blockquote p { margin: 0 0 3px; font-size: 13px; line-height: 1.45; }
+.world .mc-sources a { font-size: 11px; color: var(--mc-violet); }
+.world .mc-sources small { font-size: 11px; color: var(--mc-muted); }
+@media (max-width: 900px) { .world .mc { width: calc(100% - 16px); right: 8px; } }

@@ -27,11 +27,12 @@ import { applyDressing, type SceneDressing } from '../../../shared/scene/dressin
 import PhotoWorld from './photo/PhotoWorld';
 import { askFutureSelf } from './photo/advisor';
 import { MissionControl } from './swarm/MissionControl';
-import type { SwarmRequest, WorldOp } from '../../../shared/swarm/contracts';
+import type { SwarmRequest } from '../../../shared/swarm/contracts';
 import { inputKey as swarmInputKey } from '../../../shared/swarm/engine-tools';
 import type { PhotoManifest as FounderWorld } from '../../../shared/world/manifest';
 import type { DocumentProposal } from '../../../shared/world/document';
 import type { AdvisorSegment } from '../../../shared/scene/advisor-model';
+import { repaintRoom } from './swarm/repaint';
 import { WorldStudio } from './studio/WorldStudio';
 import { ContractDrop } from './studio/ContractDrop';
 
@@ -41,6 +42,7 @@ const FilmStudio = lazy(() => import('./studio/FilmStudio').then((m) => ({ defau
 /** Where the replay's camera stations stand in the courtyard. */
 const PLACE_FOR_STATION: Record<CameraStation, PlaceId> = { overview: 'spawn', contract: 'offer', bridge: 'bridge', marker: 'bridge', memo: 'memo' };
 const PLACE_ORDER: PlaceId[] = ['spawn', 'offer', 'intake', 'bridge', 'memo'];
+const PHOTO_PLACES: Record<PlaceId, string> = { spawn: 'The whole room', offer: 'The contract', intake: 'The desk', bridge: 'Her', memo: 'The board' };
 const MONTH_TICKS = [1, 6, 12, 18, 24, 30, 36];
 
 const SUGGESTIONS = ['What happens to cash this month?', 'What is the lowest point?', 'What does the late payment do?'];
@@ -200,8 +202,10 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [studio, setStudio] = useState<null | 'world' | 'contract' | 'film'>(null);
   // The board's words for the person in the photograph, and the light its World Builder chose. Both are cleared when the decision changes.
   const [boardWords, setBoardWords] = useState<{ key: string; text: string } | null>(null);
-  const [boardMood, setBoardMood] = useState<{ key: string; value: WorldOp['value'] } | null>(null);
+  const [boardMood, setBoardMood] = useState<{ key: string; value: 'golden' | 'night' | 'calm' } | null>(null);
   const [boardSpoken, setBoardSpoken] = useState(0);
+  const [boardOpen, setBoardOpen] = useState(false);
+  const [repainted, setRepainted] = useState<{ key: string; src: string } | null>(null);
   // Once the founder has convened the board once, each deliberate change sends it back to work. Nothing runs before that.
   const [boardTrigger, setBoardTrigger] = useState<number | undefined>(undefined);
   const boardEngaged = useRef(false);
@@ -534,6 +538,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const swarmKey = swarmInputKey(swarmRequest);
   const spokenWords = boardWords?.key === swarmKey ? boardWords.text : heardAnswer;
   const shownMood = boardMood?.key === swarmKey ? boardMood.value : null;
+  const shownRepaint = repainted?.key === swarmKey ? repainted.src : null;
   const studioStory = binding?.context?.story ?? DEMO_TEXT;
   const objectLabel = (id: string) => manifest?.objects[id as ObjectId]?.label ?? id;
   // A suggestion to go where the founder already is would be a button that does nothing.
@@ -544,7 +549,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
       <section className="stage" aria-label={photo ? 'Photographic possible future' : 'The courtyard'}>
         <div className="stage__view">
-          {photo && <PhotoWorld manifest={founderWorld} mood={shownMood} readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={spokenWords} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}|${boardSpoken}`} disabled={inReplay || working} autoPlay={spokenAsk + boardSpoken} demo={isDemo} />}
+          {photo && <PhotoWorld manifest={founderWorld} mood={shownMood} repainted={shownRepaint} aside={boardOpen} readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={spokenWords} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}|${boardSpoken}`} disabled={inReplay || working} autoPlay={spokenAsk + boardSpoken} demo={isDemo} />}
           {!photo && <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />}
           {!photo && webgl && manifest && (
             <SceneBoundary onFailure={(error) => { console.error('Courtyard renderer failed:', error); setWalk(false); setWebgl(false); }}>
@@ -596,7 +601,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
         </div>
 
         <div className="stage__bottom glass">
-          <div className="places" role="group" aria-label="Places in the courtyard">
+          <div className="places" role="group" aria-label={photo ? 'Places in the photograph' : 'Places in the courtyard'}>
             <span className="rowlabel">Places</span>
             {PLACE_ORDER.map((id) => (
               <button
@@ -606,10 +611,10 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 onClick={() => {
                   setPlace(id);
                   if (photo) setFocus(null);
-                  say(`${walk ? 'Walking to' : 'Moved to'} ${manifest?.places[id].label ?? id}.`);
+                  say(`${walk ? 'Walking to' : 'Moved to'} ${photo ? PHOTO_PLACES[id] : manifest?.places[id].label ?? id}.`);
                 }}
               >
-                {manifest?.places[id].label ?? id}
+                {photo ? PHOTO_PLACES[id] : manifest?.places[id].label ?? id}
               </button>
             ))}
             <span className="hint">{photo ? 'Explore the photograph · choose an object' : !webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
@@ -651,13 +656,20 @@ function World({ binding }: { binding?: ExploreBinding }) {
           <MissionControl
             request={swarmRequest}
             trigger={boardTrigger}
-            onStarted={() => { boardEngaged.current = true; }}
+            onStarted={() => { boardEngaged.current = true; setRepainted(null); }}
+            onOpenChange={setBoardOpen}
+            onRepaint={async (op, mood, onStep, signal) => {
+              const plate = mood === 'night' ? (founderWorld?.night ?? '/worlds/photo-demo/night.webp') : (founderWorld?.plate ?? '/worlds/photo-demo/golden.webp');
+              const painted = await repaintRoom(plate, op.prompt, onStep, signal);
+              if (painted && !signal.aborted) setRepainted({ key: swarmKey, src: painted.src });
+              return painted;
+            }}
             onSpeech={(segments: AdvisorSegment[]) => {
               setBoardWords({ key: swarmKey, text: segments.map((s) => s.text).join('') });
               setPhoto(true);
               setBoardSpoken((n) => n + 1);
             }}
-            onWorldOp={(op) => { setBoardMood({ key: swarmKey, value: op.value }); setPhoto(true); }}
+            onWorldOp={(op) => { if (op.type === 'mood') setBoardMood({ key: swarmKey, value: op.value }); setPhoto(true); }}
             onApply={(proposal) => {
               if (proposal.inputKey !== swarmKey) return { ok: false, error: 'The decision changed. Run a new review first.' };
               if (binding) return binding.onRevise(swarmPathId, proposal.assumptionId, proposal.values);
@@ -839,7 +851,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
           </details>
         </div>
 
-        {manifest && <details className="object">
+        {manifest && !photo && <details className="object">
           <summary>Objects in the courtyard</summary>
           <div className="object-links" role="group" aria-label="Courtyard objects">
             {OBJECT_IDS.map((id) => <button key={id} className="btn btn--ghost btn--sm" onClick={() => { if (walk && walkHandle.current) walkHandle.current.inspect(id); else inspect(id); }}>{manifest.objects[id].label}</button>)}
@@ -961,7 +973,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn btn--ghost" onClick={() => setSheet('memo')}>Room memo</button>
           </div>
           <p className="muted small">
-            {photo ? 'The photo world uses generated, illustrative imagery and fictional people.' : 'The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky'}{!photo && people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
+            {photo ? 'The photo world uses generated, illustrative imagery and fictional people' : 'The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky'}{!photo && people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
           </p>
         </footer>
       </aside>

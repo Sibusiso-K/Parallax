@@ -13,9 +13,21 @@ export interface PhotoWorldProps {
   reduced:boolean; transcript:string|null; resetKey:string; disabled?:boolean; manifest?:SharedManifest; base?:string; autoPlay?:number; demo?:boolean;
   /** The light the board's World Builder chose. Visual only: it never touches a figure. */
   mood?:'golden'|'night'|'calm'|null;
+  /** The room as the board's World Builder repainted it. Same camera as the plate, so it crossfades in place. */
+  repainted?:string|null;
+  /** The board is open over the right of the stage: the camera moves the subject into the free space. */
+  aside?:boolean;
 }
 /** No renderer context: a photo, transparent SAM cutouts, bounded Canvas atmosphere and DOM evidence. */
-export default function PhotoWorld({readout,place,selected,onSelect,reduced,transcript,resetKey,disabled=false,manifest:provided,base=PHOTO_BASE,autoPlay=0,demo=false,mood=null}:PhotoWorldProps) {
+export default function PhotoWorld({readout,place,selected,onSelect,reduced,transcript,resetKey,disabled=false,manifest:provided,base=PHOTO_BASE,autoPlay=0,demo=false,mood=null,repainted=null,aside=false}:PhotoWorldProps) {
+  const [stage,setStage]=useState({w:0,h:0});
+  const measure=useRef<ResizeObserver|null>(null);
+  const root=useCallback((node:HTMLDivElement|null)=>{
+    measure.current?.disconnect();measure.current=null;
+    if(!node)return;
+    const read=()=>setStage({w:node.clientWidth,h:node.clientHeight});
+    read();measure.current=new ResizeObserver(read);measure.current.observe(node);
+  },[]);
   const [manifest,setManifest]=useState<PhotoManifest|null>(provided?adaptManifest(provided):null);
   const [error,setError]=useState('');
   const [hover,setHover]=useState<ObjectId|null>(null);
@@ -82,19 +94,26 @@ export default function PhotoWorld({readout,place,selected,onSelect,reduced,tran
   if(!manifest)return <div className="photo-unavailable" role="status"><p>{error||'Opening the baked photo world…'}</p><p>Your engine figures and advisor remain available in the panel.</p></div>;
   const active=manifest.objects.find(o=>o.id===(hover??selected));
   const target=selected?manifest.objects.find(o=>o.id===selected):null;
-  const camera=speaking?[.5,.35,1.45]:target?[target.rect[0]+target.rect[2]/2,target.rect[1]+target.rect[3]/2,1.32]:PLACES[place];
+  const camera=speaking?[.5,.36,1.62]:target?[target.rect[0]+target.rect[2]/2,target.rect[1]+target.rect[3]/2,1.32]:PLACES[place];
+  // The photo covers the stage. The camera centres its subject, then stops before an edge of the photo could show.
+  const aspect=manifest.width/manifest.height,frameW=Math.max(stage.w,stage.h*aspect),frameH=frameW/aspect;
+  const [camU,camV,camZ]=camera as [number,number,number];
+  const free=aside?Math.min(stage.w*.52,600):0;
+  const roomX=Math.max(0,(frameW*camZ-stage.w)/2),roomY=Math.max(0,(frameH*camZ-stage.h)/2);
+  const camX=Math.max(-roomX,Math.min(roomX,-(camU-.5)*frameW*camZ-free/2)),camY=Math.max(-roomY,Math.min(roomY,-(camV-.5)*frameH*camZ));
   const person=manifest.people[readout.pathLetter as 'A'|'B'|'C']??manifest.people.B;
   const isNight=mood?mood==='night':nightMood(readout.below,readout.stressed);
   const contractPaper=manifest.objects.find(o=>o.id==='contract')?.paper;
   const memoPaper=manifest.objects.find(o=>o.id==='memo')?.paper;
-  return <div className={`photo-world ${isNight?'is-night':''} ${mood==='calm'?'is-calm':''} ${reduced?'is-reduced':''}`}>
-    <div className="photo-scene" ref={scene} style={{'--photo-origin':`${camera[0]!*100}% ${camera[1]!*100}%`,'--photo-zoom':camera[2]} as CSSProperties}>
-      <div className="photo-frame" ref={frame} style={{aspectRatio:`${manifest.width}/${manifest.height}`}}
+  return <div ref={root} className={`photo-world ${isNight?'is-night':''} ${mood==='calm'?'is-calm':''} ${reduced?'is-reduced':''} ${aside?'is-aside':''}`}>
+    <div className="photo-scene" ref={scene} style={{'--cam-x':`${camX}px`,'--cam-y':`${camY}px`,'--photo-zoom':camZ} as CSSProperties}>
+      <div className="photo-frame" ref={frame} style={{width:frameW||'100%',height:frameH||undefined,aspectRatio:`${manifest.width}/${manifest.height}`}}
         onPointerMove={event=>{const b=event.currentTarget.getBoundingClientRect();pointer.current={x:(event.clientX-b.left)/b.width-.5,y:(event.clientY-b.top)/b.height-.5};setHover(hit(event.clientX,event.clientY));}}
         onPointerLeave={()=>{pointer.current={x:0,y:0};setHover(null);}}
         onClick={event=>{const id=hit(event.clientX,event.clientY);if(id&&!disabled)onSelect(id);}}>
         <img className="photo-layer photo-plate" src={assetSource(manifest.golden,base)} alt="Illustrative photographic kitchen, generated for the fictional demo founder" draggable={false} onError={()=>setError('The photo could not load. Use the object buttons and engine panel.')}/>
         <img className="photo-layer photo-night" src={assetSource(manifest.night,base)} alt="" draggable={false}/>
+        {repainted&&<img key={repainted.slice(-48)} className="photo-layer photo-repaint" src={repainted} alt="The same room, repainted by the World Builder" draggable={false}/>}
         <LivingPerson person={person} base={base} path={readout.pathLetter as 'A'|'B'|'C'} transcript={transcript} resetKey={resetKey} reduced={reduced} disabled={disabled} onSpeaking={speak} dialogueHost={dialogueHost} autoPlay={autoPlay} demo={demo}/>
         {manifest.foreground&&<img className="photo-layer photo-foreground" src={assetSource(manifest.foreground,base)} alt="" draggable={false}/>}
         <canvas className="photo-layer photo-atmosphere" ref={atmosphere} width={640} height={320} aria-hidden="true"/>
@@ -107,7 +126,7 @@ export default function PhotoWorld({readout,place,selected,onSelect,reduced,tran
     <div className="photo-vignette" aria-hidden="true"/>
     <div className="photo-dialogue-host" ref={setDialogueHost}/>
     <div className="photo-object-nav" role="group" aria-label="Objects in the photograph">{manifest.objects.map(object=><button key={object.id} disabled={disabled} aria-pressed={selected===object.id} onClick={()=>onSelect(object.id)}>{object.label}</button>)}</div>
-    <span className="photo-disclosure">{manifest.mode==='baked'?'Baked demo imagery':'Generated illustrative imagery'} · Muse Image + SAM · figures from the engine</span>
+    <span className="photo-disclosure">{repainted?'Room repainted live by the World Builder, checked by Muse Spark':manifest.mode==='baked'?'Baked demo imagery':'Generated illustrative imagery'} · Muse Image + SAM · figures from the engine</span>
     {error&&<p className="photo-error" role="alert">{error}</p>}
   </div>;
 }

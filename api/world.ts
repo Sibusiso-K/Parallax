@@ -5,6 +5,7 @@ import { generateWorldImage } from '../shared/providers/image.js';
 import { segmentImage, segmentRequest } from '../shared/providers/sam.js';
 import { planWorld } from '../shared/world/plan.js';
 import { imageInput, readBody, worldJson } from '../shared/world/provider.js';
+import { reviewRepaint } from '../shared/world/inspect.js';
 import { DEMO_MANIFEST_URL } from '../shared/world/manifest.js';
 import { directFilm } from '../shared/world/film-plan.js';
 
@@ -14,6 +15,7 @@ const actionSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('direct'), story: z.string().trim().min(1).max(4000) }),
   z.object({ action: z.literal('draw'), prompt: z.string().trim().min(1).max(2000) }),
   z.object({ action: z.literal('edit'), prompt: z.string().trim().min(1).max(2000), references: z.array(imageInput).min(1).max(2) }),
+  z.object({ action: z.literal('inspect'), image: imageInput, change: z.string().trim().min(1).max(600) }),
   segmentRequest.extend({ action: z.literal('segment') }),
 ]);
 export async function POST(request: Request): Promise<Response> {
@@ -30,6 +32,7 @@ export async function POST(request: Request): Promise<Response> {
     if (input.action === 'plan') return worldJson({ ok: true, mode: 'model', plan: await planWorld(cfg, input.story) });
     if (input.action === 'direct') return worldJson({ ok: true, mode: 'model', plan: await directFilm(cfg, input.story) });
     if (input.action === 'segment') return worldJson({ ok: true, mode: 'model', ...await segmentImage(cfg, input) });
+    if (input.action === 'inspect') return worldJson({ ok: true, mode: 'model', review: await reviewRepaint(cfg, input.image, input.change) });
     const result = await generateWorldImage(cfg, input.prompt, input.action === 'edit' ? input.references : []);
     return worldJson({ ok: true, mode: 'model', ...result });
   } catch { return worldJson({ ok: false, error: 'Your world could not be generated just now. The labelled demo is still available.' }, 502); }

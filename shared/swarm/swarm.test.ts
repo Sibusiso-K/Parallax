@@ -19,8 +19,8 @@ describe('swarm engine boundaries', () => {
   it('binary search agrees with exhaustive engine checks, including baseline failure and no contract', () => {
     const p = req.path;
     const expected = Array.from({ length: 37 }, (_, i) => i).filter(i => simulate(delayPath(p, i)).likely.shortfallMonths.length === 0).at(-1);
-    expect(findBreakpoint(p).longestDelayMonths).toBe(expected);
-    expect(findBreakpoint({ ...p, startingCash: -1000 }).baselineAlreadyShort).toBe(true);
+    expect(findBreakpoint(p)).toMatchObject({ longestDelayMonths: expected });
+    expect(findBreakpoint({ ...p, startingCash: -1000 })).toMatchObject({ baselineAlreadyShort: true });
     expect(findBreakpoint({ ...p, assumptions: [] }).applicable).toBe(false);
   });
   it('proposals retain uncertainty bounds, have computed impacts, and never mutate input', () => {

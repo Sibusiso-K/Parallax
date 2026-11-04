@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { simulate, editAssumption, type PathInput } from '../engine/simulate.js';
 import { applySetback, drivers, lowestCash } from '../engine/analysis.js';
 import { buildSnapshot, canonicalJson, fingerprint } from '../scene/room-model.js';
-import type { Proposal, SwarmRequest } from './contracts.js';
+import type { Breakpoint, Proposal, SwarmRequest } from './contracts.js';
 
 export const inputKey = (req: SwarmRequest) => fingerprint(canonicalJson({ path: req.path, stressed: req.stressed, month: req.month }));
 export const snapshotFor = (req: SwarmRequest) => buildSnapshot({ sessionId: 'swarm', profileRevision: 1, simulationVersion: 1, pathId: req.path.letter, pathName: req.path.name, path: req.path, case: 'likely', stress: req.stressed ? { id: 'late-payment' } : null });
@@ -12,7 +12,7 @@ const lowest = (path: PathInput) => lowestCash(simulate(path), 'likely').cash;
 export function delayPath(path: PathInput, months: number): PathInput {
   return { ...path, assumptions: path.assumptions.map(a => a.role === 'contract' && a.kind === 'income' ? { ...a, fromMonth: (a.fromMonth ?? 1) + months, toMonth: (a.toMonth ?? path.months ?? 36) + months } : a) };
 }
-export function findBreakpoint(path: PathInput) {
+export function findBreakpoint(path: PathInput): Breakpoint {
   if (!path.assumptions.some(a => a.role === 'contract' && a.kind === 'income')) return { applicable: false, reason: 'No contract receipts on this path' };
   const cap = Math.min(36, path.months ?? 36);
   const survives = (delay: number) => simulate(delayPath(path, delay)).likely.shortfallMonths.length === 0;
