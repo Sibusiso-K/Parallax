@@ -1,4 +1,5 @@
 import { advisorRequest, answerAsAdvisor } from '../shared/scene/advisor-model.js';
+import { guardPaidRoute } from '../shared/http/guard.js';
 import { ModelError, modelConfigOrNull } from '../shared/providers/meta.js';
 
 // Vercel Function: POST /api/advisor. One question to the advisor in the 3D room, answered by Muse Spark and checked
@@ -11,6 +12,8 @@ const json = (body: unknown, status: number) => Response.json(body, { status, he
 export async function POST(request: Request): Promise<Response> {
   const cfg = modelConfigOrNull(process.env);
   if (!cfg) return json({ ok: true, mode: 'fixture' }, 200);
+  const refused = guardPaidRoute(request, 'advisor');
+  if (refused) return refused;
   if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) return json({ ok: false, error: 'That question is too long to send.' }, 413);
   const text = await request.text();
   if (text.length > MAX_BODY_BYTES) return json({ ok: false, error: 'That question is too long to send.' }, 413);

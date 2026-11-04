@@ -1,5 +1,6 @@
 import { dressScene, sceneRequest, type SceneDressing } from '../shared/scene/dressing.js';
 import { ImageError, generatePortrait } from '../shared/providers/image.js';
+import { guardPaidRoute } from '../shared/http/guard.js';
 import { ModelError, modelConfigOrNull } from '../shared/providers/meta.js';
 
 // Vercel Function: POST /api/scene. Builds the founder's world from their own story, in two Meta calls:
@@ -15,6 +16,9 @@ const json = (body: unknown, status: number) => Response.json(body, { status, he
 export async function POST(request: Request): Promise<Response> {
   const cfg = modelConfigOrNull(process.env);
   if (!cfg) return json({ ok: true, mode: 'fixture' }, 200);
+  const refused = guardPaidRoute(request, 'scene');
+  if (refused) return refused;
+  if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) return json({ ok: false, error: 'That story is too long to build a scene from.' }, 413);
   const text = await request.text();
   if (text.length > MAX_BODY_BYTES) return json({ ok: false, error: 'That story is too long to build a scene from.' }, 413);
   let body: unknown;

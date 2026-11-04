@@ -1,5 +1,6 @@
 import { intakeExtractor } from '../shared/intake/agent.js';
 import { handleIntake } from '../shared/intake/handle.js';
+import { guardPaidRoute } from '../shared/http/guard.js';
 import { modelConfigOrNull } from '../shared/providers/meta.js';
 
 // Vercel Function: POST /api/intake. Model mode only when META_MODEL_ENABLED is "true" and a key is set (see
@@ -15,6 +16,11 @@ function tooLarge(): Response {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const cfg = modelConfigOrNull(process.env);
+  if (cfg) {
+    const refused = guardPaidRoute(request, 'intake');
+    if (refused) return refused;
+  }
   if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) return tooLarge();
   const raw = await request.text();
   if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) return tooLarge();
@@ -24,7 +30,6 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return json({ ok: false, error: 'Send JSON: { "text": "..." }' }, 400);
   }
-  const cfg = modelConfigOrNull(process.env);
   const result = await handleIntake(body, cfg ? intakeExtractor(cfg) : undefined);
   return json(result, result.ok ? 200 : 400);
 }

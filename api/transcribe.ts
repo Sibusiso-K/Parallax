@@ -1,4 +1,5 @@
 import { DEMO_TEXT } from '../shared/intake/fixture.js';
+import { guardPaidRoute } from '../shared/http/guard.js';
 import { ModelError } from '../shared/providers/meta.js';
 import { transcribeWav, voiceConfigOrNull } from '../shared/providers/asr.js';
 import { MAX_UPLOAD_BYTES, checkWav } from '../shared/voice/wav.js';
@@ -12,6 +13,11 @@ const json = (body: unknown, status: number) => Response.json(body, { status, he
 const tooLarge = () => json({ ok: false, error: 'That recording is too long. Keep it under 60 seconds.' }, 413);
 
 export async function POST(request: Request): Promise<Response> {
+  const cfg = voiceConfigOrNull(process.env);
+  if (cfg) {
+    const refused = guardPaidRoute(request, 'transcribe');
+    if (refused) return refused;
+  }
   // The byte cap covers the largest WAV checkWav accepts (60 s at 24 kHz), so a valid 24 kHz file reaches the check
   // instead of being refused for its size. Anything longer is caught below and still answers 413.
   if (Number(request.headers.get('content-length') ?? 0) > MAX_UPLOAD_BYTES) return tooLarge();
@@ -20,7 +26,6 @@ export async function POST(request: Request): Promise<Response> {
   const checked = checkWav(wav);
   if (!checked.ok) return json({ ok: false, error: checked.error }, checked.tooLong ? 413 : 400);
 
-  const cfg = voiceConfigOrNull(process.env);
   if (!cfg) {
     return json({ ok: true, mode: 'fixture', transcript: DEMO_TEXT, notice: 'Demo mode: speech to text is not connected yet, so the demo story is filled in.' }, 200);
   }
