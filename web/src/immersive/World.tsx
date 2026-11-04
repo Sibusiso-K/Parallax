@@ -550,7 +550,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
       <section className="stage" aria-label={photo ? 'Photographic possible future' : 'The courtyard'}>
         <div className="stage__view">
-          {photo && <PhotoWorld manifest={founderWorld} mood={shownMood} repainted={shownRepaint} aside={boardOpen} readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={spokenWords} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}|${boardSpoken}`} disabled={inReplay || working} autoPlay={spokenAsk + boardSpoken} demo={isDemo} />}
+          {photo && <PhotoWorld manifest={founderWorld} mood={shownMood} repainted={shownRepaint} aside={boardOpen} readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={spokenWords} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}|${boardSpoken}`} disabled={inReplay || working} autoPlay={spokenAsk + boardSpoken} demo={isDemo || binding?.context?.story?.trim() === DEMO_TEXT.trim()} />}
           {!photo && <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />}
           {!photo && webgl && manifest && (
             <SceneBoundary onFailure={(error) => { console.error('Courtyard renderer failed:', error); setWalk(false); setWebgl(false); }}>
