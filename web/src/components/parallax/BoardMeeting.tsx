@@ -31,7 +31,11 @@ export function BoardMeeting() {
   const [busy, setBusy] = useState(false);
   const [round, setRound] = useState<Round | null>(null);
   const live = useRef(true);
-  useEffect(() => () => void (live.current = false), []);
+  // Set on every mount, not only at first render: React's StrictMode mounts twice in development.
+  useEffect(() => {
+    live.current = true;
+    return () => void (live.current = false);
+  }, []);
 
   const answerOf = (l: Letter, r: Round) => latest.current[l].slice(r.start[l]).find((m) => m.role === "self");
 
