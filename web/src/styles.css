@@ -720,3 +720,24 @@ button.chip:hover { background: #e6ecf8; }
 .lang-pick .caps { margin-right: 4px; }
 .lang-pick .chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
 .lang-note { flex-basis: 100%; margin: 4px 0 0; }
+
+/* ---------- The planning agent on the futures screen ---------- */
+.planner { margin: 22px 0 8px; padding: 18px 22px; border-radius: 20px; background: var(--panel); }
+.planner h2 { margin: 2px 0 4px; }
+.planner-form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 18px; margin-top: 10px; }
+.planner-form label:first-child { display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+.planner-form .field-input { width: 160px; }
+.planner-steps { margin: 14px 0 0; padding-left: 20px; display: grid; gap: 8px; font-size: 13.5px; }
+.step-tool { display: block; font-weight: 700; margin-bottom: 2px; }
+.step-res { display: inline-flex; align-items: center; gap: 6px; margin: 2px 12px 2px 0; }
+.step-res.ok { color: var(--good); }
+.step-res.no { color: var(--muted); }
+.planner-found { margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: #fff; box-shadow: inset 4px 0 0 var(--good); }
+.planner-found h3 { margin: 0 0 8px; font-size: 15px; }
+.found-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line-2); font-size: 14px; }
+.found-row:first-of-type { border-top: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .planner-steps > li, .found-row { animation: rise .4s cubic-bezier(.2, .7, .2, 1) backwards; }
+  .planner-steps > li:nth-child(2) { animation-delay: .08s; } .planner-steps > li:nth-child(3) { animation-delay: .16s; }
+  .planner-steps > li:nth-child(4) { animation-delay: .24s; } .planner-steps > li:nth-child(n + 5) { animation-delay: .32s; }
+}

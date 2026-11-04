@@ -9,6 +9,7 @@ import { NO_LENS, applyLens, safest, summarise, type Lens } from "../../../../sh
 import { SETBACK_LABELS } from "../../../../shared/engine/analysis";
 import { StepNav } from "./StepNav";
 import { MicButton } from "./MicButton";
+import { Planner } from "./Planner";
 import { readWhatIf, type WhatIfRead } from "@/lib/whatif";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
@@ -209,6 +210,13 @@ export function PathsScreen() {
           );
         })}
       </div>
+      <Planner
+        lens={lens}
+        onApply={(l) => {
+          setLens(l);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
       <p className="hint">
         {best
           ? "Safest: never runs out, or lasts longest, with the highest lowest cash. A rule, not advice."
