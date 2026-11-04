@@ -58,6 +58,28 @@
       "downloadedAt": "2026-11-02T16:59:50.637Z"
     },
     {
+      "path": "assets/source/makehuman/shirts02_ccby.zip",
+      "url": "https://files.makehumancommunity.org/asset_packs/shirts02/shirts02_ccby.zip",
+      "publisher": "makehumancommunity.org",
+      "assetId": "shirts02",
+      "licence": "CC-BY (MakeHuman asset repository; per-item authors in assets/CREDITS.md)",
+      "bytes": 175395076,
+      "sha256": "d711ca9f73212de855257ac08422e1e0ccb802e5231315c2a360d0fcfea5033e",
+      "publisherCheck": "none published",
+      "downloadedAt": "2026-11-02T21:53:39.223Z"
+    },
+    {
+      "path": "assets/source/makehuman/shirts03_ccby.zip",
+      "url": "https://files.makehumancommunity.org/asset_packs/shirts03/shirts03_ccby.zip",
+      "publisher": "makehumancommunity.org",
+      "assetId": "shirts03",
+      "licence": "CC-BY (MakeHuman asset repository; per-item authors in assets/CREDITS.md)",
+      "bytes": 71659687,
+      "sha256": "b3ff3596723dbc87cb07389895da760b667cf413f2c67869ccb0cdfb82a79a8a",
+      "publisherCheck": "none published",
+      "downloadedAt": "2026-11-02T21:54:22.047Z"
+    },
+    {
       "path": "assets/source/makehuman/visemes02.zip",
       "url": "https://files.makehumancommunity.org/functional/visemes02.zip",
       "publisher": "makehumancommunity.org",
