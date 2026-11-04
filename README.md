@@ -154,5 +154,5 @@ Open `/?world` for the 3D demo room on its own. Add `?people` to see the draft c
 - The reel and read aloud were checked only in Chromium-based browsers. Safari, Android voices and real phones are not
   yet checked.
 - Limits count by network address, so visitors who share one connection share the limit.
-- The draft characters use one CC BY garment, the advisor's overshirt (CC BY 4.0). Its credit is in `assets/CREDITS.md`,
-  not on screen. Add it on screen before the characters are shown publicly.
+- The draft characters use one CC BY garment, the advisor's overshirt (CC BY 4.0). Its credit is in `assets/CREDITS.md`
+  and in the room's caption, which shows whenever the characters do (`?people`).
