@@ -24,6 +24,8 @@ import { OBJECT_IDS, WORLD_BASE, loadManifest, type CourtyardManifest, type Obje
 import { buildReadout } from './courtyard/readout';
 import type { WalkHandle } from './courtyard/WalkCamera';
 import { applyDressing, type SceneDressing } from '../../../shared/scene/dressing';
+import PhotoWorld from './photo/PhotoWorld';
+import { askFutureSelf } from './photo/advisor';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
 
@@ -181,6 +183,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [sceneReady, setSceneReady] = useState(false);
   const [place, setPlace] = useState<PlaceId>('spawn');
   const [walk, setWalk] = useState(false);
+  const [photo, setPhoto] = useState(true);
   const [walkError, setWalkError] = useState('');
   const walkHandle = useRef<WalkHandle | null>(null);
   // The draft characters stay out of the room unless asked for: they are not accepted as realistic yet.
@@ -298,12 +301,13 @@ function World({ binding }: { binding?: ExploreBinding }) {
       const scope = { pathId: target, snapshotKey: snap.key, month: m };
       let a: AdvisorAnswer;
       try {
-        const live = latest.current.abilities.model ? await askLive(session, scope, stress, q, latest.current.extras(target), abort.signal) : ({ kind: 'fixture' } as const);
+        const live = latest.current.abilities.model ? await (photo ? askFutureSelf : askLive)(session, scope, stress, q, latest.current.extras(target), abort.signal) : ({ kind: 'fixture' } as const);
         if (live.kind === 'answer') a = live.answer;
         else if (live.kind === 'failed') a = { status: 'declined', intent: 'live', question: q, pathId: target, snapshotKey: snap.key, month: m, segments: [{ kind: 'text', text: live.message }], claims: [], trace: [] };
         else {
           await Promise.resolve();
           a = answerQuestion(session, scope, q);
+          if (photo && a.status === 'answered') a = { ...a, segments: [{ kind: 'text', text: 'In this possible future, this is what I would be watching. ' }, ...a.segments] };
         }
       } catch {
         return; // A newer question replaced this one.
@@ -315,7 +319,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
         say(a.status === 'answered' ? `Advisor answered on path ${target}.` : a.status === 'declined' ? 'The advisor could not answer that.' : 'The answer was withheld because it did not match the simulation.');
       }
     },
-    [gate, say, session],
+    [gate, say, session, photo],
   );
 
   const ask = useCallback(
@@ -496,10 +500,11 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
   return (
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
-      <section className="stage" aria-label="The courtyard">
+      <section className="stage" aria-label={photo ? 'Photographic possible future' : 'The courtyard'}>
         <div className="stage__view">
-          <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />
-          {webgl && manifest && (
+          {photo && <PhotoWorld readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}`} disabled={inReplay || working} autoPlay={spokenAsk} demo={isDemo} />}
+          {!photo && <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />}
+          {!photo && webgl && manifest && (
             <SceneBoundary onFailure={(error) => { console.error('Courtyard renderer failed:', error); setWalk(false); setWebgl(false); }}>
             <Suspense fallback={null}>
               <Courtyard
@@ -524,11 +529,11 @@ function World({ binding }: { binding?: ExploreBinding }) {
             </Suspense>
             </SceneBoundary>
           )}
-          {walkError && <p className="stage__status stage__status--warn" role="alert">{walkError} Guided mode is available.</p>}
-          {webgl && !sceneReady && !worldError && (
+          {!photo && walkError && <p className="stage__status stage__status--warn" role="alert">{walkError} Guided mode is available.</p>}
+          {!photo && webgl && !sceneReady && !worldError && (
             <p className="stage__status" role="status">Loading the 3D courtyard. Until it is ready you see a still render of the same model.</p>
           )}
-          {(!webgl || worldError) && (
+          {!photo && (!webgl || worldError) && (
             <p className="stage__status stage__status--warn" role="note">
               {worldError || 'The 3D courtyard could not be loaded or was interrupted, so this is a still render of the courtyard model.'} The figures, objects and advisor work without it.
               {!worldError && <><br /><button className="btn btn--ghost btn--sm" onClick={() => { setSceneReady(false); setWebgl(true); }}>Try 3D again</button></>}
@@ -538,8 +543,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
         <div className="stage__top">
           <div className="placecard glass">
-            <b>{dressing?.title ?? (isDemo ? 'Ayanda’s courtyard' : 'The courtyard')}</b>
-            <span>{binding ? binding.founderLabel : 'Fictional founder'} · 3D model, illustrative setting</span>
+            <b>{dressing?.title ?? (photo ? 'A possible future' : isDemo ? 'Ayanda’s courtyard' : 'The courtyard')}</b>
+            <span>{binding ? binding.founderLabel : 'Fictional founder'} · {photo ? 'Illustrative photo world' : '3D model, illustrative setting'}</span>
             <div role="tablist" aria-label="Path" className="paths">
               {PATH_ORDER.map((p) => (
                 <button key={p} role="tab" aria-selected={snapshot.ref.pathId === p} className={`pathchip pathchip--${p}`} onClick={() => switchPath(p)} disabled={inReplay}>
@@ -549,8 +554,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
             </div>
           </div>
           <div className="modes glass" role="group" aria-label="View mode">
-            <button aria-pressed={!walk} onClick={() => setWalk(false)}>Guided</button>
-            <button aria-pressed={walk} disabled={!webgl || !sceneReady || inReplay} onClick={() => { setWalkError(''); setWalk(true); }}>Walk</button>
+            <button aria-pressed={photo} onClick={() => { setPhoto(true); setWalk(false); }}>Photo</button>
+            <button aria-pressed={!photo} disabled={!webgl || inReplay} onClick={() => { setPhoto(false); setWalkError(''); setWalk(true); }}>Walk</button>
             <button disabled title="Not offered until it is tested on a real headset">VR</button>
           </div>
         </div>
@@ -565,13 +570,14 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 disabled={inReplay}
                 onClick={() => {
                   setPlace(id);
+                  if (photo) setFocus(null);
                   say(`${walk ? 'Walking to' : 'Moved to'} ${manifest?.places[id].label ?? id}.`);
                 }}
               >
                 {manifest?.places[id].label ?? id}
               </button>
             ))}
-            <span className="hint">{!webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
+            <span className="hint">{photo ? 'Explore the photograph · choose an object' : !webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
           </div>
           <div className="months">
             <span className="rowlabel">
@@ -845,7 +851,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
           </form>
           {voice.state === 'recording' && <p className="muted small" role="status">Listening. Press Stop when you have asked your question. Nothing is kept.</p>}
           {voice.message && !voice.message.startsWith('Check the words') && <p className="muted small" role="status">{voice.message}</p>}
-          <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />
+          {!photo && <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />}
         </section>
 
         <footer className="panel__foot">
@@ -858,7 +864,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
           </div>
           <p className="muted small">
-            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky{people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
+            {photo ? 'The photo world uses generated, illustrative imagery and fictional people.' : 'The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky'}{!photo && people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
           </p>
         </footer>
       </aside>

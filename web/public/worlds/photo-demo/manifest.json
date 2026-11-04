@@ -1,0 +1,317 @@
+{
+  "version": 1,
+  "id": "photo-demo",
+  "title": "A possible future",
+  "mode": "baked",
+  "width": 2240,
+  "height": 1120,
+  "plate": "/worlds/photo-demo/golden.webp",
+  "night": "/worlds/photo-demo/night.webp",
+  "foreground": "/worlds/photo-demo/foreground-main.webp",
+  "objects": [
+    {
+      "id": "contract",
+      "label": "The contract",
+      "rect": {
+        "x": 0.19598214285714285,
+        "y": 0.7839285714285714,
+        "width": 0.165625,
+        "height": 0.125
+      },
+      "mask": "/worlds/photo-demo/plate-mask-contract.webp",
+      "paper": {
+        "x": 0.20625,
+        "y": 0.7830357142857143,
+        "width": 0.14732142857142858,
+        "height": 0.1125
+      }
+    },
+    {
+      "id": "pan",
+      "label": "Cost of each meal",
+      "rect": {
+        "x": 0.37901785714285713,
+        "y": 0.6589285714285714,
+        "width": 0.1299107142857143,
+        "height": 0.2080357142857143
+      },
+      "mask": "/worlds/photo-demo/plate-mask-pan.webp"
+    },
+    {
+      "id": "fridge",
+      "label": "Equipment",
+      "rect": {
+        "x": 0.04598214285714286,
+        "y": 0.07589285714285714,
+        "width": 0.16383928571428572,
+        "height": 0.6589285714285714
+      },
+      "mask": "/worlds/photo-demo/plate-mask-fridge.webp"
+    },
+    {
+      "id": "intake_desk",
+      "label": "Your assumptions",
+      "rect": {
+        "x": 0.19285714285714287,
+        "y": 0.5098214285714285,
+        "width": 0.24419642857142856,
+        "height": 0.22678571428571428
+      },
+      "mask": "/worlds/photo-demo/plate-mask-intake_desk.webp"
+    },
+    {
+      "id": "memo",
+      "label": "Your decision",
+      "rect": {
+        "x": 0.8633928571428572,
+        "y": 0.024107142857142858,
+        "width": 0.13660714285714284,
+        "height": 0.5803571428571429
+      },
+      "mask": "/worlds/photo-demo/plate-mask-memo.webp",
+      "paper": {
+        "x": 0.9357142857142857,
+        "y": 0.08125,
+        "width": 0.061160714285714284,
+        "height": 0.23482142857142857
+      }
+    }
+  ],
+  "people": {
+    "A": {
+      "src": "/worlds/photo-demo/person-A.webp",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      },
+      "frames": {
+        "rest": {
+          "src": "/worlds/photo-demo/person-A.webp",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          }
+        },
+        "ah": {
+          "src": "/worlds/photo-demo/patch-A-ah.webp",
+          "rect": {
+            "x": 0.4767857142857143,
+            "y": 0.2875,
+            "width": 0.039285714285714285,
+            "height": 0.045535714285714284
+          }
+        },
+        "ee": {
+          "src": "/worlds/photo-demo/patch-A-ee.webp",
+          "rect": {
+            "x": 0.4767857142857143,
+            "y": 0.2875,
+            "width": 0.039285714285714285,
+            "height": 0.045535714285714284
+          }
+        },
+        "oo": {
+          "src": "/worlds/photo-demo/patch-A-oo.webp",
+          "rect": {
+            "x": 0.4767857142857143,
+            "y": 0.2875,
+            "width": 0.039285714285714285,
+            "height": 0.045535714285714284
+          }
+        },
+        "fv": {
+          "src": "/worlds/photo-demo/patch-A-fv.webp",
+          "rect": {
+            "x": 0.4767857142857143,
+            "y": 0.2875,
+            "width": 0.039285714285714285,
+            "height": 0.045535714285714284
+          }
+        },
+        "mm": {
+          "src": "/worlds/photo-demo/patch-A-mm.webp",
+          "rect": {
+            "x": 0.4767857142857143,
+            "y": 0.2875,
+            "width": 0.039285714285714285,
+            "height": 0.045535714285714284
+          }
+        },
+        "blink": {
+          "src": "/worlds/photo-demo/patch-A-blink.webp",
+          "rect": {
+            "x": 0.46875,
+            "y": 0.2330357142857143,
+            "width": 0.054910714285714285,
+            "height": 0.033035714285714286
+          }
+        }
+      }
+    },
+    "B": {
+      "src": "/worlds/photo-demo/person-B.webp",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      },
+      "frames": {
+        "rest": {
+          "src": "/worlds/photo-demo/person-B.webp",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          }
+        },
+        "ah": {
+          "src": "/worlds/photo-demo/patch-B-ah.webp",
+          "rect": {
+            "x": 0.478125,
+            "y": 0.2892857142857143,
+            "width": 0.04107142857142857,
+            "height": 0.044642857142857144
+          }
+        },
+        "ee": {
+          "src": "/worlds/photo-demo/patch-B-ee.webp",
+          "rect": {
+            "x": 0.478125,
+            "y": 0.2892857142857143,
+            "width": 0.04107142857142857,
+            "height": 0.044642857142857144
+          }
+        },
+        "oo": {
+          "src": "/worlds/photo-demo/patch-B-oo.webp",
+          "rect": {
+            "x": 0.478125,
+            "y": 0.2892857142857143,
+            "width": 0.04107142857142857,
+            "height": 0.044642857142857144
+          }
+        },
+        "fv": {
+          "src": "/worlds/photo-demo/patch-B-fv.webp",
+          "rect": {
+            "x": 0.478125,
+            "y": 0.2892857142857143,
+            "width": 0.04107142857142857,
+            "height": 0.044642857142857144
+          }
+        },
+        "mm": {
+          "src": "/worlds/photo-demo/patch-B-mm.webp",
+          "rect": {
+            "x": 0.478125,
+            "y": 0.2892857142857143,
+            "width": 0.04107142857142857,
+            "height": 0.044642857142857144
+          }
+        },
+        "blink": {
+          "src": "/worlds/photo-demo/patch-B-blink.webp",
+          "rect": {
+            "x": 0.46964285714285714,
+            "y": 0.23392857142857143,
+            "width": 0.05669642857142857,
+            "height": 0.03125
+          }
+        }
+      }
+    },
+    "C": {
+      "src": "/worlds/photo-demo/person-C.webp",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      },
+      "frames": {
+        "rest": {
+          "src": "/worlds/photo-demo/person-C.webp",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          }
+        },
+        "ah": {
+          "src": "/worlds/photo-demo/patch-C-ah.webp",
+          "rect": {
+            "x": 0.4763392857142857,
+            "y": 0.2875,
+            "width": 0.04107142857142857,
+            "height": 0.045535714285714284
+          }
+        },
+        "ee": {
+          "src": "/worlds/photo-demo/patch-C-ee.webp",
+          "rect": {
+            "x": 0.4763392857142857,
+            "y": 0.2875,
+            "width": 0.04107142857142857,
+            "height": 0.045535714285714284
+          }
+        },
+        "oo": {
+          "src": "/worlds/photo-demo/patch-C-oo.webp",
+          "rect": {
+            "x": 0.4763392857142857,
+            "y": 0.2875,
+            "width": 0.04107142857142857,
+            "height": 0.045535714285714284
+          }
+        },
+        "fv": {
+          "src": "/worlds/photo-demo/patch-C-fv.webp",
+          "rect": {
+            "x": 0.4763392857142857,
+            "y": 0.2875,
+            "width": 0.04107142857142857,
+            "height": 0.045535714285714284
+          }
+        },
+        "mm": {
+          "src": "/worlds/photo-demo/patch-C-mm.webp",
+          "rect": {
+            "x": 0.4763392857142857,
+            "y": 0.2875,
+            "width": 0.04107142857142857,
+            "height": 0.045535714285714284
+          }
+        },
+        "blink": {
+          "src": "/worlds/photo-demo/patch-C-blink.webp",
+          "rect": {
+            "x": 0.4669642857142857,
+            "y": 0.2330357142857143,
+            "width": 0.05669642857142857,
+            "height": 0.033035714285714286
+          }
+        }
+      }
+    }
+  },
+  "places": [
+    {
+      "id": "spawn",
+      "label": "The whole picture",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    }
+  ],
+  "disclosure": "Illustrative imagery. Fictional people. Synthetic images."
+}

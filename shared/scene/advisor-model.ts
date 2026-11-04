@@ -28,6 +28,7 @@ const assumption = z.object({
 const OBJECT_IDS = ['contract', 'pan', 'fridge', 'intake_desk', 'memo'] as const;
 
 export const advisorRequest = z.object({
+  persona: z.enum(['advisor', 'future-self']).optional(),
   question: z.string().trim().min(1, 'Ask the advisor something.').max(600, 'Keep the question under 600 characters.'),
   month: z.number().int().min(1).max(36),
   stressed: z.boolean(),
@@ -144,6 +145,7 @@ export function buildAdvisorPrompt(req: AdvisorRequest, snap: RoomSnapshot, mont
   const stress = snap.ref.setback ? `The late-payment switch is ON. ${snap.terms.stressRule}` : 'The late-payment switch is OFF, so every figure below is as planned.';
   const system = [
     `You are the advisor standing beside the founder of ${business}${c.location ? ` in ${c.location}` : ''}, inside a 3D room that lays out one decision: "${c.decision?.trim() || 'a big business decision'}".`,
+    req.persona === 'future-self' ? 'Speak instead as a fictional possible future self of this founder, in first person: I, my business, my cash. Describe only the selected path. Say "In this possible future, I took this path" rather than claiming it really happened. Do not invent memories, feelings, achievements or events. All figure, uncertainty and advice rules below still apply.' : '',
     `They are looking at path ${path.letter}, "${path.name}". ${path.summary}`,
     objectLine,
     `They have month ${req.month} selected. ${stress}`,
