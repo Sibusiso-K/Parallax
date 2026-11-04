@@ -66,9 +66,17 @@ export function checkedSources(raw: unknown): Source[] {
       if (typeof content.text !== 'string') continue;
       let value: unknown;
       try { value = JSON.parse(jsonIn(content.text)); } catch { continue; }
-      const parsed = z.object({ sources: z.array(z.object({ url: z.string().url(), title: z.string().max(240).optional(), fact: z.string().max(300).optional(), evidence: z.string().min(1).max(600).optional(), quote: z.string().min(1).max(600).optional() })).max(6) }).safeParse(value);
-      if (!parsed.success) continue;
-      for (const s of parsed.data.sources) {
+      const listed = z.object({ sources: z.array(z.unknown()).max(6) }).safeParse(value);
+      if (!listed.success) continue;
+      // One odd entry should not cost the good ones, and a model may drop the scheme from a URL.
+      const entries = listed.data.sources.flatMap(item => {
+        const one = z.object({ url: z.string().min(4).max(600), title: z.string().max(400).optional(), fact: z.string().max(400).optional(), evidence: z.string().min(1).max(600).optional(), quote: z.string().min(1).max(600).optional() }).safeParse(item);
+        if (!one.success) return [];
+        const url = /^https?:\/\//.test(one.data.url) ? one.data.url : `https://${one.data.url}`;
+        try { new URL(url); } catch { return []; }
+        return [{ ...one.data, url }];
+      });
+      for (const s of entries) {
         const quote = s.evidence ?? s.quote;
         // A model may shorten a result's URL to its site. One result on that site, or the title it copied, still finds the real page.
         const onSite = [...results.keys()].filter(known => { try { return new URL(known).hostname.replace(/^www\./, '') === new URL(s.url).hostname.replace(/^www\./, ''); } catch { return false; } });
@@ -224,8 +232,10 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
           }
           if (agent === 'world') {
             const below = snap.active.lowest.cash < 0;
-            const mood = payload.mood ?? (below ? 'night' : 'golden');
-            const scene = payload.scene ?? (below ? 'bare_shelves' : 'stocked');
+            const mood = below ? 'night' : payload.mood === 'calm' ? 'calm' : 'golden';
+            // The model picks the picture, but it has to agree with the engine: no bare shelves on a plan that holds.
+            const scenes: (keyof typeof SCENE_EDITS)[] = below ? ['bare_shelves', 'stacked_desk'] : ['stocked', 'helper'];
+            const scene = payload.scene && scenes.includes(payload.scene) ? payload.scene : scenes[0]!;
             result.worldOps.push({ type: 'mood', value: mood, prompt: MOODS[mood] }, { type: 'scene', value: scene, prompt: SCENE_EDITS[scene] });
           }
           if (agent === 'director') result.shots = payload.shots;
