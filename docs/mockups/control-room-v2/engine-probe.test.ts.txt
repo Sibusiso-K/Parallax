@@ -1,0 +1,61 @@
+// Engine probe for Mockup 5 v2. Copy this file into shared/ on feat/founder-pivot as _mockup_probe.test.ts, then run:
+//   PROBE_OUT=<folder>/engine.json npx vitest run shared/_mockup_probe.test.ts
+// and delete the copy. It writes the demo founder's figures that build2.mjs reads. Never commit the copy in shared/.
+import { writeFileSync } from 'node:fs';
+import { it } from 'vitest';
+import { applySetback, drivers, lowestCash, milestones, runwayMonths, SETBACK_IDS, SETBACK_LABELS, setbackMonth } from './engine/analysis.js';
+import { simulate } from './engine/simulate.js';
+import { DEMO_EXTRACTION } from './intake/fixture.js';
+import { grossMargin, templatePaths } from './paths/templates.js';
+import { buildProfile } from './profile/profile.js';
+
+it('mockup data', () => {
+  const ex = { ...DEMO_EXTRACTION, payroll: { low: 21000, high: 21000, quote: '21k' } };
+  const profile = buildProfile(ex);
+  const paths = templatePaths(profile);
+  const out = {
+    extraction: ex,
+    profile,
+    margin: grossMargin(profile),
+    paths: paths.map((p) => {
+      const sim = simulate(p);
+      const late = simulate(applySetback(p, 'late-payment'));
+      const ms = milestones(p, sim);
+      const pick = (c: 'bad' | 'likely' | 'good') => Object.fromEntries(ms[c].map((m) => [m.id, m.month]));
+      return {
+        letter: p.letter,
+        name: p.name,
+        summary: p.summary,
+        startingCash: p.startingCash,
+        setbackIds: p.setbacks,
+        assumptions: p.assumptions,
+        rows: {
+          bad: sim.bad.rows.map((r) => ({ cash: r.cash, income: r.income, costs: r.costs })),
+          likely: sim.likely.rows.map((r) => ({ cash: r.cash, income: r.income, costs: r.costs })),
+          good: sim.good.rows.map((r) => ({ cash: r.cash, income: r.income, costs: r.costs })),
+        },
+        lowest: { bad: lowestCash(sim, 'bad'), likely: lowestCash(sim, 'likely'), good: lowestCash(sim, 'good') },
+        runsOut: { bad: sim.bad.shortfallMonths[0] ?? null, likely: sim.likely.shortfallMonths[0] ?? null, good: sim.good.shortfallMonths[0] ?? null },
+        milestones: { bad: pick('bad'), likely: pick('likely'), good: pick('good') },
+        runway: runwayMonths(p),
+        drivers: drivers(p),
+        setbacks: SETBACK_IDS.map((id) => {
+          const after = simulate(applySetback(p, id));
+          return {
+            id,
+            label: SETBACK_LABELS[id],
+            month: setbackMonth(p, id),
+            lowest: lowestCash(after, 'likely'),
+            runsOut: after.likely.shortfallMonths[0] ?? null,
+            end: after.likely.rows.at(-1)!.cash - sim.likely.rows.at(-1)!.cash,
+          };
+        }),
+        lateLikely: late.likely.rows.map((r) => r.cash),
+        lateBad: late.bad.rows.map((r) => r.cash),
+        lateLowest: lowestCash(late, 'likely'),
+        lateRunsOut: late.likely.shortfallMonths[0] ?? null,
+      };
+    }),
+  };
+  writeFileSync(process.env.PROBE_OUT!, JSON.stringify(out, null, 1));
+});

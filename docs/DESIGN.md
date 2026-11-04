@@ -1,6 +1,26 @@
 # Design: look, motion and feel
 
-Written 29 Oct 2026 (day 4) for Lethabo's review. It sets the visual and motion direction for the screens in [SCOPE.md](SCOPE.md) §3 and [DEMO.md](DEMO.md) §7. It adds no features: every item styles a feature already in [FEATURES.md](FEATURES.md). Anything beyond readable and consistent is PLAN.md §5 cut 8, so none of it goes ahead of the working full flow.
+Written 29 Oct 2026 (day 4) for Lethabo's review. It sets the visual and motion direction for the screens in [SCOPE.md](SCOPE.md) §3 and [DEMO.md](DEMO.md) §7. It adds no features: every item styles a feature already in [FEATURES.md](FEATURES.md). Anything beyond readable and consistent is PLAN.md §5 cut 8, so none of it goes ahead of the working full flow. **Updated Sun 1 Nov 2026 (day 7)** with the chosen layout (§0) and the founder direction ([FOUNDERS.md](FOUNDERS.md)).
+
+## 0. Decision, Sun 1 Nov 2026: Mockup 5, Control Room
+
+Sibusiso and Lethabo chose **Mockup 5, "Control Room"** from the five mockups (1 Depth Stack, 2 Editorial Ledger, 3 Timeline River, 4 Conversation Studio, 5 Control Room). It is a two-page, 1920 × 1080 layout: a dark-slate sidebar (Profile, Paths, Assumptions, Compare, Trace), a top bar with the three path tabs and the decision, and light-slate panels. Page 1 is one path: headline figures, the 36-month cash chart with the bad-to-good band, a drivers chart, the assumptions table and a setback stress test. Page 2 is the three paths on one scale, a chat panel and the comfort check. Path colours stay A blue `#3f6fd8`, B peach `#d9825f`, C violet `#7a5cc7`; never red or green.
+
+**What it still needs** (agreed: avatars and more sections)
+
+| Add | Why | Feature |
+|---|---|---|
+| **The founder avatar per path**, in the path tab, the panel header and the chat | The face of each future; Best Creative Build | F9 |
+| **The chat as the main panel on the path page**, with "Ask this on another path" and the trace drawer | Keeps the conversation, not the dashboard, as the headline (anti-project, RESEARCH.md §5) | F10, F12, F13 |
+| **An interactive stress test**: choose a setback (late payment first) and watch the band and "cash runs out in month N" change | The demo's key moment (DEMO.md §2, 0:55) | F7 |
+| **Intake and "Here is what I heard"** in the same visual language | The first 25 seconds of the video | F2, F3 |
+| **"Your business, today"** profile page | What the founder told us and what we assumed | F5 |
+| **Decision memo** page, printable | What the founder leaves with | F16 |
+| **Start and consent** and **generation progress** | The first screen and the wait | F1 |
+| **A phone layout** | Phone first is a principle (§3); the sidebar becomes a bottom bar, panels stack, the chat stays first | — |
+| **Founder figures** in every tile: cash at month 36, lowest cash and its month, when cash runs out, the setback to watch, runway | The mockups used the earlier persona's figures; every figure must come from the engine | F7, F14 |
+
+**The anti-dashboard rule.** A data-dense layout is exactly what "dashboards as the main feature" warns against. On every path page the avatar and the conversation sit first in reading order and take the largest panel; the figures sit beside them as evidence. The video never opens on the Control Room's charts: it opens on the founder's question and lands on the late-payment moment.
 
 ## 1. Direction
 
@@ -52,7 +72,7 @@ Studied 29 Oct 2026 in two passes: a teardown of its HTML, CSS and script bundle
 | Moment | Feature | Design | Effort |
 |---|---|---|---|
 | Start and consent | F1 | The Parallax mark is three offset layers. One Begin button that grows slightly on hover and focus. The notice in plain words, with a real choice. No loader show, no sound, no gate | S |
-| Generation progress (DEMO §7 #2) | F6, F7, F9 | The "You, today" card stays on screen. Behind it, one layer per path draws itself (SVG stroke) and settles into its colour when that path's real progress event arrives, with the real step named ("Computing ranges in code"). No fake percentages or timers | ~2.5 h |
+| Generation progress (DEMO §7 #2) | F6, F7, F9 | The "Your business, today" card stays on screen. Behind it, one layer per path draws itself (SVG stroke) and settles into its colour when that path's real progress event arrives, with the real step named ("Computing 36 months of cash in code"). No fake percentages or timers | ~2.5 h |
 | Path cards (#3) | F6, F9 | Cards stacked in depth: back cards smaller, dimmer and inert; arrow keys or swipe bring the next forward; on phones, horizontal scroll-snap. The avatar starts as a silhouette in the path colour and sharpens from a blur over 500 ms once the image has decoded; its box is sized up front so nothing jumps. The initials badge fallback is unchanged | 4–5 h |
 | Future-self chat (#5) | F10, F12 | The avatar moves into the chat header (shared-element transition) and the background takes a faint path tint. Otherwise an ordinary chat: 16 px text or larger, high contrast. Citation chips fade in when their sentence completes; the trace drawer slides in from the side | ~½ day |
 | Switching and "Ask this on another path" (#6) | F13 | The depth swap (§6). Path tabs work as a mini-map: three small stacked layers with the current one forward. A chip shows "Asked on A, now on B" | ~½ day |

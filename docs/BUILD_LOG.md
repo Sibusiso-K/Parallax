@@ -118,3 +118,83 @@ Nothing else existed: no app scaffold, engine, prompts, designs in the repo or c
 - Lethabo reviews PR #1, starting with ROLES.md, PLAN.md §1 and §3, and AGENTS_AND_APIS.md §2 and §5.
 - Meta Engineering Workshop P1 at 18:00 SAST (recorded to #resources).
 - Ask the Most Viral and track questions in #questions (Sibusiso).
+
+---
+
+*Days 3 to 6 (28 to 31 Oct) are still to be written from the PRs and commits of those days (#2 to #7).*
+
+## Day 7 · Sun 1 Nov 2026
+
+**Product code written today:** yes.
+
+**Built** (with branches; PR links once opened)
+- **Founder direction in the product** (branch `feat/founder-pivot`, on top of `feat/backend-engines`): founder intake fields (sales, direct costs, running costs, wages, the founder's own pay, debt repayments, cash); the kind of decision read in code from the founder's own words; the engine tracks the business's cash; a founder setback library (late payment, lost client, slow season, equipment breakdown, cost rise) judged by how far each pushes the lowest cash point; three decision templates with three paths each (big contract, hire, raise prices); scope checks judged on the decision itself; founder copy, fields, demo story and mock replies on every screen; a `web-offline` preview that forces live model calls off. 107 offline tests, the typecheck and the build pass; the full flow was checked in the preview with model calls off.
+- **Founder docs** (branch `docs/founder-pivot`, on top of `plan/hackathon-build-plan`): FOUNDERS.md (evidence, decisions, beachhead, what founders need), COMPETITORS.md (landscape, feature comparison, positioning), and SCOPE, FEATURES (user stories replaced), DEMO (new fictional founder and scripts), RESEARCH (weighted rubric, where we can win), CONTEXT, SUBMISSION, PLAN, RISKS, DESIGN and ARCHITECTURE brought in line.
+- Re-read the Participant Guide signed in (CONTEXT.md §5.1): the rubric is weighted (Impact 30%, Use of Meta AI Tooling 25%, Technical Depth 20%, Demo 25%); finalists are judged on the video demos; the submission form's fields are known.
+
+**Meta models used today:** none (fixture mode only; no live calls).
+
+**Decisions** (who decided)
+- Direction: Parallax is for founders at every point of business decision-making (Sibusiso and Lethabo).
+- Design: Mockup 5, Control Room, plus avatars and more sections (Sibusiso and Lethabo; DESIGN.md §0).
+- Beachhead: owner-led food and hospitality businesses in South Africa; demo decision: the big contract; demo founder fictional (proposed in FOUNDERS.md and DEMO.md, for Lethabo to confirm in review).
+
+**Blockers and risks**
+- The submission form lists only Sibusiso as a team member (RISKS.md H12).
+- `shared/defaults/za.json` values are still unsourced placeholders (H13).
+- Founder agents (F10) and avatars (F9) are not started, and the video depends on them.
+
+**Credits spent today (USD):** none on today's build work (no live calls).
+
+**Next**
+- Lethabo reviews the two founder PRs, then #1, #6 and #7, in the merge order in PLAN.md §3A.
+- F10 and F9 by Mon 2 Nov evening; the Control Room layout for the path and chat screens.
+
+## Day 7 · Sun 1 Nov 2026, later: the engines caught up to the pivot
+
+**Product code written today:** yes (small: guards and tests in `feat/founder-pivot`).
+
+**Built**
+- Checked the engines and intake against the founder docs. No personal-decision terms remain in the code. The planned timeline wording in ARCHITECTURE §10 now says cash, not savings.
+- Equity splits between cofounders are out of scope, as the docs say; the funding check no longer catches every mention of equity.
+- Advice checks also read business cash ("put the business cash into…").
+- "New client" alone no longer makes a decision a contract.
+- The kind of decision is never guessed: an unreadable decision stays empty, path-building refuses to run, and the intake asks first.
+- 107 offline tests pass; the stress suite passes at 20,000 runs. One run of the 3,000-run stress suite failed once and passed on five re-runs; we have not reproduced it.
+
+**Decisions**
+- Failing closed on the decision type, rather than defaulting to contract, so a bad read cannot produce the wrong paths.
+
+**Blockers and risks**
+- The one intermittent stress failure is unexplained; watch it in CI.
+
+**Credits spent today (USD):** none on the engine work.
+
+**Next**
+- Figure guard (F11) and the agents (F10) are the next engine pieces.
+
+## Day 8 · Mon 2 Nov 2026
+
+**Product code written today:** yes (engine tests and the review fixes on #8 and #9).
+
+**Built** (with branches; PR links once opened)
+- Engine tests: every backend export is named by a test, and the stress timeout scales with the run count (`feat/founder-pivot`, commit ede2bdc). 141 offline tests pass; the typecheck and the build pass.
+- Review notes from Lethabo on PR #8 and PR #9 addressed: trace checks show "not run" until the code runs them; a text that names two decision kinds asks the founder instead of guessing; the compare view shows when the late money is paid back; the competitor facts that could be checked are corrected (Xero's 180-day horizon is not verified; QuickBooks' feature is Cashflow Forecasting 2.0); "small businesses" is "MSMEs" where the figure is about MSMEs.
+- Mockup 5 v2 (the founder Control Room, four pages) built from engine figures, with four founder portraits from Muse Image.
+
+**Meta models used today:** muse-image-1.0 (Muse Image), four calls for the founder portraits in Mockup 5 v2: one base portrait, then one edit per path. No chat model was called.
+
+**Decisions** (who decided)
+- Generate the four portraits, after the cost was explained (about USD 0.04): Sibusiso.
+- X post owners: Sibusiso posts, Lethabo reposts, as DEMO.md and FEATURES.md already said; PLAN.md now matches. For Sibusiso and Lethabo to confirm.
+- Track: switched to Indie. Discord confirmed on 2 Nov that a team of two may enter Indie; both registrations change at submission.
+
+**Blockers and risks**
+- Founder agents (F10), in-app avatars (F9) and the figure guard (F11) are not built; the app shows letter badges where the portraits will go.
+- The 3-minute video depends on F9 and F10. A go/no-go on Tue 3 Nov at 12:00 is proposed in PLAN.md §3A.
+
+**Credits spent today (USD):** Meta about 0.04 (four Muse Image calls at USD 0.01 each) · Baseten none · Modal none.
+
+**Next**
+- Lethabo re-reviews PR #8 and PR #9.
+- F10, F9 and F11, in time for the go/no-go.

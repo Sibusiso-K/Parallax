@@ -148,16 +148,24 @@ sequenceDiagram
 
 ## 6. Data model
 
+**Founder profile, as built on Sun 1 Nov 2026** (`shared/profile/profile.ts`; the earlier personal profile is in the git history). The rest of this section is the planned model for later features.
+
+```ts
+interface Profile {
+  decision: string; decisionType: 'contract' | 'hire' | 'pricing';
+  business: string | null; location: string | null;
+  riskComfort: 'low' | 'medium' | 'high' | null; goals: string[]; // cash safety, growth, profit, control, time
+  money: Record<'revenue' | 'directCosts' | 'overheads' | 'payroll' | 'founderPay' | 'debtRepayments' | 'cash'
+    | 'offerRevenue' | 'hireCost' | 'upfrontCost', { low: number; base: number; high: number; source: 'you' | 'default' }>;
+  paymentDays: { value: number; source: 'you' | 'default' }; priceRisePercent: { value: number; source: 'you' | 'default' };
+}
+```
+
+Planned model for later features (paths, timelines, personas, memory):
+
 ```ts
 type Range = { low: number; base: number; high: number };
 
-interface Profile {
-  ageBand: string; province?: string; netMonthlyIncome: number; monthlyExpenses: number; familySupportMonthly: number;
-  savings: number; debts: { label: string; balance: number; ratePct: number; payment: number }[];
-  dependants: number; skills: string[]; riskTolerance: 'low' | 'medium' | 'high';
-  goals: string[]; constraints: string[];
-  fieldSource: Record<string, 'user' | 'extracted-confirmed' | 'default'>;
-}
 interface Assumption {
   id: string; pathId: string | 'shared'; label: string;
   unit: 'ZAR/month' | 'ZAR' | '%/year' | 'probability/year' | 'months';
@@ -199,15 +207,15 @@ interface TraceEntry { id: string; ts: string; step: string; provider: string; m
 | The model does | Code does |
 |---|---|
 | Proposes paths and assumption **ranges**, each with a rationale and a `model-suggested` tag | Validates ranges and prefers user values, then `defaults/za.json` (every default carries a source and date), then model suggestions |
-| Writes events: when, what, how it feels, the probability, and which assumption drives the money effect | Applies the effects month by month to cash, debt, savings and income |
+| Writes events: when, what, how it feels, the probability, and which assumption drives the money effect | Applies the effects month by month to cash, debt and income |
 | Writes narrative and daily-life texture | Computes every figure, percentile, milestone date and sensitivity |
 
-- **Mechanics:** monthly steps over a 36-month horizon (SCOPE.md §3; `horizonMonths` keeps 60 possible if we change our minds). Inputs are take-home pay and expenses (no tax engine in the MVP). Debt amortises at the stated rate, savings earn an assumed return, and expenses inflate within an assumed CPI range.
-- **Setbacks:** 1 or 2 per path, chosen from the fixed library in SCOPE.md §3 (lost client, car breakdown, income gap, family emergency, rent increase). The model picks which fit the path and narrates them; code applies their money effect as stress tests.
+- **Mechanics (as built, 1 Nov):** monthly steps over a 36-month horizon (SCOPE.md §3). Inputs are the business's monthly sales, direct costs and fixed costs (rent and running costs, wages, the founder's own pay, debt repayments) and the cash in the business; no tax engine in the MVP. Sales are modelled as gross profit at today's margin, so the bad case never pairs low sales with full direct costs. Each line has a month window, so a contract's income lands after its payment terms while its costs start at once. Interest, inflation and returns on cash are not modelled yet.
+- **Setbacks:** 1 or 2 per path, from the fixed founder library in SCOPE.md §3 (late payment, lost client, slow season, equipment breakdown, cost rise). Code applies their money effect as stress tests and judges each by how far it pushes the lowest cash point, because a business dies when cash runs out; the model narrates them.
 - **Uncertainty (MVP):** three deterministic runs per path: every assumption at its unfavourable end (for a cost that is its high value), at its base value, and at its favourable end. Shown as a band labelled "bad case / likely / good case". Same inputs always give the same figures. In the data model these runs fill the `p10`, `p50` and `p90` slots, so nothing else changes if we upgrade; the UI must not call them percentiles, because all-bad and all-good together are more extreme than a true P10 or P90.
 - **Uncertainty (stretch, SCOPE.md §4 item 5):** 1,000 Monte Carlo runs with a stored seed, so results reproduce. Uncertain assumptions are sampled from a triangular distribution (low, base, high), and setback events fire with their stated probability. Output is true P10/P50/P90 per month, shown as a fan chart.
 - **Sensitivity:** swing each assumption to its low and high and rank by the effect on P50 net worth. "What matters most on this path" becomes a computed fact.
-- **Derived milestones** are computed, not narrated: for example "emergency fund reaches 3 months" or "savings hit zero" (with P10 timing).
+- **Derived milestones** are computed, not narrated: for example "emergency fund reaches 3 months" or "cash runs out" (with P10 timing).
 - **Figure keys** follow `<path>.<metric>.<y1..y3|mN>.<p10|p50|p90>` (`y4`, `y5` only if the horizon grows). The model only sees keys.
 - A full run takes milliseconds, so what-if sliders recompute in the browser.
 
@@ -219,7 +227,7 @@ interface TraceEntry { id: string; ts: string; step: string; provider: string; m
 2. Persona card.
 3. Timeline events for this path only.
 4. Figures table: key yearly P10/P50/P90 values, given by key.
-5. Session facts shared by all avatars (user corrections, for example "my mother lives with me now").
+5. Session facts shared by all avatars (founder corrections, for example "the client agreed to 30-day terms").
 6. This avatar's memory notes.
 7. Rolling summary of older turns (refreshed every 10 turns by a small Spark call).
 8. The last 8 turns, then the new message.
@@ -253,7 +261,7 @@ Captions are always shown.
 
 ## 11. Traceability
 
-- Every avatar reply shows "Based on" chips (for example "A3 salary growth 6–9%", "E7 retrenchment risk, 30% a year"). Tapping a chip opens the assumption or event with its source tag.
+- Every avatar reply shows "Based on" chips (for example "B6 contract income, paid 60 days after each invoice", "B7 direct costs of the contract work"). Tapping a chip opens the assumption or event with its source tag.
 - Each turn records the projection version it used, so the history stays accurate after a what-if.
 - An append-only **trace log** per session records each step's provider, model, latency, tokens, estimated cost, input and output IDs, check results and any fallback used. It is visible in a "Why?" drawer, exportable as JSON, and kept in the browser. Server logs hold metadata only.
 
@@ -261,9 +269,9 @@ Captions are always shown.
 
 | Situation | Handling |
 |---|---|
-| Vague input ("I want to change careers") | Intake asks for four must-have numbers, where "rough is fine" and "don't know" are both accepted. "Don't know" becomes a wide default-table assumption, visibly flagged |
-| Contradictions (expenses far above income, no debt) | Ask once; never silently "fix" |
-| Off-scope decision (medical, legal, relationships) | Explain the MVP scope and offer a career or money framing if one fits |
+| Vague input ("I need to grow the business") | Intake asks what the decision is (or offers the three founder decisions) and then the must-have numbers (sales, costs, cash), where "rough is fine" and "don't know" are both accepted. "Don't know" becomes a wide default-table assumption, visibly flagged |
+| Contradictions (direct costs above sales) | Ask once; never silently "fix" |
+| Off-scope or not-yet-supported decision (medical, legal, relationships; loans, investors, second sites) | Explain the MVP scope and offer the three founder decisions if one fits |
 | Signs of distress | Pause the simulation; show the support card with local helplines (hard-coded; numbers and sources in RISKS.md §2, verified 20 Oct 2026, re-check on day 9) |
 | Text that tries to instruct the model | Wrapped as quoted data; tools cannot change assumptions without a UI confirmation |
 | 429 / 500 | Exponential backoff with 0–1 s jitter, honour `Retry-After`, at most 3 tries [14] |
@@ -323,7 +331,7 @@ Assumptions for one full session: 3 paths, 30 avatar turns, 3 minutes of voice, 
 5. Should avatars speak with a South African flavour or code-switch? Spoken isiZulu and Afrikaans aren't on Muse Voice Transcribe's language list.
 6. Should the default horizon be 3 or 5 years? (All docs now use 36 months; change it only with a reason.)
 7. Which art style for the avatars?
-8. Who sources and dates the South African defaults (CPI range, savings and debt rates, typical salary bands)?
+8. Who sources and dates the South African defaults (typical margins, rents, wages and payment terms for small food businesses)?
 
 ## Sources
 

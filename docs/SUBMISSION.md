@@ -55,25 +55,35 @@ The rules disqualify anything not clearly identified as event work. The only pre
 
 ## 6. Field-by-field draft
 
-The exact form fields are **unknown** until we open the form. This is what we expect to need.
+**The form's fields are now known** (seen on the submit page, signed in, on Sun 1 Nov 2026; nothing was filled in; CONTEXT.md §5.1). Drafts follow the founder direction ([FOUNDERS.md](FOUNDERS.md)). Every figure in a draft must match the engine and cite its source.
 
-| Field | Draft or what we need | Owner | Status |
+| Field (\* required) | Draft or what we need | Owner | Status |
 |---|---|---|---|
-| Project name | Parallax | — | Ready |
-| One-line pitch | "Try a career or money decision before you live it: Parallax simulates each path for 36 months and lets you talk to your future self on each one." | Lethabo | Draft |
-| Description | Opens with the theme statement (RESEARCH.md §2); then problem, what it does, how Meta's models are used, what was built during the event, and "a reflection aid, not financial advice" | Sibusiso | To write by 3 Nov |
-| Track | Startup (both registered, confirmed 26 Oct) | — | Ready |
-| Theme | Build for Your World | — | Ready |
-| Team members | Sibusiso Khumalo, Lethabo Hoaeane (as registered) | Representative | Ready |
-| Repo URL | Public GitHub URL, checked logged out | Sibusiso | To fill in |
-| Video URL | 3-minute video, checked logged out | Lethabo | To fill in |
-| Live demo URL | Hosted app, with no passcode that blocks judges (REVIEW.md M3) | Sibusiso | Unknown whether the form asks |
-| Meta models used | Muse Spark 1.3 (structured output, tool calls, future-self chat); Muse Image (base portrait plus an edit per path); Muse Voice Transcribe (spoken intake); Muse Wonder only if shipped | Sibusiso | Update on 4 Nov |
-| X post link | URL of the demo post, for Most Viral Project | Sibusiso | Post before submitting |
-| Open-weights flag | Only if an open-weights path ships: model, host (Baseten or Modal) and which feature uses it (FEATURES.md F31) | Lethabo | Stretch; leave blank otherwise |
-| Bonus opt-ins | Best Creative Build, Best Agentic Use-Case | Representative | Unknown whether the form asks |
-| Pre-existing work | "Planning docs only (20 to 26 Oct); no product code before kickoff" | Sibusiso | Ready |
-| Gallery thumbnail and blurb | For the Community Vote | Lethabo | Unknown whether the form asks |
+| Team Name\* | Parallax | — | Ready |
+| Team Members | Sibusiso Khumalo and Lethabo Hoaeane. **On 1 Nov the form listed only Sibusiso**: Lethabo must be added or must join the team on CV | Both | **To fix by Tue 3 Nov** |
+| Track\* | Indie. Discord confirmed 2 Nov that a team of two may enter; both registrations change from Startup at submission | Both | To change at submission |
+| Problem statement\* | Build for Your World | — | Ready |
+| X post link (Most Viral) | URL of the demo post | Sibusiso | Post before submitting |
+| Project Description\* | Draft A below | Sibusiso | Draft |
+| Public GitHub Repository\* | Public URL, checked logged out | Sibusiso | To fill in |
+| 3-Minute Demo Video\* | Checked logged out | Lethabo | To fill in |
+| Describe your use of Meta products\* | Draft B below | Lethabo | Draft |
+| Why are Meta's models important to your solution?\* | Draft C below | Lethabo | Draft |
+| Feedback on partner technologies | Honest notes on Baseten, Modal or Fireworks if we used them; otherwise say we did not | Lethabo | On 4 Nov |
+| Survey questions about the Meta Model API\* | Our own honest answers | Both | On 4 Nov |
+| Open weights | No field; mention in Draft B only if F31 ships | Lethabo | Stretch |
+
+**Draft A, Project Description** (keep the first two sentences as they are; trim the rest to fit)
+
+> Built for our world: we are two founders in Johannesburg, and deciding under uncertainty is most of our week. Parallax is a decision rehearsal for founders: describe a business decision in your own words (take a big contract, hire, raise prices), and Parallax proposes three genuinely different paths, plays each forward for 36 months of cash in a bad, likely and good case, stress-tests it against the setbacks that sink small businesses, and lets you question the founder you would become on each path. In the demo, the biggest contract a catering business has been offered runs it out of cash in month 4 if the client pays two months late; on safer terms the same shock is survivable. Every figure is computed in code and traceable to an assumption the founder can change; the model is built never to write a number. Built first for South Africa's owner-led food businesses, for every owner-led business next. Everything in the product was built during the hackathon (BUILD_LOG.md). A reflection aid, not financial advice.
+
+**Draft B, use of Meta products**
+
+> Muse Spark 1.3 runs an agent loop with verification: an intake agent fills a strict schema from the founder's story, and code keeps a field only if its quote is in the founder's own words; a path planner proposes paths as structured output; one founder agent per path answers in the first person with tools (`get_figure`, `remember`) and sees only its own path's figures; a figure guard checks every reply so no invented number reaches the founder. Muse Image draws the founder at month 36 on each path: one base portrait, then one edit per path so the person stays recognisable while the setting follows the outcome. Muse Voice Transcribe takes spoken intake, confirmed before extraction. Our Meta client has timeouts, retries, a repair retry, failover to fixture mode, and refuses `-contributor` models so founders' data is never used for training. *(Update on 4 Nov to list only what shipped.)*
+
+**Draft C, why Meta's models matter**
+
+> A founder's decision is a conversation, not a form. Muse Spark's structured output and tool use let us keep the conversation and the numbers apart: the model reads, plans and talks; our engine computes every figure; the guard holds the line between them. Several agents reasoning about one business, each from a different future, is what makes it a rehearsal rather than a forecast. Muse Image makes those futures personal, and Voice Transcribe lets a founder between deliveries just talk. Meta is building agents that help businesses run (Meta Business Agent); Parallax is the agent that helps a founder decide.
 
 ## 7. Timeline in SAST
 
@@ -96,9 +106,19 @@ US clocks go back on Sun 1 Nov, so ET is 6 hours behind SAST until then and 7 ho
 | Mon 9 Nov, 19:00 | Closing ceremony and live final round |
 | Mon 16 Nov | Community Vote winner announced on Discord |
 
+## 7b. Indie judging
+
+The Indie track is judged on creativity, technical ambition, and whether it works ([CONTEXT.md](CONTEXT.md) §5). Where we stand on each:
+
+- **Creativity:** three genuinely different paths for one decision, each run for 36 months, with a future founder to question on each. Shown on the compare and path screens.
+- **Technical ambition:** a cash engine that runs bad, likely and good cases month by month, a setback library, and per-path future-self chat. The chat replies are fixtures until the founder agents (F10) land, and the figure guard (F11) is not built; the video and README must say so.
+- **Whether it works:** the live URL must open for a logged-out judge and accept their own story. Today the production site reads only the demo story (the model is off), and Vercel Authentication is on. Both need a decision before submitting.
+
+The rubric weights differ between [SCOPE.md](SCOPE.md) (Impact 30%, Meta tooling 25%, Technical 20%, Demo 25%) and [REVIEW.md](REVIEW.md) (equal weights). Check the guide for the Indie weights before relying on either.
+
 ## 8. Final pre-submit checklist
 
-- [ ] The submission shows the Startup track.
+- [ ] The submission shows the Indie track.
 - [ ] Theme statement is in the first lines of the description and README.
 - [ ] Repo, video and live URL all open in a logged-out window.
 - [ ] No secrets, keys or personal data in the repo, its history or the video.

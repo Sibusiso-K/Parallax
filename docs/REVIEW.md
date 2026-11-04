@@ -2,6 +2,8 @@
 
 Independent review of README.md and the six docs in `docs/`, written 20 Oct 2026 for Lethabo's PR review. The five planning docs were drafted in parallel, so the first job was to make them agree. Every edit is listed in section 2 so it can be checked or reverted.
 
+> **Note, Sun 1 Nov 2026:** this review covers the earlier direction (personal career-and-money decisions, the Naledi persona, paths Stay and grow / Go full-time / Qualify up). It is kept as the record. On 1 Nov the direction changed to founders' business decisions: see [FOUNDERS.md](FOUNDERS.md), [SCOPE.md](SCOPE.md) and [DEMO.md](DEMO.md). Its engineering findings (figures from code, the figure guard, failover, M1 shortfall rule, M2 tax, L2 rounding) still apply.
+
 ---
 
 ## 1. Verdict

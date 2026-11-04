@@ -1,15 +1,15 @@
 # Research: fit, rubric, anti-projects, prizes and landscape
 
-Written 26 Oct 2026 from the Participant Guide ([CONTEXT.md](CONTEXT.md) §5) and the kickoff slides shown at 18:00 SAST the same day. Confidence labels follow CONTEXT.md: **confirmed** (organiser's own material), **reported** (secondary source), **unknown**.
+Written 26 Oct 2026 from the Participant Guide ([CONTEXT.md](CONTEXT.md) §5) and the kickoff slides. **Rewritten Sun 1 Nov 2026 (day 7)** for the founder direction ([FOUNDERS.md](FOUNDERS.md)) and after re-reading the guide signed in: the rubric is now weighted. Confidence labels follow CONTEXT.md: **confirmed** (organiser's own material), **reported** (secondary source), **unknown**.
 
 ## 1. Summary
 
-1. **Theme:** Parallax fits *Build for Your World* closely. Stage 1 (pass/fail) is safe as long as each Meta model visibly does a job.
-2. **Track:** **Startup**, confirmed 26 Oct (both registered). The four Stage 2 criteria are the same on both tracks; only the emphasis differs.
-3. **Biggest scoring lever:** Technical Depth and Use of Meta AI Tooling both rest on the grounded future-self chat (F10, F11). Build it early.
-4. **Anti-projects:** we are clear of every item on the list, but three need care in how we present: medical advice, dashboards as the main feature, and personality analysers.
-5. **Bonus prizes:** Best Agentic Use-Case and Best Creative Build cost nothing extra; Most Viral and Community Vote cost only effort; Best Build on Open Weights is real work and stays a day-6 decision.
-6. **Landscape:** MIT Media Lab's *Future You* preprint reports that talking to a simulated future self reduces anxiety. Parallax goes further: several futures for one real decision, with figures computed in code.
+1. **Theme:** *Build for Your World* fits better than before: we are founders, and deciding under uncertainty is the problem we live with. Stage 1 (pass/fail) is safe as long as each Meta model visibly does a job.
+2. **Track:** **Indie**, switched from Startup on 2 Nov after Discord confirmed that a team of two may enter Indie. Indie is "individual builders and students", judged on creativity, technical ambition and whether it works. Parallax is a product *for* founders, built by two of them.
+3. **The rubric is weighted** (guide re-read 1 Nov): **Impact 30%**, Use of Meta AI Tooling 25%, Technical Depth and Execution 20%, Demo 25%. Impact is the biggest lever, which is why the founder direction matters.
+4. **Biggest scoring levers:** the contract that looks profitable but runs out of cash in month 4 if the client pays late (Impact, Demo), and the grounded per-path founder agents (Meta tooling, Technical Depth).
+5. **Anti-projects:** the main risk is now "dashboards as the main feature", because the chosen design (Mockup 5, Control Room) is dense and data-heavy. The avatar and the conversation must lead (§5, DESIGN.md §0).
+6. **Bonus prizes:** Most Viral (USD 20K) is a real chance now, because founders on X are both the audience and the users. Best Agentic Use-Case and Best Creative Build cost nothing extra. Open weights stays a late, optional call (§6).
 
 ## 2. Theme fit (confirmed: slides and guide)
 
@@ -17,99 +17,90 @@ Both tracks can build toward either theme. We enter **Build for Your World**: br
 
 | What the theme asks | Parallax |
 |---|---|
-| Your own domain, a problem you know firsthand | Johannesburg: supporting family, side businesses and thin savings are everyday life for people we know (DEMO.md §4) |
-| Free up time and mental space | Turns weeks of circling one decision into one session that ends in a written summary, or an honest "not ready yet" |
-| Something possible that wasn't before | Trying a path before living it: talking to the person you would become on each path, grounded in your own numbers |
-| Bring Meta's models in | Spark (agents), Image (avatars), Voice Transcribe (spoken intake); open weights optional |
+| Your own domain, a problem you know firsthand | We are two founders in Johannesburg; brainstorming and deciding is most of our week. Our beachhead, owner-led food businesses, is a world we know (FOUNDERS.md §4) |
+| Free up time and mental space | Turns days of circling one decision, or a spreadsheet nobody trusts, into one session that ends in a decision memo or an honest "not ready yet" |
+| Something possible that wasn't before | Rehearsing a decision before making it: three futures, 36 months of cash each, stress-tested, with the founder you would become answering your questions |
+| Bring Meta's models in | Spark (agents), Image (a founder avatar per path), Voice Transcribe (spoken intake); open weights optional |
 
 *Push the Frontier* (software, robotics, manufacturing, energy, materials) does not fit and is not considered.
 
-**Stage 1 (pass/fail):** "reasonably fits a theme and uses Meta AI products". Pass, provided the README, the video and the submission name each model and what it does.
+**Stage 1 (pass/fail):** "reasonably fits the theme and reasonably used Meta Model API and/or Meta's open-weight models". Pass, provided the README, the video and the submission name each model and what it does.
 
 ## 3. Track fit
 
 | | Indie Developer | Startup |
 |---|---|---|
-| For (slides) | Individual builders and students | Teams and founders building a real product |
-| Judged on (slides) | Creativity, technical ambition, whether it works | Technical execution, whether it holds up in production |
+| For (guide) | Individual builders and students | Teams and founders building a real product |
+| Judged on (guide) | Creativity, technical ambition, whether it works | Technical execution, whether it holds up in production |
 | Prizes, USD | 150K / 100K / 75K / 50K / 25K (400K) | 250K / 150K / 75K / 50K / 25K (550K) |
-| Our fit | We are a team of two, not students entering alone | We are a team; our design is built around production hardening (timeouts, failover, fixture mode, traceability) |
+| Our fit | A team of two, not students entering alone | A real product for founders, built by founders, hardened for production (timeouts, failover, fixture mode, traceability, 107 tests) |
 | Status | Not entered | **Both of us registered here (confirmed 26 Oct)** |
 
-**Decision: Startup.** The Stage 2 rubric is the same four criteria on both tracks; the Startup wording adds weight to holding up in production, which our design already targets. "Startups can bring a product, but only work from the event counts": we bring none, so everything in the product is new.
+The guide adds: "Startups may build on existing products or codebases, but you must clearly identify what was newly developed." We bring none, so everything is new; BUILD_LOG.md and the README say so.
 
-## 4. Rubric mapping
+## 4. Rubric mapping (weights confirmed 1 Nov)
 
-Stage 2: four equally weighted criteria, 0–10 each. Stage 3: the top 5 per track demo live on Mon 9 Nov and are ranked with the same rubric. Feature IDs from [FEATURES.md](FEATURES.md).
+Stage 2: four criteria, 0–10 each, weighted. Stage 3: the top 5 per track go to a final round where judges "watch the video demos live and rank them using the same rubric", so the video is what wins the final. Feature IDs from [FEATURES.md](FEATURES.md).
 
-| Criterion | What judges look for (guide) | Our evidence | Gap to close | Owner |
+| Criterion (weight) | What judges ask (guide) | Our evidence | Gap to close | Owner |
 |---|---|---|---|---|
-| **Impact** | Real-world potential, who benefits, could people use it, fits a problem statement | Naledi's story; people with the least safety net; "reflection aid, not advice"; works in any country by configuration | No one outside the team has used it. Run 3 external sessions on day 7 or 8 and quote one reaction (with consent) | Both |
-| **Use of Meta AI Tooling** | Creative, beyond a basic integration, surfaces capabilities that surprise Meta | Spark in a verified agent loop with tools; per-path agents with their own memory; Image base portrait plus per-path edits; Voice Transcribe intake; structured output everywhere | A "Built on Meta" beat in the video naming each model's job; the open-weights path only if chosen | Lethabo |
-| **Technical Depth and Execution** | Sound, refined engineering, real craft | Engine with unit tests; figure guard; citation IDs; trace drawer; failover chain; faulty-input handling | The figure guard must work live, not only in the plan; show it replacing an invented number | Lethabo (guard), Sibusiso (engine) |
-| **Demo** | Works, impressive, holds up live; the video is genuinely cool to watch | 3-minute script with a cold open, live assumption edit, faulty-input catch | Recording quality and pace; keep the live URL up and credits reserved for 5–8 Nov | Both |
+| **Impact (30%)** | Real-world potential; who benefits and how much; could people actually use it; fits a problem statement | About three million SA MSMEs; cash decisions as a leading cause of failure; late payment as a local fact (FOUNDERS.md §2); a beachhead and four business-model routes (FOUNDERS.md §6); no books needed | **One real founder's reaction** (with consent) by Tue 3 Nov; cite every statistic | Both |
+| **Use of Meta AI Tooling (25%)** | How creatively; beyond a basic integration; surfaces capabilities that surprise Meta | Spark in a verified agent loop; one founder agent per path, each seeing only its path; the figure guard; Image avatars (one base portrait, one edit per path); Voice Transcribe intake | The agents (F10) and avatars (F9) must be live by Mon 2 Nov evening; a "Built on Meta" beat naming each model's job | Lethabo |
+| **Technical Depth and Execution (20%)** | Sound, refined engineering; real craft | Engine with unit and stress tests; faulty-input script; quotes checked against the text; fixture mode; failover | Show the figure guard replacing an invented number live | Lethabo (guard), Sibusiso (engine) |
+| **Demo (25%)** | Working, impressive, holds up live; the video is genuinely cool to watch | The late-payment moment (DEMO.md §2); a live assumption edit; "Ask this on another path" | Recording quality; keep the live URL up 5–8 Nov | Both |
 
-## 5. Anti-project check (confirmed: slide "Skip these overdone projects", plus the guide)
+## 5. Anti-project check (confirmed: guide and slides)
 
-The slide says the list is not complete, and medical advice includes tools such as AI mental-health advisers and skin-blemish detectors. The guide adds anything political or involving war.
+The guide's list: AI medical advice (including mental-health advisers and skin-blemish detectors), basic RAG apps, simple image analysers, simple "AI for Education" chatbots, AI job-application screeners, AI nutrition coaches, personality analysers, sports analysers or coaches, anything political or involving war. The kickoff slides added Streamlit apps and dashboards as the main feature. Neither list is complete.
 
 | Anti-project | Risk for Parallax | How we stay clear |
 |---|---|---|
-| AI-generated medical advice | **Medium** | Health decisions are out of scope and redirected. The crisis support card shows hard-coded helplines only; Parallax never counsels or diagnoses (RISKS.md S5) |
-| Basic RAG apps | Low | No retrieval product: a simulation engine plus agents |
-| Simple image analysers | Low | We generate images; we never analyse the user's photo (no photo upload) |
-| Streamlit apps | Low | React + Vite + Vercel Functions in TypeScript |
-| **Dashboards as the main feature** | **Medium** | Charts and the compare view support the conversation; the headline is talking to your future selves. The video never opens on a chart |
-| "AI for Education" chatbots | Low | Path C involves a study loan, but Parallax teaches nothing |
-| AI job application screeners | Low | Career decisions, but no screening, ranking or CVs |
-| AI nutrition coaches | None | — |
-| **Personality analysers** | **Medium** | The profile holds money facts, a self-reported risk comfort and chosen priorities. No personality or psychological profiling, no inferred traits |
+| **Dashboards as the main feature** | **High** (the Control Room design is data-dense) | The founder avatar and the conversation lead every screen; charts support them; the video opens on the founder's question and the late-payment moment, never on a chart (DESIGN.md §0) |
+| AI-generated medical advice | Low | Health decisions are out of scope and redirected; the crisis card shows hard-coded helplines only (RISKS.md S5) |
+| Basic RAG apps | Low | No retrieval: a simulation engine plus agents |
+| Simple image analysers | Low | We generate images; no photo upload |
+| Streamlit apps | Low | React, Vite and TypeScript |
+| "AI for Education" chatbots | None | — |
+| AI job-application screeners | Low | The hire template models cost and sales; it never screens, ranks or reads CVs |
+| AI nutrition coaches | None | Food businesses, but no nutrition content |
+| **Personality analysers** | Medium | The profile is the business's figures, a self-reported risk comfort and chosen priorities; no psychological profiling |
 | Sports analysers or coaches | None | — |
-| Political or war content | Low | None in personas, prompts or the demo |
+| Political or war content | Low | None in the demo, prompts or templates |
 
-Not on the list but close: **financial advice** (South Africa's FAIS Act). We frame Parallax as a reflection aid, name no products or lenders, and the avatars refuse investment advice (RISKS.md P1, P7).
+Not on the list but close: **financial advice**. We frame Parallax as a reflection aid, name no banks, lenders or products, decline investment advice, and keep loans and investors out of the MVP (RISKS.md P1).
 
-## 6. Bonus prizes (confirmed: slides)
+## 6. Bonus prizes: where we can win
 
-| Prize | Fit | Extra effort | Recommendation |
-|---|---|---|---|
-| **Most Viral Project, 20K:** most likes, reposts and comments on the X post of the demo by 8 Nov 11:59 PM ET (9 Nov 06:59 SAST) | Any project can win; a talking future self is shareable | A 30-second hook, a short thread, replies for four days | **Do it** (DEMO.md §3). Ask whether a post before the deadline counts, since the slide says "after the event" |
-| **Best Build on Meta Open Weights, 10K:** Muse Glimmer or Muse Spark Open, own hardware or partner inference; flagged in round one; the infra partner verifies it | Only through F31 | Second provider, Baseten or Modal credits, verification, risk to the core | **Decide on day 6.** Request Baseten and Modal credits on day 1 anyway so the option stays open |
-| **Community Vote, 10K:** most gallery votes, one per verified account; announced 16 Nov | Any project | Share the gallery link widely from 9 Nov; no vote buying | **Do it** |
-| **Best Agentic Use-Case, 5K:** agents that complete tasks, make decisions or run multi-step workflows; scored on autonomy, effectiveness, usefulness | Strong: the multi-step flow plus per-path agents with tools, memory and verification | None beyond showing it | **Do it**: one video beat on the agent loop (AGENTS_AND_APIS.md §2) |
-| **Best Creative Build, 5K:** most original creative project with Muse Image or Muse Wonder; flagged in round one | Good: one future self per path, the same face in different lives | None beyond showing it | **Do it**: flag it, and show base portrait → per-path edits |
+| Prize | Rule (guide) | Our fit | Extra effort | Recommendation |
+|---|---|---|---|---|
+| **Most Viral Project, 20K** | Highest engagement on X after the event; post the demo on X and submit the link; likes, reposts and comments up to 8 Nov EOD | **Strong:** founders on X are our users; "One late payment on this contract runs my business out of cash in month 4" is a hook founders share | A 30-second hook, a thread, replies for four days | **Do it** (DEMO.md §3) |
+| **Community Vote, 10K** | Most votes in the public gallery, one per verified account; announced 16 Nov | Good: SA founder and developer communities, incubators | Share the gallery link from 9 Nov; no vote buying | **Do it** |
+| **Best Agentic Use-Case, 5K** | Strongest use of agents to complete meaningful tasks, make decisions or coordinate multi-step workflows; autonomy, effectiveness, practical usefulness | **Strong:** intake agent, path planner, one founder agent per path with tools, verification on every reply | None beyond showing the loop | **Do it**: one video beat on the agent loop |
+| **Best Creative Build, 5K** | Most original creative project with Muse Image or Muse Wonder; flagged in round one | Good: the same founder on three paths (a crowded home kitchen, a commercial kitchen, a steady café) | None beyond showing base portrait → per-path edits | **Do it**, if F9 ships |
+| **Best Build on Meta Open Weights, 10K** | Muse Glimmer or Muse Spark Open on own hardware or partner inference; flagged in round one; partner verifies | Only through F31 | A second provider and its credits | **Only if** F10 and F9 work by Mon 2 Nov evening; otherwise skip |
+
+The submission form has a field for the X post link and none for bonus opt-ins (checked 1 Nov, CONTEXT.md §5); "flagged in round one" seems to be done by the judges.
 
 ## 7. Landscape
 
-| Work | What it is | What Parallax adds |
-|---|---|---|
-| **Future You, MIT Media Lab (2024)**, with Hal Hershfield (UCLA) | A chat with a simulated 60-year-old version of yourself, built from a questionnaire and an age-progressed photo. The authors' preprint reports lower anxiety and negative emotion and higher future-self continuity (arXiv 2405.12514), but no gain in self-reflection or insight (UCLA Anderson Review). Target users 18–30 (reported) | Not one generic future but **several, one per path of a real decision**; every figure computed in code with ranges and sources; a comfort check and decision summary aimed squarely at the reflection Future You did not move; no photo of the user |
-| **Future You, multimodal follow-up (2025 preprint, arXiv 2512.06106)** | Age-progressed, animated "digital twins" with conversation; measures continuity, engagement, trust and persuasion (results not yet read) | We deliberately avoid photoreal likeness and animated faces (RISKS.md L4, L5) |
-| Hershfield et al. on age-progressed renderings and saving | Seeing an aged image of yourself increased saving in lab studies (reported, from memory: check the paper before quoting) | The idea behind per-path avatars, applied to a decision rather than retirement saving |
-| General chatbots (Meta AI and others) asked "should I quit my job?" | Fluent, generic, invents numbers, gives one answer | Grounded figures, several futures, traceable answers, no verdict |
-| Spreadsheets, budget and loan calculators | Correct arithmetic, no story, no uncertainty, no conversation | The same arithmetic, explained by the person you might become |
-| Bank and robo-adviser tools | Regulated advice tied to products | No products, no advice: reflection only |
-| **"Usaid" (2026 hackathon project)** | Tagline "Experience the future before you choose it" (from team notes; not checked) | Our tagline "Talk to your future before you choose it" is close: see recommendation 9 |
+The full competitor analysis is [COMPETITORS.md](COMPETITORS.md). In one line: cash-flow tools and accounting AI start from the books and add a what-if; chatbots talk but invent numbers; Parallax starts from the decision, needs no books, and lets the founder talk to each future with figures computed in code.
 
-**Pitch line we can defend:** "Research from MIT's Media Lab found that talking to a future self can reduce anxiety about the future. Parallax lets you talk to each future a decision could lead to, with numbers you can check." Cite the preprint in the README, not just in the video.
+The earlier research on simulated future selves still holds as background: MIT Media Lab's *Future You* preprint reports that a conversation with a simulated future self reduced anxiety and raised future-self continuity (arXiv 2405.12514, 2024), though not self-reflection. Parallax applies the idea to a business decision, with several futures and checkable figures.
 
 ## 8. Recommendations
 
-1. Build the figure guard against fixtures on day 2 (Lethabo) and the engine's figure keys the same day (Sibusiso), so F10 and F11 work live by day 4.
-2. Open the video on Naledi's question, never on a chart; keep the compare view as support.
-3. Give every Meta model one visible job in the video and one line in the README.
-4. Flag Best Creative Build and Best Agentic Use-Case in the submission; ask in #questions how bonus prizes are flagged.
-5. Run three sessions with people outside the team on day 7 or 8 for Impact.
-6. Request Baseten and Modal credits on day 1; decide the open-weights path at the day-6 checkpoint.
-7. Ask in #questions now: does an X post made before 4 Nov 21:00 ET count for Most Viral? Still open on 27 Oct.
-8. Keep BUILD_LOG.md daily so judges can tell exactly what was built during the event.
-9. Decide the tagline before the form and README are final. "Talk to your future before you choose it" is close to the "Usaid" tagline in §7; check that project before we keep ours.
+1. Lead every artefact (video, README, submission, X post) with the founder's question and the late-payment moment.
+2. Get the founder agents (F10) and avatars (F9) live by Mon 2 Nov evening; everything else in the video depends on them.
+3. Get one real founder (outside the team, with consent) through a session by Tue 3 Nov and quote one line (Impact).
+4. Source the placeholder defaults in `shared/defaults/za.json` that the demo shows, or label them "placeholder" on screen.
+5. Add Lethabo as a team member on the submission form (it lists only Sibusiso today) and check the registration answers on the Indie form (CONTEXT.md §5).
+6. Post the demo on X as soon as the video is final; reply to comments until 8 Nov (Most Viral).
+7. Decide open weights at the Mon 2 Nov sync, not later.
+8. Keep BUILD_LOG.md daily; days 3 to 6 still need entries.
 
 ## Sources
 
-- Participant Guide: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (read 26 Oct 2026, CONTEXT.md §5)
-- Kickoff slides, 26 Oct 2026 (tracks, themes, rules, anti-projects, prizes, timeline, Discord, credits, judging, submissions)
-- MIT Media Lab, Future You project: https://www.media.mit.edu/projects/future-you/overview/ and https://futureyou.media.mit.edu/research/
-- Pataranutaporn et al., *Future You: A Conversation with an AI-Generated Future Self Reduces Anxiety, Negative Emotions, and Increases Future Self-Continuity*, arXiv:2405.12514 (2024)
-- *Future You: Designing and Evaluating Multimodal AI-generated Digital Twins for Strengthening Future Self-Continuity*, arXiv:2512.06106
-- UCLA Anderson Review on the Future You study: https://anderson-review.ucla.edu/young-adults-with-an-ai-bot-chat-with-their-60-year-old-selves
+- Participant Guide: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details (read 26 Oct; re-read signed in on 1 Nov 2026, CONTEXT.md §5)
+- Kickoff slides, 26 Oct 2026
+- Founder research: [FOUNDERS.md](FOUNDERS.md); competitors: [COMPETITORS.md](COMPETITORS.md)
+- Pataranutaporn et al., *Future You*, arXiv:2405.12514 (2024); MIT Media Lab project: https://www.media.mit.edu/projects/future-you/overview/
