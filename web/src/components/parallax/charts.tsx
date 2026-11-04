@@ -142,10 +142,10 @@ export function CashChart({
             {m === 0 ? "Today" : m}
           </text>
         ))}
-        <path d={areaPath(xs, Y(good), Y(bad))} fill={color} fillOpacity=".14" />
+        <path d={areaPath(xs, Y(good), Y(bad))} className="fade" fill={color} fillOpacity=".14" />
         <path d={linePath(xs, Y(good))} fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="6 5" opacity=".75" />
         <path d={linePath(xs, Y(bad))} fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="6 5" opacity=".75" />
-        <path d={linePath(xs, Y(likely))} fill="none" stroke={color} strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={linePath(xs, Y(likely))} pathLength="1" className="draw" fill="none" stroke={color} strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" />
         {overlay && (
           <g>
             <path d={linePath(xs, Y(overlay))} fill="none" stroke={INK} strokeWidth="2" strokeDasharray="7 5" />

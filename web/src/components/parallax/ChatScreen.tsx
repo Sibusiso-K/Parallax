@@ -24,6 +24,17 @@ function TraceList({ checks }: { checks: { name: string; ok: boolean | null }[] 
   );
 }
 
+/** Three dots while the future self is answering. */
+function Typing() {
+  return (
+    <span className="typing" role="status" aria-label="Future you is answering">
+      <i />
+      <i />
+      <i />
+    </span>
+  );
+}
+
 /** The future founder on the active path: the chat, with the cash chart and the stress test beside it. */
 export function ChatScreen() {
   const { active, chats, pathOf, send, set, go, traceOpen } = useParallax();
@@ -69,7 +80,7 @@ export function ChatScreen() {
     <div className="row pagecols">
       <section className="panel chat">
         <header className="chat-head">
-          <div className="avwrap">
+          <div className={cx("avwrap", speech.speakingId !== null && msgs.some((m) => m.id === speech.speakingId) && "speaking")}>
             <Avatar letter={active} src={path.avatarUrl} size={96} />
             <div className="avcap">AI-generated</div>
           </div>
@@ -125,7 +136,7 @@ export function ChatScreen() {
               </div>
             ) : (
               <div key={m.id} className="bot-wrap">
-                <div className="msg bot">{m.text || <span className="sub">…</span>}</div>
+                <div className="msg bot">{m.text || <Typing />}</div>
                 {m.citations.length > 0 && (
                   <div className="based">
                     <span className="caps">Based on</span>
@@ -208,6 +219,7 @@ export function ChatScreen() {
             </div>
           </div>
           <CashChart
+            key={active}
             letter={active}
             start={path.startingCash}
             bad={figures.bad}
