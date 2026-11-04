@@ -3,6 +3,7 @@ import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import "./motion.css";
+import "./roadmap.css";
 import { ParallaxProvider, useParallax } from "@/lib/parallax-store";
 import { Footer, ParallaxMark, cx } from "@/components/parallax/shared";
 import { ControlRoom } from "@/components/parallax/Frame";
@@ -13,6 +14,8 @@ import { ChatScreen } from "@/components/parallax/ChatScreen";
 import { CompareScreen, SummaryScreen } from "@/components/parallax/DecideScreens";
 import { ExploreScreen } from "@/components/parallax/ExploreScreen";
 import { Splash } from "@/components/parallax/Splash";
+import { RoadmapScreen } from "@/components/parallax/RoadmapScreen";
+import { RoadmapStrip } from "@/components/parallax/RoadmapStrip";
 
 const SCREENS = {
   start: StartScreen,
@@ -26,6 +29,7 @@ const SCREENS = {
   compare: CompareScreen,
   comfort: CompareScreen,
   summary: SummaryScreen,
+  roadmap: RoadmapScreen,
 } as const;
 
 /** These screens come before the business is read, so they stand alone; the rest sit inside the Control Room frame. */
@@ -59,6 +63,7 @@ function Shell() {
         </header>
       )}
       <main className="plain-main">
+        {step !== "start" && <RoadmapStrip />}
         <Screen />
       </main>
       <Footer />

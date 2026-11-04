@@ -81,6 +81,7 @@ const STEP_NAMES: Partial<Record<string, string>> = {
   compare: "comparing the paths",
   comfort: "comparing the paths",
   summary: "the decision memo",
+  roadmap: "your roadmap",
 };
 
 /** Offers the saved decision back. Nothing is restored until the founder says so. */
