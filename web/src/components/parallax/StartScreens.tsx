@@ -5,6 +5,14 @@ import { Avatar, Button, Src } from "./shared";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
 import { MicButton } from "./MicButton";
 
+// The four steps of a run, for a founder (or a judge) opening Parallax for the first time.
+const HOW_TO: [string, string][] = [
+  ["Tell it your decision", "Type it the way you would tell a cofounder, or press Speak instead. Sales, costs, cash and the choice on the table."],
+  ["Check what it heard", "Every figure shows the words it came from. Answer the follow-ups, or press I don't know to use a marked default."],
+  ["Meet three futures", "Paths A, B and C, each with 36 months of cash computed in code. Stress-test them and ask each future you why."],
+  ["Compare and decide", "Put the paths side by side, check how much risk you are comfortable with, and print a decision memo."],
+];
+
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
   return (
@@ -32,6 +40,25 @@ export function StartScreen() {
           <Avatar letter="A" src="/avatars/A.png" size={168} className="hero-face hero-a" />
           <Avatar letter="C" src="/avatars/C.png" size={168} className="hero-face hero-c" />
         </div>
+      </section>
+      <section className="how-to" aria-labelledby="how-to-title">
+        <div className="how-head">
+          <h2 id="how-to-title">How it works</h2>
+          <p>
+            First time? Tick the box, press <b>Begin</b>, then <b>Use the demo story</b> to see a full run in about two minutes.
+          </p>
+        </div>
+        <ol className="how-steps">
+          {HOW_TO.map(([title, text], i) => (
+            <li key={title}>
+              <span className="how-num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <b>{title}</b>
+              <span>{text}</span>
+            </li>
+          ))}
+        </ol>
       </section>
       <section className="start-notes">
         <div className="note">

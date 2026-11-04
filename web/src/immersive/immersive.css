@@ -47,6 +47,7 @@
 
 .world .stage__bottom { position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 4; display: grid; gap: 8px; padding: 10px 16px 12px; }
 .world .places, .world .months { display: flex; align-items: center; gap: 8px; }
+.world .places { flex-wrap: wrap; row-gap: 6px; }
 .world .rowlabel { min-width: 104px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .world .places button { min-height: 36px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line); background: #f3f0ea; cursor: pointer; font-size: 13px; }
 .world .places button[aria-pressed='true'] { background: var(--lav); border-color: var(--lav-edge); color: var(--lav-ink); font-weight: 600; }
@@ -60,6 +61,8 @@
 .world .object-tag::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #8e7cf0; vertical-align: 1px; }
 
 /* ---- the context panel ---- */
+/* The panel scrolls inside itself, so the room keeps the height of the screen. Letting it grow to its full content
+   stretched the room to about 1,240px on a 900px screen and pushed the place and month controls out of view. */
 .world .panel { display: flex; flex-direction: column; gap: 14px; padding: 22px 20px 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 24px; max-height: calc(100dvh - 32px); overflow: auto; }
 .world.world--embedded .panel { max-height: calc(100dvh - 140px); position: sticky; top: 120px; }
 .world .panel__h { margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 34px; line-height: 1.02; letter-spacing: -0.01em; }
@@ -167,6 +170,16 @@
   .world .months__track input[type='range'] { min-height: 44px; }
   .world .drawer { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 60dvh; }
   .world .replay { bottom: 8px; }
+}
+/* On a phone the room's top card cannot hold three path chips and the mode switch on one line. Stack the card full
+   width, let the chips wrap, and let the five places sit in one wrapped row instead of being cut off by the stage. */
+@media (max-width: 480px) {
+  .world .stage__top { flex-wrap: wrap; }
+  .world .placecard { max-width: 100%; flex: 1 1 100%; }
+  .world .modes { margin-left: auto; }
+  .world .paths { flex-wrap: wrap; overflow-x: visible; }
+  .world .places { flex-wrap: wrap; overflow-x: visible; gap: 2px; }
+  .world .places button { padding: 0 7px; }
 }
 @media (prefers-reduced-motion: reduce) { .world * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 @media print {

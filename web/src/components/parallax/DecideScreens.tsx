@@ -24,7 +24,7 @@ export function CompareScreen() {
         <>
           <div className="v">{formatMoney(at(f.likely, 12))}</div>
           <div className="r">
-            Bad {formatMoney(at(f.bad, 12))} · Good {formatMoney(at(f.good, 12))}
+            <span>Bad {formatMoney(at(f.bad, 12))}</span> · <span>Good {formatMoney(at(f.good, 12))}</span>
           </div>
         </>
       ),
@@ -35,7 +35,7 @@ export function CompareScreen() {
         <>
           <div className="v">{formatMoney(end(f.likely))}</div>
           <div className="r">
-            Bad {formatMoney(end(f.bad))} · Good {formatMoney(end(f.good))}
+            <span>Bad {formatMoney(end(f.bad))}</span> · <span>Good {formatMoney(end(f.good))}</span>
           </div>
           <RangeBar letter={p.letter} bad={end(f.bad)} likely={end(f.likely)} good={end(f.good)} domain={domain} />
         </>
@@ -132,7 +132,7 @@ export function CompareScreen() {
                 <tr key={r.label}>
                   <td className="lab">{r.label}</td>
                   {paths.map((p, i) => (
-                    <td key={p.id}>{r.cell(p, figures[i]!)}</td>
+                    <td key={p.id} data-label={`${p.letter} · ${p.name}`}>{r.cell(p, figures[i]!)}</td>
                   ))}
                 </tr>
               ))}
@@ -310,14 +310,14 @@ export function SummaryScreen() {
                         </div>
                       </div>
                     </td>
-                    <td className="n">{formatMoney(end(f.bad))}</td>
-                    <td className="n">{formatMoney(end(f.likely))}</td>
-                    <td className="n">{formatMoney(end(f.good))}</td>
-                    <td className="n">
+                    <td className="n" data-label="Month 36, bad">{formatMoney(end(f.bad))}</td>
+                    <td className="n" data-label="Month 36, likely">{formatMoney(end(f.likely))}</td>
+                    <td className="n" data-label="Month 36, good">{formatMoney(end(f.good))}</td>
+                    <td className="n" data-label="Lowest, likely">
                       {formatMoney(f.lowestLikely.cash)}
                       <div className="psub">month {f.lowestLikely.month}</div>
                     </td>
-                    <td className="n">
+                    <td className="n" data-label="Lowest, 2-month late payment">
                       {formatMoney(f.late.lowest.cash)}
                       <div className="psub">
                         month {f.late.lowest.month}
