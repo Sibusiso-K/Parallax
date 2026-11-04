@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "stress": "vitest run stress",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "eval:live": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.19.2",

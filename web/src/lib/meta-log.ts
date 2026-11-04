@@ -25,9 +25,10 @@ const FEATURES: Record<string, string> = {
   whatif: "Read your what-if",
   board: "Board moderator summed up",
   check: "Double-checked what it read",
+  plan: "Planning agent searched with engine tools",
 };
 /** The model each route uses when its reply does not name one. */
-const DEFAULT_MODEL: Record<string, string> = { board: "Muse Spark", check: "Muse Spark", intake: "Muse Spark", chat: "Muse Spark", advisor: "Muse Spark", whatif: "Muse Spark", transcribe: "Muse Voice Transcribe" };
+const DEFAULT_MODEL: Record<string, string> = { plan: "Muse Spark", board: "Muse Spark", check: "Muse Spark", intake: "Muse Spark", chat: "Muse Spark", advisor: "Muse Spark", whatif: "Muse Spark", transcribe: "Muse Voice Transcribe" };
 
 let calls: MetaCall[] = [];
 let seq = 0;
@@ -73,7 +74,14 @@ export function watchMetaCalls(): void {
     if (!path) return original(input, init);
     // Two routes do a second job, told apart by the request: the board moderator (chat) and the self-check (intake).
     const body = typeof init?.body === "string" ? init.body : "";
-    const route = path === "chat" && body.includes('"kind":"board"') ? "board" : path === "intake" && body.includes('"check":true') ? "check" : path;
+    const route =
+      path === "chat" && body.includes('"kind":"board"')
+        ? "board"
+        : path === "intake" && body.includes('"check":true')
+          ? "check"
+          : path === "whatif" && body.includes('"kind":"plan"')
+            ? "plan"
+            : path;
     const t0 = performance.now();
     try {
       const res = await original(input, init);

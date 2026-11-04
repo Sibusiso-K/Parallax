@@ -32,7 +32,8 @@ describe('POST /api/whatif', () => {
     process.env.META_API_KEY = 'test-key-not-real';
     expect((await post('{nope')).status).toBe(400);
     expect((await post({ text: '' })).status).toBe(400);
-    expect((await post({ text: 'x'.repeat(5000) })).status).toBe(413);
+    expect((await post({ text: 'x'.repeat(5000) })).status).toBe(400);
+    expect((await post({ text: 'x'.repeat(70000) })).status).toBe(413);
   });
 });
 
