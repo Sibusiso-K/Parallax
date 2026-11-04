@@ -634,3 +634,22 @@ button.chip:hover { background: #e6ecf8; }
 .start-choice .btn.on-navy:hover:not(:disabled) { background: rgba(255, 255, 255, .12); }
 .frow--wide { grid-template-columns: minmax(0, 1fr); }
 .frow--wide .frow-val { justify-self: start; text-align: left; padding-left: 0; }
+
+/* ---------- Futures side by side: what-ifs, three figures, the safest marker ---------- */
+.whatif { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin: 6px 0 20px; padding: 16px 22px; border-radius: 20px; background: var(--panel); }
+.whatif h2 { margin: 0; }
+.wi-toggle { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.wi-toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+.wi-range { display: grid; gap: 4px; min-width: 170px; font-size: 13px; color: var(--ink-2); }
+.wi-range b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.wi-range input { width: 100%; accent-color: var(--accent); }
+.wi-reset { margin-left: auto; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; }
+.wi-reset:disabled { color: var(--muted); opacity: .5; cursor: default; }
+.fut-figs { display: grid; gap: 8px; margin: 0; padding: 0 8px; }
+.fut-figs > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+.fut-figs dt { margin: 0; }
+.fut-figs dd { margin: 0; font-size: 17px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+.fut-figs small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.nft.is-safest { box-shadow: 0 0 0 3px var(--good); }
+.safest-tag { position: absolute; left: 14px; bottom: 14px; padding: 5px 12px; border-radius: 999px; background: var(--good); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+@media (max-width: 520px) { .whatif { padding: 14px 16px; } .wi-range { min-width: 0; flex: 1 1 100%; } .wi-reset { margin-left: 0; } }
