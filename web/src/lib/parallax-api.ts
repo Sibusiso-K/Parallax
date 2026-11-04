@@ -316,6 +316,8 @@ export interface ChatContext {
   decision?: string;
   goals?: string[];
   story?: string;
+  /** Reply in this language (see shared/chat/languages.ts). English when absent. */
+  language?: string;
 }
 
 type ModelReply = { ok?: boolean; mode?: string; text?: unknown; citations?: unknown; clean?: unknown; checks?: unknown; model?: unknown; error?: unknown };
