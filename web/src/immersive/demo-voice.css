@@ -1,0 +1,12 @@
+.world .demo-voice { display: grid; gap: 6px; }
+.world .demo-voice p { margin: 0; font-size: 12px; line-height: 1.4; }
+.world .demo-voice__controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+.world .demo-voice__action { flex: 0 1 auto; min-height: 40px; padding: 0 14px; background: #4a3484; color: #fff; border: 0; }
+.world .demo-voice__stop { min-height: 40px; padding: 0 14px; border: 1px solid #a79ac2; background: #fff; color: #211747; }
+.world .demo-voice__choice { flex: 1 1 130px; min-width: 0; display: grid; }
+.world .demo-voice__choice select { width: 100%; min-height: 40px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); font: inherit; font-size: 12.5px; }
+.world .demo-voice__action:disabled { opacity: .55; }
+.world .demo-voice__action:focus-visible, .world .demo-voice__stop:focus-visible, .world .demo-voice__choice select:focus-visible { outline: 3px solid #2b1761; outline-offset: 3px; }
+.world .demo-voice__note { color: var(--mute); }
+.world .demo-voice__status { font-size: 12px; color: var(--lav-ink); font-weight: 600; }
+.world .demo-voice__status:empty { display: none; }

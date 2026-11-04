@@ -45,6 +45,13 @@ const PEOPLE = [
   ].map(([id, path]) => ({ id, url: `https://files.makehumancommunity.org/${path}`, licence: 'CC0-1.0', publisher: 'makehumancommunity.org' })),
 ];
 
+// Approved by the user on 2 Nov 2026 ("Yes, with credit"): CC-BY shirt packs for the characters' outfits. Each item's
+// author must be credited (assets/CREDITS.md and the scene note).
+const CLOTHING = [
+  ['shirts02', 'asset_packs/shirts02/shirts02_ccby.zip'],
+  ['shirts03', 'asset_packs/shirts03/shirts03_ccby.zip'],
+].map(([id, path]) => ({ id, url: `https://files.makehumancommunity.org/${path}`, licence: 'CC-BY (MakeHuman asset repository; per-item authors in assets/CREDITS.md)', publisher: 'makehumancommunity.org' }));
+
 async function getJson(url) {
   const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
@@ -135,9 +142,13 @@ async function polyhavenItems() {
 }
 
 const group = process.argv[2];
-if (!['polyhaven', 'people'].includes(group)) throw new Error('usage: node assets/tools/fetch_assets.mjs polyhaven|people');
+if (!['polyhaven', 'people', 'clothing'].includes(group)) throw new Error('usage: node assets/tools/fetch_assets.mjs polyhaven|people|clothing');
 const ledger = await loadLedger();
-const items = group === 'polyhaven' ? await polyhavenItems() : PEOPLE.map((p) => ({ ...p, assetId: p.id, dest: join(SOURCE, p.publisher === 'extensions.blender.org' ? 'mpfb' : 'makehuman', p.url.split('/').pop()) }));
+const packs = group === 'people' ? PEOPLE : CLOTHING;
+const items =
+  group === 'polyhaven'
+    ? await polyhavenItems()
+    : packs.map((p) => ({ ...p, assetId: p.id, dest: join(SOURCE, p.publisher === 'extensions.blender.org' ? 'mpfb' : 'makehuman', p.url.split('/').pop()) }));
 console.log(`${group}: ${items.length} files`);
 for (const item of items) await fetchOne(ledger, item);
 console.log(`${group}: done`);

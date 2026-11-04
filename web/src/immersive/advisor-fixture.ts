@@ -1,3 +1,4 @@
+import type { AdvisorAction } from '../../../shared/scene/advisor-model';
 import { resolveClaim, verifyClaims, type ClaimRef, type ResolvedClaim } from '../../../shared/scene/claims';
 import type { PathLetter } from '../../../shared/scene/room-model';
 import { runTool, type TraceLine } from '../../../shared/scene/tools';
@@ -10,9 +11,10 @@ import type { Session } from './session';
 
 // True with or without a model on the intake: the advisor itself never calls one.
 export const FIXTURE_LABEL = 'Fixture advisor: answers are authored templates over real engine results, not model output.';
+export const LIVE_LABEL = 'Muse Spark writes these answers. Code fills in every figure from the engine, so the model cannot invent one.';
 export const MATCHED_LABEL = 'Matched to this simulation';
 
-export type Intent = 'why_month' | 'lowest' | 'delay_meaning' | 'unsupported';
+export type Intent = 'why_month' | 'lowest' | 'delay_meaning' | 'unsupported' | 'live';
 
 export function classify(question: string): Intent {
   const q = question.toLowerCase();
@@ -34,6 +36,12 @@ export interface AdvisorAnswer {
   segments: Segment[];
   claims: ResolvedClaim[];
   trace: TraceLine[];
+  /** Set when a model wrote the words. */
+  source?: 'model';
+  model?: string;
+  /** What the model suggests looking at next. Each only moves the view. */
+  actions?: AdvisorAction[];
+  followups?: string[];
 }
 
 export interface AdvisorScope {

@@ -126,7 +126,7 @@
 .world .ask { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
 .world .ask input, .world .field input, .world .field textarea, .world .field select { min-height: 44px; border-radius: 12px; border: 1px solid #d6d0c4; padding: 8px 12px; font: inherit; background: #fff; width: 100%; }
 .world .voice { display: grid; gap: 4px; }
-.world .btn { min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 600; cursor: pointer; }
+.world .btn { min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 600; cursor: pointer; text-transform: none; letter-spacing: 0; }
 .world .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .world .btn--ghost { background: #fff; color: var(--ink); border-color: #d6d0c4; }
 .world .btn--round { width: 44px; padding: 0; font-size: 20px; border-radius: 50%; }
@@ -162,7 +162,7 @@
   .world .placecard > span { display: none; }
   .world .paths { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .world .pathchip { flex: none; min-height: 36px; font-size: 12px; padding-right: 9px; }
-  .world .modes button:not([aria-pressed='true']) { display: none; }
+  .world .modes button:disabled { display: none; }
   .world .stage__bottom { left: 8px; right: 8px; bottom: 8px; padding: 8px 10px; }
   .world .places { overflow-x: auto; scrollbar-width: none; }
   .world .places .hint, .world .rowlabel { display: none; }
@@ -187,4 +187,46 @@
   .world > *:not(.memo-wrap), .world .no-print { display: none !important; }
   .world .memo-wrap { position: static; background: none; padding: 0; overflow: visible; display: block; }
   .world .memo { box-shadow: none; border: 0; width: 100%; background: #fff; backdrop-filter: none; }
+}
+
+/* ---- the selected object ---- */
+.world .object__tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 3px; border-radius: 12px; background: #f3f0ea; }
+.world .object__tabs button { min-height: 36px; padding: 0 4px; border: 0; border-radius: 9px; background: transparent; font-size: 12.5px; cursor: pointer; }
+.world .object__tabs button[aria-selected='true'] { background: var(--paper); color: var(--lav-ink); font-weight: 600; box-shadow: 0 1px 4px rgba(40, 30, 80, 0.14); }
+.world .object__explore, .world .object__listen { display: grid; gap: 8px; }
+.world .object__listen > p { font-size: 13.5px; }
+.world .object__asks { margin-top: 2px; }
+.world .answer__next { margin-top: 8px; }
+.world .ask__mic { flex: none; min-width: 70px; }
+.world .ask__mic.is-on { background: var(--neg); border-color: var(--neg); color: #fff; }
+
+/* ---- what the founder can make ---- */
+.world .studio { display: grid; gap: 10px; }
+.world .studio__make { display: flex; flex-wrap: wrap; gap: 6px; }
+.world .studio__make .btn { min-height: 40px; padding: 4px 12px; font-size: 13px; }
+.world .studio p { margin: 0; }
+.world .studio__progress { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; font-size: 12.5px; }
+.world .studio__progress progress { grid-column: 1 / -1; width: 100%; height: 8px; accent-color: var(--lav-ink); }
+.world .studio__library { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.world .studio__library li { display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 13px; }
+.world .studio__library video, .world .studio__library img { width: 96px; max-height: 170px; object-fit: cover; border-radius: 8px; background: #2a2530; }
+.world .studio__library .btn { display: inline-flex; align-items: center; margin-top: 6px; text-decoration: none; }
+.world .studio__library .chip { display: block; margin-top: 4px; white-space: normal; }
+
+/* ---- walking ---- */
+.world .walk-prompt { position: absolute; z-index: 3; left: 50%; bottom: 150px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px 8px 10px; border: 1px solid var(--lav-edge); border-radius: 14px; background: var(--paper); color: var(--lav-ink); font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 8px 28px rgba(30, 22, 60, 0.22); }
+.world .walk-prompt kbd { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--lav); font: 700 12px 'Geist Mono Variable', monospace; }
+.world .walk-controls { position: absolute; z-index: 3; right: 14px; bottom: 145px; display: grid; justify-items: end; gap: 6px; width: 250px; padding: 10px 12px; font-size: 12px; }
+.world .walk-controls__hint { margin: 0; width: 100%; line-height: 1.35; opacity: 0.8; }
+.world .walk-controls__notice { margin: 0; width: 100%; color: var(--lav-ink); font-weight: 600; line-height: 1.35; }
+.world .walk-pad { display: grid; grid-template-columns: repeat(3, 44px); gap: 4px; justify-content: center; width: 100%; }
+.world .walk-pad button { min-height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--ivory); font-size: 18px; line-height: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
+.world .walk-pad button:active { background: var(--lav); border-color: var(--lav-edge); }
+.world .walk-controls__home { width: 100%; min-height: 34px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--ivory); font-size: 12px; cursor: pointer; }
+@media (max-width: 960px) {
+  .world .walk-controls { bottom: 135px; left: 8px; right: auto; width: auto; padding: 8px; }
+  .world .walk-controls__hint, .world .walk-controls__notice, .world .walk-controls__home { display: none; }
+  .world .walk-pad { grid-template-columns: repeat(3, 48px); }
+  .world .walk-pad button { min-height: 48px; }
+  .world .walk-prompt { left: auto; right: 8px; bottom: 135px; transform: none; white-space: normal; max-width: 44%; }
 }

@@ -1,8 +1,10 @@
 import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from '@react-three/fiber';
 import { BakeShadows, Html, useGLTF } from '@react-three/drei';
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import PeoplePreview from './PeoplePreview';
+import { WalkCamera, WalkControls, type WalkHandle } from './WalkCamera';
 import { OBJECT_IDS, WORLD_BASE, objectForNode, skyRotationY, type CourtyardManifest, type ObjectId, type PlaceId } from './manifest';
 
 // The courtyard: the Blender-built environment.glb, lit by the real Johannesburg sunset panorama (fill and
@@ -12,6 +14,14 @@ import { OBJECT_IDS, WORLD_BASE, objectForNode, skyRotationY, type CourtyardMani
 export interface CourtyardProps {
   manifest: CourtyardManifest;
   place: PlaceId;
+  walk: boolean;
+  /** Filled while walking, so the panel can send the walker to an object. */
+  walkHandle: RefObject<WalkHandle | null>;
+  onWalkError: (message: string) => void;
+  /** The walker has come to a place on foot, so the Places row can say where they are. */
+  onPlaceNear: (id: PlaceId) => void;
+  /** Whether the draft characters stand in the courtyard. */
+  people: boolean;
   selected: ObjectId | null;
   hovered: ObjectId | null;
   onHover: (id: ObjectId | null) => void;
@@ -22,35 +32,30 @@ export interface CourtyardProps {
   onContextLost: () => void;
 }
 
-/**
- * Integrated GPUs are fill-bound here: on an Intel UHD GPU a forced render at 1102x807 cost 25.8 ms at pixel ratio
- * 1.25 and 20.9 ms at 882x646, ratio 1 (2 Nov 2026), so they render at ratio 1. Three r187 removed soft PCF shadows,
- * so every tier uses PCF.
- */
-function integratedGpu(): boolean {
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    const ext = gl?.getExtension('WEBGL_debug_renderer_info');
-    const name = gl && ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    return /Intel|Mali|Adreno|PowerVR|SwiftShader|llvmpipe/i.test(name);
-  } catch {
-    return true;
-  }
-}
+/** Integrated and phone GPUs are fill-bound, so they draw at ratio 1. Read from the live context: a probe would cost a second one. */
+const FILL_BOUND = /Intel|Mali|Adreno|PowerVR|SwiftShader|llvmpipe/i;
 
 export default function Courtyard(p: CourtyardProps) {
   const start = p.manifest.places[p.place];
-  const integrated = useMemo(integratedGpu, []);
+  const [walkNotice, setWalkNotice] = useState('Walk up to an object, or press a place to walk there.');
+  const [near, setNear] = useState<ObjectId | null>(null);
+  // After a walk the guided camera eases back from where the walker stood, instead of jumping.
+  const hasWalked = useRef(false);
+  if (p.walk) hasWalked.current = true;
   return (
+    <>
     <Canvas
       shadows={p.lowTier ? false : 'percentage'}
-      dpr={p.lowTier || integrated ? 1 : [1, 1.5]}
+      dpr={1}
       camera={{ fov: 50, near: 0.05, far: 600, position: start.camera }}
       gl={{ antialias: !p.lowTier, toneMapping: THREE.AgXToneMapping, toneMappingExposure: p.manifest.lighting.exposure, powerPreference: 'high-performance' }}
-      onCreated={({ gl, scene, camera }) => {
-        // Development builds expose the renderer so frame cost can be measured even when the window is throttled.
-        if (import.meta.env.DEV) (window as unknown as { __courtyard?: unknown }).__courtyard = { gl, scene, camera };
+      onCreated={({ gl, scene, camera, setDpr }) => {
+        // Development and test builds expose the renderer so frame cost can be measured even when the window is throttled.
+        if (import.meta.env.DEV || import.meta.env.VITE_COURTYARD_DEBUG === '1') (window as unknown as { __courtyard?: unknown }).__courtyard = { gl, scene, camera };
+        const context = gl.getContext();
+        const info = context.getExtension('WEBGL_debug_renderer_info');
+        const renderer = info ? String(context.getParameter(info.UNMASKED_RENDERER_WEBGL)) : 'Intel';
+        if (!p.lowTier && !FILL_BOUND.test(renderer)) setDpr(Math.min(window.devicePixelRatio || 1, 1.5));
         gl.domElement.addEventListener('webglcontextlost', (e) => {
           e.preventDefault();
           p.onContextLost();
@@ -59,15 +64,22 @@ export default function Courtyard(p: CourtyardProps) {
     >
       <Suspense fallback={null}>
         <Sky manifest={p.manifest} />
-        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered} onHover={p.onHover} onSelect={p.onSelect} />
+        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered ?? (p.walk ? near : null)} onHover={p.onHover} onSelect={(id) => (p.walk ? p.walkHandle.current?.inspect(id) : p.onSelect(id))} />
+        {p.people && <PeoplePreview reduced={p.reduced} selected={p.selected} />}
         {/* Sun and architecture never move, so the shadow map is drawn once instead of every frame. */}
         <BakeShadows />
         <Ready onReady={p.onReady} />
       </Suspense>
       <Sun manifest={p.manifest} lowTier={p.lowTier} />
       <Lamps manifest={p.manifest} lowTier={p.lowTier} />
-      <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} />
+      {p.walk ? (
+        <WalkCamera manifest={p.manifest} place={p.place} reduced={p.reduced} onSelect={p.onSelect} onError={p.onWalkError} onNotice={setWalkNotice} onNear={setNear} onPlaceNear={p.onPlaceNear} handle={p.walkHandle} />
+      ) : (
+        <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} easeIn={hasWalked.current} />
+      )}
     </Canvas>
+    {p.walk && <WalkControls handle={p.walkHandle} notice={walkNotice} near={near} manifest={p.manifest} />}
+    </>
   );
 }
 
@@ -264,7 +276,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
 /** Eases the camera between places along a straight line inside the courtyard; drag adds a bounded look offset. */
-function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifest; place: PlaceId; reduced: boolean }) {
+function GuidedCamera({ manifest, place, reduced, easeIn }: { manifest: CourtyardManifest; place: PlaceId; reduced: boolean; easeIn: boolean }) {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
   const v3 = (a: readonly number[]) => new THREE.Vector3(a[0], a[1], a[2]);
@@ -281,9 +293,18 @@ function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifes
     drag: null as null | { x: number; y: number },
   });
 
+  const mounted = useRef(false);
   useEffect(() => {
     const s = state.current;
     const next = manifest.places[place];
+    if (!mounted.current) {
+      mounted.current = true;
+      if (easeIn) {
+        // Coming back from a walk: start from where the walker stands and looks.
+        s.pos.copy(camera.position);
+        s.target.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(6));
+      }
+    }
     s.fromPos.copy(s.pos);
     s.fromTarget.copy(s.target);
     s.toPos.copy(v3(next.camera));
@@ -291,7 +312,7 @@ function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifes
     s.t = reduced ? 1 : 0;
     s.yaw = 0;
     s.pitch = 0;
-  }, [manifest, place, reduced]);
+  }, [camera, easeIn, manifest, place, reduced]);
 
   useEffect(() => {
     const el = gl.domElement;

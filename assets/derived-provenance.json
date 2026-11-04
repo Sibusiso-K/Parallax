@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "note": "Derived runtime files served from web/public. Sources and licences: assets/provenance.json.",
-  "licence": "CC0-1.0 sources; derived files carry no extra restriction",
+  "licence": "CC0-1.0 sources; derived files carry no extra restriction, except the entries that carry their own licence",
   "files": [
     {
       "path": "web/public/worlds/courtyard-v1/environment.glb",
@@ -56,6 +56,20 @@
       "bytes": 85916,
       "sha256": "ec8305610e676e01238c8a039447e2f7f294a3186dc311ff01710df15526fff9",
       "how": "Cycles CPU render (32 samples, denoised, AgX) of place memo from courtyard.blend, converted with ffmpeg -q:v 4."
+    },
+    {
+      "path": "web/public/avatars/ayanda-preview-v3.glb",
+      "bytes": 6387184,
+      "sha256": "185677c6b325443767131ef275ea93b0310d0e79c3057d3a521275885fa88941",
+      "how": "Built by assets/blender/build_people.py (Blender 5.2.3, MPFB 2.0.18) for Ayanda from MakeHuman CC0 packs only: her olive top is the casual suit from makehuman_system_assets_cc0.zip. See assets/CREDITS.md. Fictional draft, not accepted as photoreal.",
+      "licence": "CC0-1.0 (MakeHuman CC0 packs); no CC BY garment"
+    },
+    {
+      "path": "web/public/avatars/advisor-preview-v3.glb",
+      "bytes": 7790100,
+      "sha256": "cc398798a53b69f7dc8cb2a1a72813ec7379779ab743618633710b5b4ef4dc5d",
+      "how": "Built by assets/blender/build_people.py (Blender 5.2.3, MPFB 2.0.18) for the advisor from MakeHuman CC0 packs plus one CC BY garment; see assets/CREDITS.md. Fictional draft, not accepted as photoreal.",
+      "licence": "CC0 base with a CC BY garment: credit required (assets/CREDITS.md)"
     }
   ]
 }
