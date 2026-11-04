@@ -18,7 +18,8 @@ export type Step =
   | "explore"
   | "compare"
   | "comfort"
-  | "summary";
+  | "summary"
+  | "roadmap";
 
 /** What the founder last looked at in Explore. The path is the shared `active` path, so every screen agrees on it. */
 export interface ExploreView {
@@ -160,8 +161,8 @@ const SAVED_KEYS = [
   "comfort", "bothering", "pinned", "chosen", "decision", "reasons", "questions", "sessionId", "revision", "explore",
   "scene", "portrait",
 ] as const satisfies readonly (keyof State)[];
-const STEPS: readonly Step[] = ["start", "intake", "heard", "generating", "profile", "paths", "chat", "explore", "compare", "comfort", "summary"];
-const NEEDS_PATHS: readonly Step[] = ["paths", "chat", "explore", "compare", "comfort", "summary"];
+const STEPS: readonly Step[] = ["roadmap","start", "intake", "heard", "generating", "profile", "paths", "chat", "explore", "compare", "comfort", "summary"];
+const NEEDS_PATHS: readonly Step[] = ["roadmap","paths", "chat", "explore", "compare", "comfort", "summary"];
 
 /** The part of the state worth saving. A reply still streaming is saved as it stands; generating resumes on profile. */
 export function snapshotOf(s: State): Record<string, unknown> {

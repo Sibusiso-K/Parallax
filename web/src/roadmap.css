@@ -1,0 +1,88 @@
+/* The roadmap, and the journey strip along the top of every screen. */
+
+/* ---- Journey strip ---- */
+.rm-strip { margin: 0 0 4px; }
+.rm-strip ol { display: flex; margin: 0; padding: 0; list-style: none; }
+.rm-st { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.rm-line { position: absolute; top: 7px; left: -50%; right: 50%; height: 2px; background: var(--line); }
+.rm-st:first-child .rm-line { display: none; }
+.rm-st.done .rm-line, .rm-st.now .rm-line { background: var(--accent); }
+.rm-dot-s { position: relative; z-index: 1; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid var(--line); }
+.rm-st.done .rm-dot-s { background: var(--accent); border-color: var(--accent); }
+.rm-st.now .rm-dot-s { background: var(--navy); border-color: var(--navy); box-shadow: 0 0 0 5px color-mix(in srgb, var(--navy) 16%, transparent); }
+.rm-label { font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: none; border: 0; padding: 0; }
+.rm-st.done .rm-label { color: var(--ink-2); }
+.rm-st.now .rm-label { color: var(--ink); }
+button.rm-label { cursor: pointer; }
+button.rm-label:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.rm-fork { display: flex; flex-wrap: nowrap; justify-content: center; gap: 6px; }
+.rm-pill { width: 26px; height: 26px; border-radius: 50%; border: 0; background: var(--c); color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.rm-pill:hover { filter: brightness(1.08); }
+@media (max-width: 720px) { .rm-label { font-size: 10px; letter-spacing: .02em; } }
+@media (max-width: 520px) { .rm-st:not(.now) .rm-label { display: none; } }
+
+/* ---- The roadmap screen ---- */
+.roadmap { gap: 22px; }
+.rm-root { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; padding: 22px 24px 20px; border-radius: 26px; background: var(--panel); }
+.rm-dot { width: 18px; height: 18px; margin-top: 8px; border-radius: 50%; background: var(--navy); box-shadow: 0 0 0 6px color-mix(in srgb, var(--navy) 14%, transparent); }
+.rm-rootbody { min-width: 0; }
+.rm-rootbody h2 { margin-top: 4px; font-size: 22px; font-weight: 800; font-stretch: 118%; line-height: 1.2; overflow-wrap: anywhere; }
+.rm-rootbody .sub { margin-top: 6px; }
+.rm-questions { grid-column: 2; list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.rm-questions .rm-item { max-width: 340px; padding: 10px 14px; border-radius: 16px; background: #fff; border: 1px solid var(--line-2); }
+.rm-questions .rm-item b { font-size: 13px; color: var(--ink); }
+.rm-questions .rm-item span { font-size: 12px; color: var(--muted); }
+
+/* The three futures: a stem from the decision to a bar, and a stem from the bar down to each branch. */
+.rm-split { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding-top: 26px; }
+.rm-split::before { content: ""; position: absolute; top: -22px; left: 50%; width: 2px; height: 34px; margin-left: -1px; background: var(--line); }
+.rm-split::after { content: ""; position: absolute; top: 12px; left: calc(100% / 6); right: calc(100% / 6); height: 2px; background: var(--line); }
+.rm-branch { position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 18px 18px 16px; border-radius: 24px; background: #fff; border: 1.5px solid var(--line-2); border-top: 5px solid var(--c); }
+.rm-branch::before { content: ""; position: absolute; top: -14px; left: 50%; width: 2px; height: 14px; margin-left: -1px; background: var(--c); }
+.rm-head { display: flex; gap: 12px; align-items: flex-start; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+.rm-head > span:last-child { min-width: 0; }
+.rm-head b { font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+.rm-head:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.rm-hsub { display: block; margin-top: 3px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.rm-list { list-style: none; margin: 0; padding: 0 0 0 16px; border-left: 2px solid var(--line-2); display: flex; flex-direction: column; gap: 6px; }
+.rm-node { position: relative; min-width: 0; }
+.rm-node::before { content: ""; position: absolute; left: -23px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--c); }
+.rm-node.conversation::before { border-radius: 3px; }
+.rm-node.setback::before { border-color: var(--muted-3); }
+.rm-node.warn::before { border-color: var(--warn); background: var(--warn); }
+.rm-item { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 6px 8px; border: 0; border-radius: 12px; background: none; font: inherit; color: var(--ink-2); text-align: left; }
+.rm-item b { font-size: 14px; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.rm-item span { font-size: 13px; line-height: 1.45; color: var(--muted); overflow-wrap: anywhere; }
+button.rm-item { cursor: pointer; }
+button.rm-item:hover { background: var(--panel); }
+
+@media (max-width: 860px) {
+  .rm-split { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 0; }
+  .rm-split::before, .rm-split::after, .rm-branch::before { display: none; }
+}
+@media (max-width: 720px) {
+  .rm-root { grid-template-columns: minmax(0, 1fr); padding: 18px 16px; }
+  .rm-dot { display: none; }
+  .rm-questions { grid-column: 1; }
+  .rm-questions .rm-item { max-width: 100%; }
+  .rm-branch { padding: 16px 14px; }
+}
+
+/* Motion: the strip fills in as a station is passed, the branches grow out of the decision. Off when motion is reduced. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes drop { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .rm-st.done .rm-line, .rm-st.now .rm-line { transform-origin: left center; animation: grow .6s ease backwards; }
+  .rm-st.now .rm-dot-s { animation: pop .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .rm-branch { animation: rise .6s cubic-bezier(.2, .7, .2, 1) backwards; }
+  .rm-split > :nth-child(2) { animation-delay: .1s; }
+  .rm-split > :nth-child(3) { animation-delay: .2s; }
+  .rm-branch::before { transform-origin: top center; animation: drop .4s ease .35s backwards; }
+  .rm-node { animation: fade .5s ease backwards; }
+  .rm-node:nth-child(2) { animation-delay: .06s; }
+  .rm-node:nth-child(3) { animation-delay: .12s; }
+  .rm-node:nth-child(4) { animation-delay: .18s; }
+  .rm-node:nth-child(5) { animation-delay: .24s; }
+  .rm-node:nth-child(6) { animation-delay: .3s; }
+}
