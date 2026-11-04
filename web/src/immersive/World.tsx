@@ -26,8 +26,17 @@ import type { WalkHandle } from './courtyard/WalkCamera';
 import { applyDressing, type SceneDressing } from '../../../shared/scene/dressing';
 import PhotoWorld from './photo/PhotoWorld';
 import { askFutureSelf } from './photo/advisor';
+import { MissionControl } from './swarm/MissionControl';
+import type { SwarmRequest, WorldOp } from '../../../shared/swarm/contracts';
+import { inputKey as swarmInputKey } from '../../../shared/swarm/engine-tools';
+import type { PhotoManifest as FounderWorld } from '../../../shared/world/manifest';
+import type { DocumentProposal } from '../../../shared/world/document';
+import type { AdvisorSegment } from '../../../shared/scene/advisor-model';
+import { WorldStudio } from './studio/WorldStudio';
+import { ContractDrop } from './studio/ContractDrop';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
+const FilmStudio = lazy(() => import('./studio/FilmStudio').then((m) => ({ default: m.FilmStudio })));
 
 /** Where the replay's camera stations stand in the courtyard. */
 const PLACE_FOR_STATION: Record<CameraStation, PlaceId> = { overview: 'spawn', contract: 'offer', bridge: 'bridge', marker: 'bridge', memo: 'memo' };
@@ -185,6 +194,17 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [walk, setWalk] = useState(false);
   const [photo, setPhoto] = useState(true);
   const [walkError, setWalkError] = useState('');
+  // What the founder has built or read in the studio. Their own photograph replaces the demo one; the figures never change here.
+  const [founderWorld, setFounderWorld] = useState<FounderWorld | undefined>();
+  const [documentProposal, setDocumentProposal] = useState<DocumentProposal | null>(null);
+  const [studio, setStudio] = useState<null | 'world' | 'contract' | 'film'>(null);
+  // The board's words for the person in the photograph, and the light its World Builder chose. Both are cleared when the decision changes.
+  const [boardWords, setBoardWords] = useState<{ key: string; text: string } | null>(null);
+  const [boardMood, setBoardMood] = useState<{ key: string; value: WorldOp['value'] } | null>(null);
+  const [boardSpoken, setBoardSpoken] = useState(0);
+  // Once the founder has convened the board once, each deliberate change sends it back to work. Nothing runs before that.
+  const [boardTrigger, setBoardTrigger] = useState<number | undefined>(undefined);
+  const boardEngaged = useRef(false);
   const walkHandle = useRef<WalkHandle | null>(null);
   // The draft characters stay out of the room unless asked for: they are not accepted as realistic yet.
   const people = useMemo(() => new URLSearchParams(location.search).has('people'), []);
@@ -273,6 +293,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
           : `Late payment applied to path ${pathId}. Cash does not run out within 36 months. Lowest cash is in month ${snap.active.lowest.month}. Showing that month.`,
       );
     } else say(`Late payment removed. Showing the baseline for path ${pathId}.`);
+    // The founder changed the decision on purpose, so a board they already convened goes back to work.
+    if (boardEngaged.current) setBoardTrigger((n) => (n ?? 0) + 1);
   }, [gate, pathId, say, session, stressed]);
 
   // What the advisor is told about this moment. Read when the question is sent, so it is never a stale copy.
@@ -500,6 +522,19 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const readout = useMemo(() => buildReadout(snapshot, shownMonth), [shownMonth, snapshot]);
   const lastAnswer = answers.at(-1);
   const heardAnswer = lastAnswer && lastAnswer.snapshotKey === snapshot.key && lastAnswer.month === shownMonth ? answerTranscript(lastAnswer) : null;
+  const swarmPathId = snapshot.ref.pathId;
+  const swarmEntry = session.paths[swarmPathId];
+  const swarmRequest: SwarmRequest = {
+    event: snapshot.ref.setback ? 'Late payment switched on. Challenge this plan.' : 'Review this path before I decide.',
+    month: shownMonth,
+    stressed: snapshot.ref.setback !== null,
+    path: { ...swarmEntry.path, letter: swarmPathId, name: swarmEntry.name, summary: swarmEntry.summary },
+    context: binding?.context ?? DEMO_CONTEXT,
+  };
+  const swarmKey = swarmInputKey(swarmRequest);
+  const spokenWords = boardWords?.key === swarmKey ? boardWords.text : heardAnswer;
+  const shownMood = boardMood?.key === swarmKey ? boardMood.value : null;
+  const studioStory = binding?.context?.story ?? DEMO_TEXT;
   const objectLabel = (id: string) => manifest?.objects[id as ObjectId]?.label ?? id;
   // A suggestion to go where the founder already is would be a button that does nothing.
   const wouldChange = (action: AdvisorAction) =>
@@ -509,7 +544,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
       <section className="stage" aria-label={photo ? 'Photographic possible future' : 'The courtyard'}>
         <div className="stage__view">
-          {photo && <PhotoWorld readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}`} disabled={inReplay || working} autoPlay={spokenAsk} demo={isDemo} />}
+          {photo && <PhotoWorld manifest={founderWorld} mood={shownMood} readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={spokenWords} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}|${boardSpoken}`} disabled={inReplay || working} autoPlay={spokenAsk + boardSpoken} demo={isDemo} />}
           {!photo && <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />}
           {!photo && webgl && manifest && (
             <SceneBoundary onFailure={(error) => { console.error('Courtyard renderer failed:', error); setWalk(false); setWebgl(false); }}>
@@ -580,6 +615,59 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <span className="hint">{photo ? 'Explore the photograph · choose an object' : !webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
           </div>
         </div>
+
+        {!inReplay && (
+          <div className="studio-dock glass" role="group" aria-label="Make this yours">
+            <button aria-pressed={studio === 'world'} onClick={() => setStudio((v) => (v === 'world' ? null : 'world'))}>Build my world</button>
+            <button aria-pressed={studio === 'contract'} onClick={() => setStudio((v) => (v === 'contract' ? null : 'contract'))}>Read my contract</button>
+            <button aria-pressed={studio === 'film'} onClick={() => setStudio((v) => (v === 'film' ? null : 'film'))}>Your future, the film</button>
+          </div>
+        )}
+        {studio && !inReplay && (
+          <div className="studio-sheet" role="dialog" aria-label="Studio">
+            <button className="studio-sheet__close btn btn--round" onClick={() => setStudio(null)} aria-label="Close the studio">×</button>
+            {studio === 'world' && <WorldStudio story={studioStory} onWorld={(world) => { setFounderWorld(world); setPhoto(true); }} />}
+            {studio === 'contract' && (
+              <>
+                <ContractDrop onApply={setDocumentProposal} />
+                {documentProposal && (
+                  <aside className="px-studio studio-proposal" aria-label="Document assumption proposal">
+                    <p>Check this against the original, then enter it on the object it belongs to. Nothing has changed yet.</p>
+                    <blockquote>{documentProposal.quote}</blockquote>
+                    <p>{documentProposal.kind === 'paymentDays' ? 'Payment delay in days' : 'Amount in rand'}: {documentProposal.value.toLocaleString('en-ZA')} · source page {documentProposal.page}</p>
+                    <button className="secondary" onClick={() => setDocumentProposal(null)}>Dismiss</button>
+                  </aside>
+                )}
+              </>
+            )}
+            {studio === 'film' && (
+              <Suspense fallback={<p role="status">Opening the film studio…</p>}>
+                <FilmStudio snapshot={snapshot} story={studioStory} world={founderWorld} />
+              </Suspense>
+            )}
+          </div>
+        )}
+        {!inReplay && (
+          <MissionControl
+            request={swarmRequest}
+            trigger={boardTrigger}
+            onStarted={() => { boardEngaged.current = true; }}
+            onSpeech={(segments: AdvisorSegment[]) => {
+              setBoardWords({ key: swarmKey, text: segments.map((s) => s.text).join('') });
+              setPhoto(true);
+              setBoardSpoken((n) => n + 1);
+            }}
+            onWorldOp={(op) => { setBoardMood({ key: swarmKey, value: op.value }); setPhoto(true); }}
+            onApply={(proposal) => {
+              if (proposal.inputKey !== swarmKey) return { ok: false, error: 'The decision changed. Run a new review first.' };
+              if (binding) return binding.onRevise(swarmPathId, proposal.assumptionId, proposal.values);
+              const revised = session.revise(swarmPathId, proposal.assumptionId, proposal.values);
+              if (!revised.ok) return revised;
+              setOwnSession(revised.session);
+              return { ok: true };
+            }}
+          />
+        )}
       </section>
 
       <aside className="panel" ref={panelRef} aria-label="The payment gap, from the engine">

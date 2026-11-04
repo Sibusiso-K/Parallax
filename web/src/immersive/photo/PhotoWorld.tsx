@@ -11,9 +11,11 @@ const PLACES: Record<PlaceId,[number,number,number]> = { spawn:[.5,.5,1],offer:[
 export interface PhotoWorldProps {
   readout: RoomReadout; place: PlaceId; selected: ObjectId|null; onSelect:(id:ObjectId)=>void;
   reduced:boolean; transcript:string|null; resetKey:string; disabled?:boolean; manifest?:SharedManifest; base?:string; autoPlay?:number; demo?:boolean;
+  /** The light the board's World Builder chose. Visual only: it never touches a figure. */
+  mood?:'golden'|'night'|'calm'|null;
 }
 /** No renderer context: a photo, transparent SAM cutouts, bounded Canvas atmosphere and DOM evidence. */
-export default function PhotoWorld({readout,place,selected,onSelect,reduced,transcript,resetKey,disabled=false,manifest:provided,base=PHOTO_BASE,autoPlay=0,demo=false}:PhotoWorldProps) {
+export default function PhotoWorld({readout,place,selected,onSelect,reduced,transcript,resetKey,disabled=false,manifest:provided,base=PHOTO_BASE,autoPlay=0,demo=false,mood=null}:PhotoWorldProps) {
   const [manifest,setManifest]=useState<PhotoManifest|null>(provided?adaptManifest(provided):null);
   const [error,setError]=useState('');
   const [hover,setHover]=useState<ObjectId|null>(null);
@@ -82,10 +84,10 @@ export default function PhotoWorld({readout,place,selected,onSelect,reduced,tran
   const target=selected?manifest.objects.find(o=>o.id===selected):null;
   const camera=speaking?[.5,.35,1.45]:target?[target.rect[0]+target.rect[2]/2,target.rect[1]+target.rect[3]/2,1.32]:PLACES[place];
   const person=manifest.people[readout.pathLetter as 'A'|'B'|'C']??manifest.people.B;
-  const isNight=nightMood(readout.below,readout.stressed);
+  const isNight=mood?mood==='night':nightMood(readout.below,readout.stressed);
   const contractPaper=manifest.objects.find(o=>o.id==='contract')?.paper;
   const memoPaper=manifest.objects.find(o=>o.id==='memo')?.paper;
-  return <div className={`photo-world ${isNight?'is-night':''} ${reduced?'is-reduced':''}`}>
+  return <div className={`photo-world ${isNight?'is-night':''} ${mood==='calm'?'is-calm':''} ${reduced?'is-reduced':''}`}>
     <div className="photo-scene" ref={scene} style={{'--photo-origin':`${camera[0]!*100}% ${camera[1]!*100}%`,'--photo-zoom':camera[2]} as CSSProperties}>
       <div className="photo-frame" ref={frame} style={{aspectRatio:`${manifest.width}/${manifest.height}`}}
         onPointerMove={event=>{const b=event.currentTarget.getBoundingClientRect();pointer.current={x:(event.clientX-b.left)/b.width-.5,y:(event.clientY-b.top)/b.height-.5};setHover(hit(event.clientX,event.clientY));}}

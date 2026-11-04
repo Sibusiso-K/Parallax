@@ -24,7 +24,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!cfg) return worldJson({ ok: true, mode: 'fixture', manifestUrl: DEMO_MANIFEST_URL });
   // Existing guard buckets until the integration owner adds named world/document limits.
   // Forty calls cover one sequential world and film; image calls remain bounded and one-shot.
-  const refused = guardPaidRoute(request, 'advisor');
+  const refused = guardPaidRoute(request, 'world');
   if (refused) return refused;
   try {
     if (input.action === 'plan') return worldJson({ ok: true, mode: 'model', plan: await planWorld(cfg, input.story) });

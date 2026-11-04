@@ -306,3 +306,18 @@
 .world .panel .months--panel .rowlabel { display: block; font-size: 14px; }
 .world .panel .room-working { margin-top: 10px; }
 .world .panel .foot__actions--quiet .btn { min-height: 34px; font-size: 12px; }
+
+/* The dock and the studio sheet: light glass over the photograph, one thing open at a time. */
+.world .studio-dock { position: absolute; left: 18px; top: 92px; z-index: 22; display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 16px; }
+.world .studio-dock button { font: inherit; font-size: 13px; text-align: left; padding: 8px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); cursor: pointer; }
+.world .studio-dock button:hover { background: rgba(255,255,255,.65); }
+.world .studio-dock button[aria-pressed='true'] { background: var(--lav); color: var(--lav-ink); }
+.world .studio-sheet { position: absolute; z-index: 29; left: 18px; top: 92px; bottom: 18px; width: min(620px, calc(100% - 36px)); overflow: auto; overscroll-behavior: contain; border-radius: 24px; background: #faf8f2; box-shadow: 0 24px 90px #26394a26; }
+.world .studio-sheet .px-studio { box-shadow: none; background: transparent; max-width: none; }
+.world .studio-sheet__close { position: sticky; top: 14px; float: right; margin: 14px 14px 0 0; z-index: 2; }
+.world .studio-proposal { border-top: 1px solid #e5dfd3; border-radius: 0; }
+.world .is-calm .photo-plate { filter: saturate(.86) brightness(1.03); transition: filter 1500ms ease-in-out; }
+@media (max-width: 768px) {
+  .world .studio-dock { position: static; flex-direction: row; flex-wrap: wrap; margin: 8px; }
+  .world .studio-sheet { left: 8px; right: 8px; top: 62px; bottom: 8px; width: auto; }
+}

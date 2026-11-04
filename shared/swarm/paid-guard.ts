@@ -4,7 +4,7 @@ const hits = new Map<string, { start: number; count: number }>();
 export const SWARM_LIMIT = 12;
 /** Reuses the shared origin/quota guard without editing another worker's file. One hit per complete swarm. */
 export function guardPaidRoute(request: Request, route: 'swarm', now = Date.now()): Response | null {
-  const denied = sharedGuard(request, 'advisor', now);
+  const denied = sharedGuard(request, 'swarm', now);
   if (denied) return denied;
   const visitor = clientKey(request);
   if (!visitor) return null;

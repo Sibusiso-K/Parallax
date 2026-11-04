@@ -14,6 +14,8 @@ export interface MissionControlProps {
   onWorldOp?: (operation: WorldOp) => void;
   /** Parent increments only for deliberate founder actions; absent means review-button only. */
   trigger?: string | number;
+  /** Called when a review starts, so the room knows the founder has convened the board. */
+  onStarted?: () => void;
 }
 const money = (n: number | null) => n === null ? 'Cost unavailable' : `US$${n.toFixed(4)}`;
 const actors = Object.keys(NODE_POSITIONS) as Actor[];
@@ -22,7 +24,7 @@ function Segments({ value }: { value: AdvisorSegment[] }) {
 }
 
 /** Unmounted until Worker A integrates it. No globals, scene edits or automatic assumption writes. */
-export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger }: MissionControlProps) {
+export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger, onStarted }: MissionControlProps) {
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false);
   const [traces, setTraces] = useState<Partial<Record<Actor, Trace>>>({});
   const [selected, setSelected] = useState<Actor>('orchestrator');
@@ -39,6 +41,7 @@ export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger 
   const run = async () => {
     abort.current?.abort(); const controller = new AbortController(); abort.current = controller;
     const ticket = ++generation.current;
+    onStarted?.();
     setBusy(true); setOpen(true); setResult(null); setTraces({}); setError(''); setApplied([]); setSelected('orchestrator');
     let fixtureReplay = false;
     try {
@@ -48,7 +51,7 @@ export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger 
         if (controller.signal.aborted || ticket !== generation.current) return;
         if (event.type === 'start') setMode(event.mode === 'fixture' ? 'Offline fixture replay · no model calls' : 'Live Meta review');
         if (event.type === 'trace') setTraces(old => ({ ...old, [event.trace.agent]: event.trace }));
-        if (event.type === 'result') { setResult(event.result); setMode(event.result.mode === 'fixture' ? 'Offline fixture · no model calls' : event.result.mode === 'partial' ? 'Partial review · some steps unavailable' : 'Live review complete'); }
+        if (event.type === 'result') { setResult(event.result); event.result.worldOps.slice(0, 1).forEach(op => onWorldOp?.(op)); setMode(event.result.mode === 'fixture' ? 'Offline fixture · no model calls' : event.result.mode === 'partial' ? 'Partial review · some steps unavailable' : 'Live review complete'); }
       }, controller.signal);
     } catch (e) { if (!controller.signal.aborted && ticket === generation.current) setError(e instanceof Error ? e.message : 'Review unavailable.'); }
     finally { if (ticket === generation.current) setBusy(false); }
@@ -69,7 +72,7 @@ export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger 
     } catch { setError('That change could not be applied.'); }
     finally { applyLock.current = false; setApplying(null); }
   };
-  if (!open) return <button className="mc-launch" onClick={() => setOpen(true)}><span aria-hidden="true">✳</span> Convene the board <small>See what each agent checks</small></button>;
+  if (!open) return <button className="mc-launch" onClick={() => setOpen(true)}><span aria-hidden="true">✳</span> Convene the board <small>A swarm of agents challenges this plan. Watch each step.</small></button>;
   return <aside className="mc" aria-label="Decision review board">
     <header className="mc-head"><div><p className="mc-mode" role="status">{mode}</p><h2>A second look at your future.</h2></div><button className="mc-close" aria-label="Close decision review" onClick={() => setOpen(false)}>×</button></header>
     <form className="mc-question" onSubmit={e => { e.preventDefault(); void run(); }}><label className="mc-sr" htmlFor="mc-question">Question for the board</label><input id="mc-question" value={question} onChange={e => setQuestion(e.target.value)} maxLength={600} placeholder={request.event} /><button type="submit" disabled={busy}>{busy ? 'Reviewing…' : result ? 'Review again' : 'Start review'}</button>{busy && <button type="button" onClick={() => { generation.current++; abort.current?.abort(); setBusy(false); setMode('Review stopped'); }}>Stop</button>}</form>
