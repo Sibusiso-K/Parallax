@@ -12,7 +12,7 @@ import { decisionLabels, type DecisionType, type Extraction } from "../../../sha
 import { templatePaths } from "../../../shared/paths/templates";
 import { buildProfile } from "../../../shared/profile/profile";
 import { isMoneyField } from "./format";
-import type { ChatChunk, FieldKey, IntakeResponse, PathCard, Profile, Simulation } from "./types";
+import type { ChatChunk, FieldKey, IntakeIssue, IntakeResponse, PathCard, Profile, Simulation } from "./types";
 
 export const DEMO_STORY = DEMO_TEXT;
 export { parseDecisionAnswer };
@@ -95,7 +95,8 @@ export const FIELD_DEFAULTS: Partial<Record<FieldKey, unknown>> = {
 };
 
 // /api/intake returns { value, quote } for text fields; the screens show plain values and keep each quote beside them.
-function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKey, unknown>>; quotes: Partial<Record<FieldKey, string>> } {
+// Exported so the end-to-end test drives the same mapping the screens do, not a copy of it.
+export function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKey, unknown>>; quotes: Partial<Record<FieldKey, string>> } {
   const fields: Partial<Record<FieldKey, unknown>> = {};
   const quotes: Partial<Record<FieldKey, string>> = {};
   for (const [key, field] of Object.entries(ex) as [FieldKey, Extraction[FieldKey]][]) {
@@ -110,6 +111,17 @@ function toScreenFields(ex: Extraction): { fields: Partial<Record<FieldKey, unkn
   return { fields, quotes };
 }
 
+// The F4 checks as the screens read them. An older deploy may send none, and a malformed entry is skipped rather than
+// shown; a blocking flag must be exactly true, so nothing is blocked by accident.
+function readIssues(raw: unknown): IntakeIssue[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((i) =>
+    i && typeof i === "object" && typeof i.message === "string" && i.message.trim()
+      ? [{ kind: String(i.kind ?? ""), message: i.message, blocking: i.blocking === true, ...(typeof i.field === "string" ? { field: i.field as FieldKey } : {}) }]
+      : [],
+  );
+}
+
 async function intake(text: string): Promise<IntakeResponse> {
   try {
     const res = await fetch("/api/intake", {
@@ -117,14 +129,21 @@ async function intake(text: string): Promise<IntakeResponse> {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ text }),
     });
-    const data = (await res.json()) as ApiIntake;
-    if (!data.ok) return { ok: true, mode: "fixture", fields: {}, missing: [...ASK_WHEN_UNREAD], notice: data.error };
+    const data = (await res.json()) as ApiIntake | null;
+    if (!data || data.ok !== true) {
+      // The route always sends a plain-English error, but a proxy or an older deploy may not. Never show no message,
+      // and never leave the founder without a way forward: the text stays in the box and the answers open below.
+      const raw = data as { error?: unknown } | null;
+      const error = raw && typeof raw.error === "string" && raw.error.trim() ? raw.error : "We couldn't read that. Your text is kept; please fill in the answers.";
+      return { ok: true, mode: "fixture", fields: {}, missing: [...ASK_WHEN_UNREAD], notice: error };
+    }
     const screen = toScreenFields(data.fields);
     return {
       ok: true,
       mode: data.mode,
       fields: screen.fields,
       quotes: screen.quotes,
+      issues: readIssues(data.issues),
       missing: data.missing.filter((k) => k !== "decision"),
       notice:
         data.notice ?? (data.mode === "fixture" ? "Demo mode: no model is connected yet, so only the demo story is read for you." : undefined),
@@ -140,9 +159,27 @@ async function intake(text: string): Promise<IntakeResponse> {
   }
 }
 
+export interface Health {
+  modelReady: boolean;
+  voiceReady: boolean;
+  /** Whether /api/session saves to Parallax's database. Off, a decision is kept in this browser only. */
+  savingReady: boolean;
+}
+
+/** What the server has switched on. Anything but a clear yes reads as off, so the screens never claim a model. */
+async function health(): Promise<Health> {
+  try {
+    const res = await fetch("/api/health", { cache: "no-store" });
+    const data = (await res.json()) as Partial<Record<keyof Health, unknown>> | null;
+    return { modelReady: data?.modelReady === true, voiceReady: data?.voiceReady === true, savingReady: data?.savingReady === true };
+  } catch {
+    return { modelReady: false, voiceReady: false, savingReady: false };
+  }
+}
+
 // Screens hold plain values; the engine's profile builder wants intake fields. Assumed answers are
-// left out so the profile builder fills them from za.json and marks them as defaults.
-function toExtraction(p: Profile): Extraction {
+// left out so the profile builder fills them from za.json and marks them as defaults. Exported for the end-to-end test.
+export function toExtraction(p: Profile): Extraction {
   const ex: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(p.fields) as [FieldKey, unknown][]) {
     if (p.assumed.includes(key) || value === undefined) continue;
@@ -273,8 +310,84 @@ const REPLIES: Record<DecisionType, Record<"A" | "B" | "C", Reply[]>> = {
 };
 const counters: Record<string, number> = {};
 
-async function* chat(pathId: string, message: string): AsyncIterable<ChatChunk> {
-  void message;
+export interface ChatContext {
+  business?: string;
+  location?: string;
+  decision?: string;
+  goals?: string[];
+  story?: string;
+}
+
+type ModelReply = { ok?: boolean; mode?: string; text?: unknown; citations?: unknown; clean?: unknown; checks?: unknown; model?: unknown; error?: unknown };
+
+/** Types a reply out word by word, as the scripted replies do, so both read the same way on screen. */
+async function* typeOut(text: string): AsyncIterable<ChatChunk> {
+  const words = text.split(" ");
+  for (let w = 0; w < words.length; w++) {
+    await wait(18);
+    yield { type: "token", text: (w ? " " : "") + words[w] };
+  }
+}
+
+/**
+ * One question to a future self. With Muse Spark connected, /api/chat answers from this path's own figures and the
+ * founder's own story, through the figure guard; the path sent is the one on screen, edits and all. With no model
+ * connected the route says so and the scripted replies below are used.
+ */
+async function* chat(
+  path: PathCard,
+  message: string,
+  history: { role: "user" | "self"; text: string }[] = [],
+  context: ChatContext = {},
+): AsyncIterable<ChatChunk> {
+  let data: ModelReply | null = null;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        path: { id: path.id, letter: path.letter, name: path.name, summary: path.summary, startingCash: path.startingCash, assumptions: path.assumptions },
+        context,
+        history: history.filter((h) => h.text.trim()).slice(-8).map((h) => ({ role: h.role, text: h.text.slice(0, 2000) })),
+        message: message.slice(0, 1000),
+      }),
+    });
+    data = (await res.json()) as ModelReply | null;
+  } catch {
+    data = null;
+  }
+  if (data?.ok && data.mode === "model" && typeof data.text === "string" && data.text.trim()) {
+    yield* typeOut(data.text);
+    const cites = Array.isArray(data.citations) ? data.citations : [];
+    for (const c of cites as { id?: unknown; label?: unknown }[]) {
+      if (typeof c?.id === "string" && typeof c.label === "string") yield { type: "citation", citation: { id: c.id, label: c.label } };
+    }
+    const checks = Array.isArray(data.checks) ? (data.checks as { type?: unknown }[]).map((c) => String(c?.type ?? "")) : [];
+    yield {
+      type: "done",
+      trace: {
+        model: typeof data.model === "string" ? data.model : "muse-spark",
+        checks: [
+          { name: "Figures come from code, not the model", ok: !checks.some((t) => ["scrubbed", "unknown_key", "wrong_path", "bad_value"].includes(t)) },
+          { name: "Cites at least one assumption on this path", ok: cites.length > 0 },
+          { name: "Makes no promises", ok: !checks.includes("certainty") },
+          { name: "Speaks in first person, 36 months on", ok: null },
+          { name: "Does not tell you what to choose", ok: null },
+        ],
+      },
+    };
+    return;
+  }
+  if (data && data.mode !== "fixture" && !(data.ok && data.mode === "model")) {
+    // The model is connected but this answer failed: say so, rather than pass a scripted reply off as an answer.
+    yield* typeOut(typeof data.error === "string" && data.error ? data.error : "Your future self couldn't answer just now. Please ask again.");
+    yield { type: "done", trace: { model: "none (the answer failed)", checks: [] } };
+    return;
+  }
+  yield* scripted(path.id);
+}
+
+async function* scripted(pathId: string): AsyncIterable<ChatChunk> {
   const path = lastPaths.get(pathId);
   const letter = path?.letter ?? "A";
   const list = REPLIES[lastDecision][letter];
@@ -295,4 +408,4 @@ async function* chat(pathId: string, message: string): AsyncIterable<ChatChunk> 
   yield { type: "done" };
 }
 
-export const mockApi = { intake, paths, simulate, chat };
+export const mockApi = { intake, health, paths, simulate, chat };

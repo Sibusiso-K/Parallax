@@ -1,8 +1,111 @@
-import { useState, type FormEvent } from "react";
-import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi } from "@/lib/parallax-api";
+import { useEffect, useState, type FormEvent } from "react";
+import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi, type Health } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
 import { Avatar, Button, Src } from "./shared";
+import { Listen } from "./Listen";
 import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
+import { MicButton } from "./MicButton";
+
+// The four steps of a run, for a founder (or a judge) opening Parallax for the first time.
+const HOW_TO: [string, string][] = [
+  ["Tell it your decision", "Type it the way you would tell a cofounder, or press Speak instead. Sales, costs, cash and the choice on the table."],
+  ["Check what it heard", "Every figure shows the words it came from. Answer the follow-ups, or press I don't know to use a marked default."],
+  ["Meet three futures", "Paths A, B and C, each with 36 months of cash computed in code. Stress-test them and ask each future you why."],
+  ["Compare and decide", "Put the paths side by side, check how much risk you are comfortable with, and print a decision memo."],
+];
+
+/**
+ * The privacy and model notes say what is really switched on, from /api/health. Until it answers, they describe demo
+ * mode, where nothing leaves Parallax's own server.
+ */
+function ModelNotes() {
+  const [health, setHealth] = useState<Health | null>(null);
+  useEffect(() => {
+    let live = true;
+    mockApi.health().then((h) => live && setHealth(h));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const meta = !!(health?.modelReady || health?.voiceReady);
+  const toMeta = meta ? ` To be read, your ${health?.modelReady ? "text" : "recording"} also goes to Meta's Model API, which does not keep it for Parallax.` : "";
+  const privacy = health?.savingReady ? (
+    <div className="note">
+      <b>Saved, privately</b>
+      <span>
+        Your decision is saved in Parallax's database under a private code only this browser holds, so you can come back to it.
+        Delete everything erases it.{toMeta}
+      </span>
+    </div>
+  ) : (
+    <div className="note">
+      <b>Kept on this device</b>
+      <span>
+        Parallax's server reads your text and keeps nothing; a copy stays in this browser so a reload picks up where you were. Delete
+        everything erases it.{toMeta}
+      </span>
+    </div>
+  );
+  if (!meta) {
+    return (
+      <>
+        {privacy}
+        <div className="note">
+          <b>No model connected yet</b>
+          <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
+        </div>
+      </>
+    );
+  }
+  const reads = [health?.modelReady && "Muse Spark reads your story and answers as each future you", health?.voiceReady && "Muse Voice Transcribe turns your voice into text"]
+    .filter(Boolean)
+    .join(", and ");
+  return (
+    <>
+      {privacy}
+      <div className="note">
+        <b>Read by Meta's Muse models</b>
+        <span>{reads}. Every figure is still computed in code, never by the model.</span>
+      </div>
+    </>
+  );
+}
+
+const STEP_NAMES: Partial<Record<string, string>> = {
+  intake: "telling it your decision",
+  heard: "checking what it heard",
+  profile: "your business today",
+  paths: "the three paths",
+  chat: "talking to a future you",
+  explore: "the 3D room",
+  compare: "comparing the paths",
+  comfort: "comparing the paths",
+  summary: "the decision memo",
+  roadmap: "your roadmap",
+};
+
+/** Offers the saved decision back. Nothing is restored until the founder says so. */
+function ResumeCard() {
+  const { resume, resumeSaved, dismissResume } = useParallax();
+  if (!resume) return null;
+  return (
+    <div className="resume-card" role="region" aria-label="Your saved decision">
+      <div className="eyebrow">Welcome back</div>
+      <b>{resume.decision || "Your saved decision"}</b>
+      <span>
+        {resume.business ? `${resume.business} · ` : ""}you were on {STEP_NAMES[resume.step] ?? "your decision"}.
+      </span>
+      <div className="actions-row">
+        <Button variant="primary" onClick={resumeSaved}>
+          Pick up where I left off
+        </Button>
+        <Button variant="ghost" className="on-navy" onClick={dismissResume}>
+          Start a new decision
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
@@ -16,6 +119,7 @@ export function StartScreen() {
             Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the founder
             you would become.
           </p>
+          <ResumeCard />
           <label className="agree">
             <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
             <span>I am 18 or older</span>
@@ -32,19 +136,31 @@ export function StartScreen() {
           <Avatar letter="C" src="/avatars/C.png" size={168} className="hero-face hero-c" />
         </div>
       </section>
+      <section className="how-to" aria-labelledby="how-to-title">
+        <div className="how-head">
+          <h2 id="how-to-title">How it works</h2>
+          <p>
+            First time? Tick the box, press <b>Begin</b>, then <b>Use the demo story</b> to see a full run in about two minutes.
+          </p>
+        </div>
+        <ol className="how-steps">
+          {HOW_TO.map(([title, text], i) => (
+            <li key={title}>
+              <span className="how-num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <b>{title}</b>
+              <span>{text}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
       <section className="start-notes">
         <div className="note">
           <b>A reflection aid</b>
           <span>Not financial advice. One possible future, not a prediction.</span>
         </div>
-        <div className="note">
-          <b>Not stored</b>
-          <span>Your text goes only to Parallax's own server, to be read. The server does not keep it.</span>
-        </div>
-        <div className="note">
-          <b>No model connected yet</b>
-          <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
-        </div>
+        <ModelNotes />
       </section>
     </>
   );
@@ -85,6 +201,7 @@ export function IntakeScreen() {
         <Button variant="outline" onClick={() => set({ story: DEMO_STORY })}>
           Use the demo story (fictional founder)
         </Button>
+        <MicButton onText={(text) => set((s) => ({ story: s.story.trim() ? `${s.story.trimEnd()} ${text}` : text }))} />
         <Button variant="primary" className="ml-auto" onClick={next} disabled={!story.trim() || busy}>
           {busy ? "Reading…" : "Continue"}
         </Button>
@@ -99,6 +216,11 @@ export function IntakeScreen() {
 export function HeardScreen() {
   const { missing, intake, set, go } = useParallax();
   const current = missing[0];
+  // F4: a blocking check (under 18, out of scope, not supported yet) stops the paths until the founder changes what
+  // they wrote. The others are questions to confirm; they never stop anything.
+  const issues = intake?.issues ?? [];
+  const blocking = issues.filter((i) => i.blocking);
+  const checks = issues.filter((i) => !i.blocking);
   const [answer, setAnswer] = useState("");
   const [err, setErr] = useState("");
 
@@ -133,7 +255,33 @@ export function HeardScreen() {
       </div>
       {intake?.notice && <p className="notice">{intake.notice}</p>}
 
-      {current && (
+      {blocking.length > 0 && (
+        <div className="issue-box blocking" role="alert">
+          <div className="caps">Parallax can't go on with this</div>
+          <ul>
+            {[...new Set(blocking.map((i) => i.message))].map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+          <div className="row-btns">
+            <Button variant="primary" onClick={() => go("intake")}>
+              Change what I wrote
+            </Button>
+          </div>
+        </div>
+      )}
+      {checks.length > 0 && (
+        <div className="issue-box">
+          <div className="caps">Please check</div>
+          <ul>
+            {[...new Set(checks.map((i) => i.message))].map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {current && blocking.length === 0 && (
         <form key={current} className="followup-box" onSubmit={submit}>
           <div className="caps">
             One more thing{missing.length > 1 ? ` · ${missing.length} left` : ""}
@@ -143,6 +291,7 @@ export function HeardScreen() {
               <p className="q" id="followup-q">
                 {FIELD_QUESTIONS[current]}
               </p>
+              <Listen id={`q-${current}`} text={FIELD_QUESTIONS[current] ?? ""} />
               <div className="row-btns" role="group" aria-labelledby="followup-q">
                 {DECISION_TYPES.map((t) => (
                   <Button key={t} variant="outline" onClick={() => resolve(t, false)}>
@@ -156,6 +305,7 @@ export function HeardScreen() {
               <label htmlFor="followup" className="q">
                 {FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]}
               </label>
+              <Listen id={`q-${current}`} text={FIELD_QUESTIONS[current] ?? FIELD_LABELS[current]} />
               <input
                 id="followup"
                 autoFocus
@@ -194,11 +344,15 @@ export function HeardScreen() {
         <Button variant="ghost" onClick={() => go("intake")}>
           Back
         </Button>
-        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current} onClick={() => go("generating")}>
+        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current || blocking.length > 0} onClick={() => go("generating")}>
           This is right
         </Button>
       </div>
-      {current && <p className="hint">Answer the question above first.</p>}
+      {blocking.length > 0 ? (
+        <p className="hint">Change what you wrote to go on.</p>
+      ) : (
+        current && <p className="hint">Answer the question above first.</p>
+      )}
     </section>
   );
 }

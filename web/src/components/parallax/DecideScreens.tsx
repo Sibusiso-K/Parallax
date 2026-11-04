@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { FIELD_LABELS } from "@/lib/parallax-api";
 import { useParallax, type Letter } from "@/lib/parallax-store";
-import { formatField, formatMoney } from "@/lib/format";
+import { formatField, formatMoney, memoQuestion } from "@/lib/format";
 import type { FieldKey, PathCard } from "@/lib/types";
 import { pathFigures, type Figures } from "@/lib/stress";
 import { Avatar, Badge, Button, NoPaths, Src, type Kind } from "./shared";
@@ -9,7 +9,6 @@ import { RangeBar, domainOf } from "./charts";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 const at = (a: number[], month: number) => a[month] ?? 0;
-const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The three paths side by side, with the comfort check beside them. */
 export function CompareScreen() {
@@ -25,7 +24,7 @@ export function CompareScreen() {
         <>
           <div className="v">{formatMoney(at(f.likely, 12))}</div>
           <div className="r">
-            Bad {formatMoney(at(f.bad, 12))} · Good {formatMoney(at(f.good, 12))}
+            <span>Bad {formatMoney(at(f.bad, 12))}</span> · <span>Good {formatMoney(at(f.good, 12))}</span>
           </div>
         </>
       ),
@@ -36,7 +35,7 @@ export function CompareScreen() {
         <>
           <div className="v">{formatMoney(end(f.likely))}</div>
           <div className="r">
-            Bad {formatMoney(end(f.bad))} · Good {formatMoney(end(f.good))}
+            <span>Bad {formatMoney(end(f.bad))}</span> · <span>Good {formatMoney(end(f.good))}</span>
           </div>
           <RangeBar letter={p.letter} bad={end(f.bad)} likely={end(f.likely)} good={end(f.good)} domain={domain} />
         </>
@@ -133,7 +132,7 @@ export function CompareScreen() {
                 <tr key={r.label}>
                   <td className="lab">{r.label}</td>
                   {paths.map((p, i) => (
-                    <td key={p.id}>{r.cell(p, figures[i]!)}</td>
+                    <td key={p.id} data-label={`${p.letter} · ${p.name}`}>{r.cell(p, figures[i]!)}</td>
                   ))}
                 </tr>
               ))}
@@ -220,7 +219,7 @@ export function SummaryScreen() {
   if (paths.length === 0) return <NoPaths />;
 
   const chosenPath = chosen ? pathOf(chosen) : undefined;
-  const question = typeof fields.decision === "string" && fields.decision ? fields.decision : "Your decision";
+  const question = memoQuestion(fields.decision);
   const pick = (l: Letter) => set({ chosen: l, decision: "decided" });
 
   const choice =
@@ -259,7 +258,7 @@ export function SummaryScreen() {
     <div className="memowrap">
       <article className="memo">
         <div className="caps">Decision memo · printed from Parallax</div>
-        <h1>{capitalise(question)}?</h1>
+        <h1>{question}</h1>
         <div className="choice">
           <span className="caps">Choice</span>
           {choice}
@@ -311,14 +310,14 @@ export function SummaryScreen() {
                         </div>
                       </div>
                     </td>
-                    <td className="n">{formatMoney(end(f.bad))}</td>
-                    <td className="n">{formatMoney(end(f.likely))}</td>
-                    <td className="n">{formatMoney(end(f.good))}</td>
-                    <td className="n">
+                    <td className="n" data-label="Month 36, bad">{formatMoney(end(f.bad))}</td>
+                    <td className="n" data-label="Month 36, likely">{formatMoney(end(f.likely))}</td>
+                    <td className="n" data-label="Month 36, good">{formatMoney(end(f.good))}</td>
+                    <td className="n" data-label="Lowest, likely">
                       {formatMoney(f.lowestLikely.cash)}
                       <div className="psub">month {f.lowestLikely.month}</div>
                     </td>
-                    <td className="n">
+                    <td className="n" data-label="Lowest, 2-month late payment">
                       {formatMoney(f.late.lowest.cash)}
                       <div className="psub">
                         month {f.late.lowest.month}

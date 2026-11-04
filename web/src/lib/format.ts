@@ -22,13 +22,15 @@ function parseOne(raw: string): number | null {
 }
 
 /**
- * Accepts "8000", "8k", "about 8k", "R8 000", "8k to 12k", "8k-12k".
+ * Accepts "8000", "8k", "about 8k", "R8 000", "8k to 12k", "8 to 12k", "8k-12k".
  * Returns null when the text cannot be read as an amount.
  */
 export function parseAmount(input: string): { low: number; high: number; base?: number } | null {
   let s = input.trim().toLowerCase();
   if (!s) return null;
   s = s.replace(/^(about|around|roughly|approx\.?|approximately|~)\s*/, "");
+  // "-500" is not a range from nothing to 500: a leading sign is a negative amount, which is never a valid figure.
+  if (/^r?\s*[-−]/.test(s)) return null;
   s = s.replace(/\s*(a|per)\s*month$|\/\s*m(onth)?$|\s*pm$/, "");
   const parts = s.split(/\s*(?:to|–|—|-(?=\s*r?\d)|and)\s*/).filter(Boolean);
   if (parts.length === 1) {
@@ -36,9 +38,17 @@ export function parseAmount(input: string): { low: number; high: number; base?: 
     return n === null || n < 0 ? null : { low: n, high: n, base: n };
   }
   if (parts.length === 2) {
-    const a = parseOne(parts[0]!);
+    let a = parseOne(parts[0]!);
     const b = parseOne(parts[1]!);
     if (a === null || b === null || a < 0 || b < 0) return null;
+    // "8 to 12k" means R8 000 to R12 000, the way the intake's own parser reads it. The shorthand only applies when
+    // the left end has no unit of its own and scaling it still leaves it at or below the right end: "8000 to 12k"
+    // stays R8 000, and "999 to 1k" stays R999.
+    const suffix = /[km]$/i.exec(parts[1]!)?.[0] ?? "";
+    if (suffix && !/[km]$/i.test(parts[0]!)) {
+      const scaled = parseOne(parts[0]! + suffix);
+      if (scaled !== null && scaled <= b) a = scaled;
+    }
     const low = Math.min(a, b);
     const high = Math.max(a, b);
     return { low, high, base: Math.round((low + high) / 2) };
@@ -48,6 +58,18 @@ export function parseAmount(input: string): { low: number; high: number; base?: 
 
 export function isMoneyField(v: unknown): v is MoneyField {
   return typeof v === "object" && v !== null && "low" in v && "high" in v;
+}
+
+/** The memo heading: the founder's own question, capitalised, with exactly one question mark. */
+export function memoQuestion(decision: unknown): string {
+  const text = typeof decision === "string" ? decision.trim().replace(/[?.!]+$/, "") : "";
+  if (!text) return "Your decision?";
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)}?`;
+}
+
+/** What an edit box starts with for a money figure: a range the parser can read, never the sentence it came from. */
+export function moneyDraft(v: MoneyField): string {
+  return v.low === v.high ? String(v.base ?? v.low) : `${v.low} to ${v.high}`;
 }
 
 export function formatField(v: unknown): string {

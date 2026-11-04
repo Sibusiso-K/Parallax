@@ -16,6 +16,7 @@ import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailabl
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
 import { exploreSession } from './session-adapter';
 import { OBJECT_IDS, WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
+import { applyDressing, type SceneDressing } from '../../../shared/scene/dressing';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
 
@@ -76,6 +77,8 @@ export interface ExploreBinding {
   onRevise: (pathId: PathLetter, assumptionId: string, edit: Edit) => { ok: true; revision: number } | { ok: false; error: string };
   /** Whose figures these are, shown beside the scene. */
   founderLabel: string;
+  /** This founder's names for the places and objects, from Muse Spark (shared/scene/dressing.ts). Absent: the courtyard as built. */
+  dressing?: SceneDressing | null;
 }
 
 export default function WorldRoot({ binding }: { binding?: ExploreBinding }) {
@@ -125,12 +128,24 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [place, setPlace] = useState<PlaceId>('spawn');
   const [walk, setWalk] = useState(false);
   const [walkError, setWalkError] = useState('');
+  // The founder's own names for the room, applied over the built manifest; positions never change.
+  const dressing = binding?.dressing ?? null;
+  const dressingRef = useRef(dressing);
+  dressingRef.current = dressing;
+  const rawManifest = useRef<CourtyardManifest | null>(null);
+  useEffect(() => {
+    if (rawManifest.current) setManifest(applyDressing(rawManifest.current, dressing));
+  }, [dressing]);
   const [focus, setFocus] = useState<ObjectId | null>(null);
   const [hoverObject, setHoverObject] = useState<ObjectId | null>(null);
   useEffect(() => {
     let live = true;
     loadManifest().then(
-      (m) => live && setManifest(m),
+      (m) => {
+        if (!live) return;
+        rawManifest.current = m;
+        setManifest(applyDressing(m, dressingRef.current));
+      },
       (e: Error) => live && setWorldError(e.message),
     );
     return () => {
@@ -392,7 +407,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
         <div className="stage__top">
           <div className="placecard glass">
-            <b>{isDemo ? 'Ayanda’s courtyard' : 'The courtyard'}</b>
+            <b>{dressing?.title ?? (isDemo ? 'Ayanda’s courtyard' : 'The courtyard')}</b>
             <span>{binding ? binding.founderLabel : 'Fictional founder'} · 3D model, illustrative setting</span>
             <div role="tablist" aria-label="Path" className="paths">
               {PATH_ORDER.map((p) => (
@@ -552,6 +567,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 ×
               </button>
             </div>
+            {dressing?.objects[focus]?.caption && <p className="muted small">{dressing.objects[focus].caption}</p>}
             {focus !== 'intake_desk' && (
               <details className="table">
                 <summary>Preview reel storyboard</summary>

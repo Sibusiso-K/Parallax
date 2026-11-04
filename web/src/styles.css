@@ -7,8 +7,8 @@
   --card: #ffffff;
   --ink: #0f1a33;
   --ink-2: #3f4d68;
-  --muted: #7b8598;
-  --muted-3: #a3acbd;
+  --muted: #5f6b80;
+  --muted-3: #66718a;
   --line: #e3e8f1;
   --line-2: #eef1f7;
   --field: #d3dbe8;
@@ -106,6 +106,8 @@ button { cursor: pointer; }
 .decision-title {
   margin-top: 4px; font-size: 22px; font-weight: 800; font-stretch: 125%; line-height: 1.15;
   text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; color: var(--ink);
+  /* A long decision is the founder's own words: keep the heading to two lines here and print it in full in the memo. */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
 .tabs { display: flex; flex-wrap: wrap; gap: 10px; }
 .tab {
@@ -119,6 +121,8 @@ button { cursor: pointer; }
   width: 20px; height: 20px; border-radius: 50%; background: var(--c); color: #fff;
   font-size: 11px; font-weight: 800; border: 2px solid #fff;
 }
+/* Salmon B is light: white on it is 2.9:1. Ink keeps the small letter readable and leaves the path colour itself. */
+.p-B .tab-letter, .p-B .nft-letter { color: var(--ink); }
 .content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 26px; padding: 8px 36px 40px; }
 .footer { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 12px 16px; font-size: 13px; color: var(--muted); }
 .screen { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
@@ -141,7 +145,10 @@ button { cursor: pointer; }
 .hero {
   position: relative; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; align-items: center;
   padding: 84px 72px 104px; overflow: hidden; color: #fff; background: var(--navy);
-  clip-path: polygon(0 12%, 50% 0, 100% 12%, 100% 88%, 50% 100%, 0 88%);
+  /* The slant is a fixed depth, not a share of the height: a share grows as the band stacks into one tall column and
+     cut through the eyebrow. The top padding stays deeper than the slant. */
+  --slant: 56px;
+  clip-path: polygon(0 var(--slant), 50% 0, 100% var(--slant), 100% calc(100% - var(--slant)), 50% 100%, 0 calc(100% - var(--slant)));
 }
 .hero::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -163,6 +170,43 @@ button { cursor: pointer; }
 .hero-b { left: 30%; top: 0; border-color: var(--B); }
 .hero-a { left: 4%; top: 46%; border-color: var(--A); }
 .hero-c { left: 58%; top: 52%; border-color: var(--C); }
+/* The start-up animation (Splash.tsx): the mark's three paths slide apart from one point, then the name rises. */
+.splash {
+  position: fixed; inset: 0; z-index: 1000; display: grid; place-content: center; justify-items: center; gap: 12px;
+  padding: 24px; background: var(--navy); color: #fff; text-align: center; cursor: pointer; transition: opacity .45s ease;
+}
+.splash-out { opacity: 0; pointer-events: none; }
+.splash .sq { transform-box: fill-box; transform-origin: center; animation: splash-sq .9s cubic-bezier(.2, .8, .2, 1) both; }
+.splash .sq-a { --dx: 5.5px; --dy: -.5px; animation-delay: .1s; }
+.splash .sq-b { --dx: -.5px; --dy: 3.5px; animation-delay: .25s; }
+.splash .sq-c { --dx: -5.5px; --dy: -2.5px; animation-delay: .4s; }
+@keyframes splash-sq { from { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.55); } to { opacity: 1; transform: none; } }
+.splash-word { font-size: 46px; font-weight: 800; font-stretch: 125%; letter-spacing: .01em; animation: splash-rise .6s .6s both; }
+.splash-tag { max-width: 30ch; font-size: 15px; line-height: 1.45; color: rgba(255, 255, 255, .78); animation: splash-rise .6s .8s both; }
+@keyframes splash-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .splash, .splash * { animation: none !important; transition-duration: .2s !important; }
+}
+
+/* The saved decision, offered back on the navy band. Nothing is restored until the founder picks it up. */
+.resume-card {
+  display: flex; flex-direction: column; gap: 6px; margin: 4px 0 18px; padding: 18px 20px; max-width: 560px;
+  border: 1px solid rgba(255, 255, 255, .22); border-radius: 22px; background: rgba(255, 255, 255, .08);
+  font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .86);
+}
+.resume-card .eyebrow { color: rgba(255, 255, 255, .72); }
+.resume-card b { font-size: 18px; font-weight: 800; color: #fff; overflow-wrap: anywhere; }
+.resume-card .actions-row { margin-top: 8px; }
+.btn.on-navy { color: #fff; }
+.btn.on-navy:hover { background: rgba(255, 255, 255, .12); }
+.how-to { display: flex; flex-direction: column; gap: 18px; padding: 40px 72px 0; }
+.how-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+.how-head h2 { font-size: 26px; font-weight: 800; font-stretch: 112%; letter-spacing: -.01em; }
+.how-head p { font-size: 14px; color: var(--ink-2); }
+.how-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; }
+.how-steps li { display: flex; flex-direction: column; gap: 6px; padding: 22px; border: 1.5px solid var(--line-2); border-radius: 24px; background: #fff; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.how-steps b { font-size: 15px; font-weight: 800; color: var(--ink); }
+.how-num { display: grid; place-items: center; width: 30px; height: 30px; margin-bottom: 4px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 800; }
 .start-notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 36px 72px 8px; }
 .note { display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: 24px; background: var(--panel); font-size: 14px; line-height: 1.5; color: var(--ink-2); }
 .note b { font-size: 15px; font-weight: 800; color: var(--ink); }
@@ -206,7 +250,7 @@ button { cursor: pointer; }
 
 /* ---------- Pills and notices ---------- */
 .src {
-  display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+  display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
   letter-spacing: .04em; text-transform: uppercase; line-height: 1.5; white-space: nowrap; vertical-align: middle;
 }
 .src.you { background: #e3e9ff; color: #2c3fb0; }
@@ -232,7 +276,7 @@ button.chip:hover { background: #e6ecf8; }
 
 .fgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .ffield { min-width: 0; padding: 18px 20px; border-radius: 22px; background: var(--panel); }
-.fcap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fcap { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .fedit { margin-left: auto; text-transform: none; letter-spacing: 0; }
 .fval { margin-top: 8px; font-size: 22px; font-weight: 800; font-stretch: 112%; overflow-wrap: anywhere; }
 .fsub { margin-top: 4px; font-size: 13px; color: var(--muted); }
@@ -249,6 +293,12 @@ button.chip:hover { background: #e6ecf8; }
 .followup-box .btn { background: transparent; border-color: rgba(255, 255, 255, .7); color: #fff; }
 .followup-box .ferr { color: #fff; }
 .followup-box .row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.issue-box { display: flex; flex-direction: column; gap: 10px; padding: 18px 22px; border-radius: 22px; background: var(--panel); }
+.issue-box ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+.issue-box.blocking { border: 1.5px solid var(--warn); background: #fff; }
+.issue-box.blocking .caps { color: var(--warn); }
+.issue-box .row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* ---------- Panels ---------- */
 .row { display: grid; gap: 24px; align-items: start; }
@@ -304,6 +354,7 @@ button.chip:hover { background: #e6ecf8; }
 .tracelist .trace p { margin-bottom: 6px; }
 
 /* ---------- Charts and stress tests ---------- */
+.chartbox { width: 100%; min-width: 0; }
 .chart { display: block; width: 100%; height: auto; }
 .rangebar { display: block; width: 100%; height: auto; margin-top: 8px; }
 .srows { display: flex; flex-direction: column; gap: 10px; }
@@ -356,7 +407,10 @@ button.chip:hover { background: #e6ecf8; }
 .cmp td { padding: 18px 14px; vertical-align: top; border-bottom: 1px solid var(--line-2); font-size: 15px; }
 .cmp td.lab { width: 230px; font-weight: 700; color: var(--ink-2); }
 .cmp .v { font-size: 22px; font-weight: 800; font-stretch: 112%; }
-.cmp .r { margin-top: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+/* The range may break between its two figures, never inside one: a single nowrap line made the table wider than its
+   panel at 1440px and hid path C behind a scrollbar. */
+.cmp .r { margin-top: 6px; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.cmp .r span { white-space: nowrap; }
 .cmp .t { font-size: 16px; font-weight: 800; }
 .cmp .s { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
 .cmp .none { color: var(--muted-3); }
@@ -428,6 +482,16 @@ button.chip:hover { background: #e6ecf8; }
   .hero { grid-template-columns: minmax(0, 1fr); padding: 72px 48px 96px; }
   .hero-art { height: 300px; }
   .start-notes { padding: 32px 48px 8px; }
+  .how-to { padding: 36px 48px 0; }
+  .how-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* The compare table needs about 760px. Below that, the row gets the full width before the comfort panel moves under it. */
+@media (max-width: 1400px) {
+  .pagecols3 { grid-template-columns: minmax(0, 1fr); }
+}
+/* Two path cards fit a tablet, but the third card alone in a row looks unfinished: centre it under the pair. */
+@media (min-width: 861px) and (max-width: 1280px) {
+  .pathgrid > .nft:last-child:nth-child(3) { grid-column: 1 / -1; width: calc(50% - 11px); justify-self: center; }
 }
 @media (max-width: 1180px) {
   .pagecols, .pagecols3 { grid-template-columns: minmax(0, 1fr); }
@@ -442,9 +506,11 @@ button.chip:hover { background: #e6ecf8; }
   .topbar { padding: 16px 18px 8px; }
   .content { padding: 8px 18px 32px; }
   .pagehead h1 { font-size: 30px; }
-  .hero { padding: 56px 26px 84px; clip-path: polygon(0 6%, 50% 0, 100% 6%, 100% 94%, 50% 100%, 0 94%); }
+  .hero { --slant: 28px; padding: 56px 26px 84px; }
   .hero h1 { font-size: 40px; }
   .start-notes { grid-template-columns: minmax(0, 1fr); padding: 24px 18px 8px; }
+  .how-to { padding: 28px 18px 0; }
+  .how-steps { grid-template-columns: minmax(0, 1fr); }
   .fgrid, .pathgrid, .twocol, .notes { grid-template-columns: minmax(0, 1fr); }
   .memo { padding: 26px 20px; }
   .chat-head { flex-wrap: wrap; }
@@ -453,12 +519,78 @@ button.chip:hover { background: #e6ecf8; }
   .cmp td.lab { width: auto; }
   .dnote { width: 100%; margin-left: 0; }
   .decision-title { font-size: 18px; }
+  /* The demo decision needs three lines at phone width; the long-decision clamp still keeps the header bounded. */
+  .decision-title { -webkit-line-clamp: 3; }
   .drawer-panel { top: 0; right: 0; bottom: 0; width: 100%; border-radius: 0; }
+  .rate { gap: 4px; }
+  .rate button { width: 36px; height: 36px; }
 }
+
+/* The compare table is four columns wide; below the tablet breakpoint it becomes one labelled block per row, so no
+   path's figure is cut off behind a horizontal scrollbar. */
+@media screen and (max-width: 860px) {
+  .tablewrap { overflow: visible; }
+  .cmp:not(.memo-table), .cmp:not(.memo-table) tbody, .cmp:not(.memo-table) tr, .cmp:not(.memo-table) td { display: block; width: 100%; }
+  .cmp:not(.memo-table) thead { display: none; }
+  .cmp:not(.memo-table) tr { padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+  .cmp:not(.memo-table) td { border: 0; padding: 4px 0; }
+  .cmp:not(.memo-table) td.lab { width: auto; padding-bottom: 2px; font-size: 13px; }
+  .cmp:not(.memo-table) td[data-label] { padding: 8px 0; border-bottom: 1px dashed var(--line-2); }
+  .cmp:not(.memo-table) td[data-label]:last-child { border-bottom: 0; }
+  .cmp:not(.memo-table) td[data-label]::before {
+    content: attr(data-label); display: block; margin-bottom: 3px;
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+  }
+  .cmp .r { white-space: normal; }
+  .cmp .rangebar { max-width: none; }
+}
+
+/* The printable memo's six columns need about 660px. They fit a tablet once the sidebar moves to the top (761-860px),
+   but not a phone, nor a small laptop where the sidebar still sits beside the memo (861-960px). There each path
+   becomes a labelled block too. */
+@media screen and (max-width: 760px), screen and (min-width: 861px) and (max-width: 960px) {
+  .memo-table, .memo-table tbody, .memo-table tr, .memo-table td { display: block; width: 100%; }
+  .memo-table thead { display: none; }
+  .memo-table tr { padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+  .memo-table td { border: 0; padding: 4px 0; }
+  .memo-table td.n { text-align: left; }
+  .memo-table td[data-label] { padding: 7px 0; border-bottom: 1px dashed var(--line-2); }
+  .memo-table td[data-label]:last-child { border-bottom: 0; }
+  .memo-table td[data-label]::before {
+    content: attr(data-label); display: block; margin-bottom: 2px;
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+  }
+}
+
+@media (max-width: 520px) {
+  .sidebar { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "logo . foot" "nav nav nav"; gap: 8px 10px; padding: 10px 14px; }
+  .logo { grid-area: logo; width: 40px; height: 40px; margin: 0; }
+  .nav { grid-area: nav; flex-direction: row; justify-content: center; gap: 4px; }
+  .nav button { width: 44px; height: 44px; }
+  .side-foot { grid-area: foot; flex-direction: row; margin: 0; gap: 6px; }
+  .side-foot button { width: 38px; height: 38px; }
+}
+
+@media (max-width: 480px) {
+  .hero-c { left: auto; right: 0; }
+  .intake .actions-row .btn { white-space: normal; padding: 10px 18px; line-height: 1.25; }
+  .followup-box .row-btns .btn { white-space: normal; padding: 9px 16px; line-height: 1.2; text-align: center; }
+}
+
+@page { size: A4; margin: 12mm; }
 
 @media print {
   body { background: #fff; }
   .no-print, .sidebar, .topbar, .footer, .drawer-root { display: none !important; }
   .cr, .main, .content { display: block; padding: 0; }
   .memo { max-width: none; padding: 0; border: 0; box-shadow: none; }
+  .memo h1 { font-size: 26px; }
+  .tablewrap { overflow: visible; }
+  .memo-table { width: 100%; table-layout: fixed; font-size: 10px; }
+  .memo-table th, .memo-table td { padding: 5px 3px; }
+  .memo-table th:first-child, .memo-table td:first-child { width: 27%; }
+  .memo-table .pname .avatar { display: none; }
+  .memo-table .psub { font-size: 9px; }
+  .cmp .v { font-size: 14px; }
+  .cmp .r { font-size: 9.5px; white-space: normal; }
 }

@@ -8,7 +8,8 @@ import type { Session } from './session';
 // claim reference resolved and formatted by code; if any reference fails, the whole answer is withheld. The trace shows
 // only what actually ran locally. Nothing here claims a model reasoned, and "matched" means matched to this simulation.
 
-export const FIXTURE_LABEL = 'Fixture advisor: no model is connected. Answers are authored templates over real engine results.';
+// True with or without a model on the intake: the advisor itself never calls one.
+export const FIXTURE_LABEL = 'Fixture advisor: answers are authored templates over real engine results, not model output.';
 export const MATCHED_LABEL = 'Matched to this simulation';
 
 export type Intent = 'why_month' | 'lowest' | 'delay_meaning' | 'unsupported';

@@ -2,11 +2,20 @@
 import { useState, type ReactNode } from "react";
 import { useParallax, type Step } from "@/lib/parallax-store";
 import { Avatar, Footer, ParallaxMark, cx } from "./shared";
+import { RoadmapStrip } from "./RoadmapStrip";
 
-type NavId = "Profile" | "Paths" | "Explore" | "Assumptions" | "Compare" | "Trace";
-const NAV: NavId[] = ["Profile", "Paths", "Explore", "Assumptions", "Compare", "Trace"];
+type NavId = "Profile" | "Roadmap" | "Paths" | "Explore" | "Assumptions" | "Compare" | "Trace";
+const NAV: NavId[] = ["Profile", "Roadmap", "Paths", "Explore", "Assumptions", "Compare", "Trace"];
 
 const ICON: Record<NavId, ReactNode> = {
+  Roadmap: (
+    <>
+      <circle cx="4" cy="4" r="1.9" />
+      <circle cx="16" cy="4" r="1.9" />
+      <circle cx="10" cy="16" r="1.9" />
+      <path d="M4 5.9V9c0 2.4 6 2.4 6 5.2M16 5.9V9c0 2.4-6 2.4-6 5.2" />
+    </>
+  ),
   Profile: (
     <>
       <circle cx="10" cy="7" r="3.2" />
@@ -75,6 +84,7 @@ const CURRENT: Partial<Record<Step, NavId>> = {
   explore: "Explore",
   compare: "Compare",
   comfort: "Compare",
+  roadmap: "Roadmap",
 };
 
 /** Downloads what the founder has entered and the paths built from it. Nothing is sent anywhere. */
@@ -111,6 +121,7 @@ export function ControlRoom({ children }: { children: ReactNode }) {
 
   function open(id: NavId) {
     if (id === "Profile") go(ready ? "profile" : "heard");
+    if (id === "Roadmap") go("roadmap");
     if (id === "Paths") go("paths");
     if (id === "Explore") go("explore");
     if (id === "Assumptions") set({ panel: { letter: active } });
@@ -198,7 +209,10 @@ export function ControlRoom({ children }: { children: ReactNode }) {
               ))}
           </div>
         </header>
-        <main className="content">{children}</main>
+        <main className="content">
+          <RoadmapStrip />
+          {children}
+        </main>
         <Footer />
       </div>
     </div>

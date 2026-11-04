@@ -7,16 +7,21 @@ import { FieldGrid } from "./FieldGrid";
 const STEPS = ["Reading your business", "Computing 36 months of cash in code", "Drawing the founder you could become"];
 
 export function GeneratingScreen() {
-  const { profile, set, go } = useParallax();
+  const { profile, intake, set, go, startWorld } = useParallax();
   const [ready, setReady] = useState(0);
 
   useEffect(() => {
     let alive = true;
+    // A story Muse Spark read is this founder's, not the demo chef's: start their own room and portrait now, in the
+    // background, and show path-coloured silhouettes until the portrait lands.
+    const own = intake?.mode === "model";
+    if (own) startWorld();
     (async () => {
       await new Promise((r) => setTimeout(r, 1100));
       if (!alive) return;
       setReady(1);
-      const cards = await mockApi.paths(profile);
+      const built = await mockApi.paths(profile);
+      const cards = own ? built.map((c) => ({ ...c, avatarUrl: undefined })) : built;
       await new Promise((r) => setTimeout(r, 900));
       if (!alive) return;
       set({ paths: cards, active: "A" });

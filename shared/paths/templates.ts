@@ -164,4 +164,7 @@ export function templatePaths(p: Profile): PathCard[] {
     case 'pricing':
       return pricingPaths(p);
   }
+  // Only reachable when a caller passes a kind that is not one of the three (for example from an older saved answer).
+  // Returning undefined here used to crash the generating screen with "Cannot read properties of undefined".
+  throw new Error(`No paths for this kind of decision: ${String(p.decisionType)}`);
 }

@@ -11,7 +11,13 @@ export const DEFAULT_MODELS = ['muse-spark-1.3', 'muse-spark-1.2'] as const;
 const TIMEOUT_MS = 20_000; // first-token budget (ARCHITECTURE §12)
 const DEADLINE_MS = 90_000; // no new attempt after this, so one call stays well inside the function time limit
 const MAX_RETRY_AFTER_MS = 10_000;
-export const MAX_TOKENS = 1024; // a hard cap on what one reply can cost
+// A hard cap on what one reply can cost. Muse Spark reasons before it answers, and the reasoning counts against this cap:
+// at 1,024 a full intake spent it all on reasoning and came back with no text (finish_reason "length"). A two-figure
+// test answer alone used about 300 reasoning tokens.
+export const MAX_TOKENS = 8192;
+// Copying figures and quotes out of a founder's story needs little reasoning. On a live 4 Nov test, "minimal" read the
+// same fields and quotes as "low" in about 10 s instead of 18 s.
+export const REASONING_EFFORT = 'minimal';
 
 export type ErrorKind =
   | 'config' // bad settings: nothing was sent
@@ -36,6 +42,10 @@ export class ModelError extends Error {
   readonly kind: ErrorKind;
   readonly status?: number;
   readonly retryAfterMs?: number;
+  /** The start of the API's own error reply (never the request), for diagnosing a refusal. The key is redacted. */
+  detail?: string;
+  /** Every model tried before giving up, in order, so a refusal by the first model is not hidden by the last. */
+  attempts?: { model: string; kind: ErrorKind; status: number | null; detail: string | null }[];
 
   constructor(kind: ErrorKind, message: string, status?: number, retryAfterMs?: number) {
     super(message);
@@ -143,6 +153,7 @@ export async function chatJson<S extends z.ZodType>(
     { role: 'user', content: call.user },
   ];
   let last: ModelError | undefined;
+  const attempts: NonNullable<ModelError['attempts']> = [];
   for (const model of cfg.models) {
     try {
       const out = await callModel(cfg, model, call, format, start, counter, deps, deadline);
@@ -151,9 +162,11 @@ export async function chatJson<S extends z.ZodType>(
     } catch (err) {
       if (!(err instanceof ModelError)) throw err;
       last = err;
+      attempts.push({ model, kind: err.kind, status: err.status ?? null, detail: err.detail ?? err.message });
       if (STOP_KINDS.has(err.kind) || deps.now() >= deadline) break;
     }
   }
+  if (last) last.attempts = attempts;
   throw last ?? new ModelError('config', 'no model is configured');
 }
 
@@ -235,6 +248,7 @@ async function postOnce<S extends z.ZodType>(
           messages: convo,
           temperature: 0,
           max_tokens: MAX_TOKENS,
+          reasoning_effort: REASONING_EFFORT,
           response_format: { type: 'json_schema', json_schema: { name: call.name, schema: format, strict: false } },
         }),
         signal: controller.signal,
@@ -243,7 +257,11 @@ async function postOnce<S extends z.ZodType>(
       if (controller.signal.aborted) throw timedOut();
       throw new ModelError('network', 'could not reach the model API');
     }
-    if (!res.ok) throw httpError(res);
+    if (!res.ok) {
+      const err = httpError(res);
+      err.detail = (await res.text().catch(() => '')).slice(0, 240).split(cfg.apiKey).join('<key>');
+      throw err;
+    }
     let data: unknown;
     try {
       data = await res.json();
@@ -252,7 +270,10 @@ async function postOnce<S extends z.ZodType>(
       throw new ModelError('schema', 'the reply was not JSON');
     }
     const content = (data as { choices?: { message?: { content?: unknown } }[] } | null)?.choices?.[0]?.message?.content;
-    if (typeof content !== 'string') throw new ModelError('schema', 'the reply had no text');
+    if (typeof content !== 'string') {
+      const finish = (data as { choices?: { finish_reason?: unknown }[] }).choices?.[0]?.finish_reason;
+      throw new ModelError('schema', finish === 'length' ? 'the reply ran out of tokens before any text' : 'the reply had no text');
+    }
     return content;
   } finally {
     clearTimeout(timer);

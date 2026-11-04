@@ -3,6 +3,8 @@ import { LETTERS, useParallax, type Letter } from "@/lib/parallax-store";
 import { formatMoney } from "@/lib/format";
 import { pathFigures, type Setback } from "@/lib/stress";
 import { Avatar, Badge, Button, Drawer, NoPaths, Src, cx } from "./shared";
+import { speak, setReadAloud, useSpeech } from "@/lib/speech";
+import { Listen } from "./Listen";
 import { CashChart } from "./charts";
 
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
@@ -22,6 +24,17 @@ function TraceList({ checks }: { checks: { name: string; ok: boolean | null }[] 
   );
 }
 
+/** Three dots while the future self is answering. */
+function Typing() {
+  return (
+    <span className="typing" role="status" aria-label="Future you is answering">
+      <i />
+      <i />
+      <i />
+    </span>
+  );
+}
+
 /** The future founder on the active path: the chat, with the cash chart and the stress test beside it. */
 export function ChatScreen() {
   const { active, chats, pathOf, send, set, go, traceOpen } = useParallax();
@@ -32,6 +45,22 @@ export function ChatScreen() {
   const [picked, setPicked] = useState("late-payment");
   const list = useRef<HTMLDivElement>(null);
   const msgs = chats[active];
+  const speech = useSpeech();
+  // The replies already seen, so opening the chat never reads an old one aloud: only a reply that arrives now is read.
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const finished = Object.values(chats)
+      .flat()
+      .filter((m) => m.role === "self" && !m.streaming && m.text);
+    if (seen.current === null) {
+      seen.current = new Set(finished.map((m) => m.id));
+      return;
+    }
+    const fresh = finished.filter((m) => !seen.current!.has(m.id));
+    for (const m of fresh) seen.current.add(m.id);
+    const latest = fresh[fresh.length - 1];
+    if (speech.readAloud && latest) speak(latest.id, latest.text);
+  }, [chats, speech.readAloud]);
 
   useEffect(() => {
     list.current?.lastElementChild?.scrollIntoView({ block: "end", behavior: "smooth" });
@@ -51,7 +80,7 @@ export function ChatScreen() {
     <div className="row pagecols">
       <section className="panel chat">
         <header className="chat-head">
-          <div className="avwrap">
+          <div className={cx("avwrap", speech.speakingId !== null && msgs.some((m) => m.id === speech.speakingId) && "speaking")}>
             <Avatar letter={active} src={path.avatarUrl} size={96} />
             <div className="avcap">AI-generated</div>
           </div>
@@ -77,6 +106,11 @@ export function ChatScreen() {
               <button type="button" onClick={() => go("compare")}>
                 Comfort check
               </button>
+              {speech.supported && (
+                <button type="button" aria-pressed={speech.readAloud} onClick={() => setReadAloud(!speech.readAloud)}>
+                  Read replies aloud
+                </button>
+              )}
             </div>
           </div>
         </header>
@@ -102,7 +136,7 @@ export function ChatScreen() {
               </div>
             ) : (
               <div key={m.id} className="bot-wrap">
-                <div className="msg bot">{m.text || <span className="sub">…</span>}</div>
+                <div className="msg bot">{m.text || <Typing />}</div>
                 {m.citations.length > 0 && (
                   <div className="based">
                     <span className="caps">Based on</span>
@@ -116,6 +150,7 @@ export function ChatScreen() {
                 {!m.streaming && (
                   <>
                     <div className="acts">
+                      <Listen id={m.id} text={m.text} />
                       <button type="button" aria-expanded={menu === m.id} onClick={() => setMenu(menu === m.id ? null : m.id)}>
                         Ask this on another path
                       </button>
@@ -184,6 +219,7 @@ export function ChatScreen() {
             </div>
           </div>
           <CashChart
+            key={active}
             letter={active}
             start={path.startingCash}
             bad={figures.bad}

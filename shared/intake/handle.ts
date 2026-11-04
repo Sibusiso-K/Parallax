@@ -24,7 +24,13 @@ export type IntakeResponse =
 // the demo story and an empty form answers for anything else. The founder's text is never lost (ARCHITECTURE §12).
 export async function handleIntake(body: unknown, extract?: Extractor): Promise<IntakeResponse> {
   const req = intakeRequest.safeParse(body);
-  if (!req.success) return { ok: false, error: req.error.issues[0]?.message ?? 'Invalid request' };
+  if (!req.success) {
+    // Only the two limits carry a message written for the founder. A missing or wrong-typed body would otherwise show
+    // zod's own wording ("Invalid input: expected string, received number") as the notice on the next screen.
+    const issue = req.error.issues[0];
+    const friendly = issue?.code === 'too_small' || issue?.code === 'too_big';
+    return { ok: false, error: friendly ? issue!.message : 'Tell us about your decision in a few sentences.' };
+  }
   const text = req.data.text;
 
   let mode: 'model' | 'fixture' = 'fixture';

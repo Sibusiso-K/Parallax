@@ -72,12 +72,23 @@ export interface IntakeResponse {
   /** The founder's own words for each text field, kept beside the value. */
   quotes?: Partial<Record<FieldKey, string>>;
   notice?: string;
+  /** The server's F4 checks on what the founder wrote. A blocking one stops the paths until the text is changed. */
+  issues?: IntakeIssue[];
+}
+
+export interface IntakeIssue {
+  kind: string;
+  message: string;
+  field?: FieldKey;
+  blocking: boolean;
 }
 
 export interface ChatChunk {
   type: "token" | "citation" | "done";
   text?: string;
   citation?: { id: string; label: string };
+  /** On "done" from a real model: which model answered and what the code checked. Absent for scripted replies. */
+  trace?: { model: string; checks: { name: string; ok: boolean | null }[] };
 }
 
 /** The confirmed "Your business, today" profile passed to mockApi.paths. */
