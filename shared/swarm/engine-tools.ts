@@ -2,9 +2,14 @@ import { z } from 'zod';
 import { simulate, editAssumption, type PathInput } from '../engine/simulate.js';
 import { applySetback, drivers, lowestCash } from '../engine/analysis.js';
 import { buildSnapshot, canonicalJson, fingerprint } from '../scene/room-model.js';
-import type { Breakpoint, Proposal, SwarmRequest } from './contracts.js';
+import { swarmRequest, type Breakpoint, type Proposal, type SwarmRequest } from './contracts.js';
 
-export const inputKey = (req: SwarmRequest) => fingerprint(canonicalJson({ path: req.path, stressed: req.stressed, month: req.month }));
+// The server hashes the validated request, so the browser hashes the same thing. A path may carry extra fields that validation strips.
+export const inputKey = (req: SwarmRequest) => {
+  const known = swarmRequest.safeParse(req);
+  const value = known.success ? known.data : req;
+  return fingerprint(canonicalJson({ path: value.path, stressed: value.stressed, month: value.month }));
+};
 export const snapshotFor = (req: SwarmRequest) => buildSnapshot({ sessionId: 'swarm', profileRevision: 1, simulationVersion: 1, pathId: req.path.letter, pathName: req.path.name, path: req.path, case: 'likely', stress: req.stressed ? { id: 'late-payment' } : null });
 const lowest = (path: PathInput) => lowestCash(simulate(path), 'likely').cash;
 

@@ -70,7 +70,9 @@ export function checkedSources(raw: unknown): Source[] {
       if (!parsed.success) continue;
       for (const s of parsed.data.sources) {
         const quote = s.evidence ?? s.quote;
-        const url = results.has(s.url) ? s.url : s.title ? titles.get(plainWords(s.title)) : undefined;
+        // A model may shorten a result's URL to its site. One result on that site, or the title it copied, still finds the real page.
+        const onSite = [...results.keys()].filter(known => { try { return new URL(known).hostname.replace(/^www\./, '') === new URL(s.url).hostname.replace(/^www\./, ''); } catch { return false; } });
+        const url = results.has(s.url) ? s.url : (s.title ? titles.get(plainWords(s.title)) : undefined) ?? (onSite.length === 1 ? onSite[0] : undefined);
         const snippets = url ? results.get(url) : undefined;
         if (!quote || !url || !/^https?:\/\//.test(url) || !snippets || (snippets.length > 0 && !snippets.some(text => text.includes(quote)))) continue;
         if (/\.(?:vercel|netlify|pages|github)\.(?:app|dev|io)$/i.test(new URL(url).hostname)) continue;

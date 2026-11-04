@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { checkedSources, runSwarm } from './run.js';
-import { delayPath, findBreakpoint, proposalCandidates } from './engine-tools.js';
+import { delayPath, findBreakpoint, inputKey, proposalCandidates } from './engine-tools.js';
 import { simulate } from '../engine/simulate.js';
 import { swarmRequest, type SwarmEvent } from './contracts.js';
 import { POST } from '../../api/swarm.js';
@@ -16,6 +16,10 @@ const cfg = { apiKey: 'stub-only', baseUrl: 'https://provider.invalid/v1', model
 const response = (content: unknown, tool_calls?: unknown[]) => Response.json({ choices: [{ message: { content: JSON.stringify(content), ...(tool_calls ? { tool_calls } : {}) } }], usage: { prompt_tokens: 100, completion_tokens: 40 } });
 
 describe('swarm engine boundaries', () => {
+  it('the browser and the server agree on the key even when a path carries extra fields', () => {
+    const extra = { ...req, path: { ...req.path, shownInBrowserOnly: true } } as typeof req;
+    expect(inputKey(extra)).toBe(inputKey(req));
+  });
   it('binary search agrees with exhaustive engine checks, including baseline failure and no contract', () => {
     const p = req.path;
     const expected = Array.from({ length: 37 }, (_, i) => i).filter(i => simulate(delayPath(p, i)).likely.shortfallMonths.length === 0).at(-1);
@@ -56,6 +60,10 @@ describe('swarm engine boundaries', () => {
       ] }) }] }] };
     expect(checkedSources(raw)).toHaveLength(1);
     expect(checkedSources({ output: [raw.output[1]] })).toEqual([]);
+    // Real replies carry no snippets, and the model may shorten a URL it was given.
+    const short = { output: [{ type: 'web_search_call', results: [{ url: 'https://news.example.co.za/rates/today', title: 'Rates today', snippet: '' }] },
+      { type: 'message', content: [{ text: `Here: ${JSON.stringify({ sources: [{ url: 'https://news.example.co.za', title: 'Rates', fact: 'Prime is high.', evidence: '10.75%' }, { url: 'https://other.example.co.za', evidence: '10.75%' }] })}` }] }] };
+    expect(checkedSources(short)).toEqual([{ url: 'https://news.example.co.za/rates/today', quote: '10.75%', fact: 'Prime is high.', title: 'Rates', label: 'External source', checked: 'url-in-search-results' }]);
   });
 });
 
