@@ -611,3 +611,26 @@ button.chip:hover { background: #e6ecf8; }
   .decision-block { flex: 1 1 auto; }
   .decision-title { font-size: 16px; }
 }
+
+/* ---------- Getting started: two choices, short cards editable in place ---------- */
+.start-choice { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.start-sub { margin: 10px 0 0; font-size: 14px; opacity: .8; }
+.fcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 18px 0; }
+.fcard { padding: 18px 20px; border-radius: 18px; background: var(--panel); }
+.fcard h2 { margin: 0 0 8px; }
+.fcard ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.frow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; padding: 8px 0; border-top: 1px solid var(--line-2); }
+.frow:first-child { border-top: 0; }
+.frow-lab { font-size: 13.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.frow-val { justify-self: end; border: 0; background: transparent; padding: 4px 6px; border-radius: 8px; font: inherit; font-weight: 800; color: var(--ink); text-align: right; cursor: pointer; }
+.frow-val span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.frow-val:hover, .frow-val:focus-visible { background: #fff; }
+.frow-sub { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.frow-form { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.frow-form .field-input { flex: 1 1 140px; min-width: 0; }
+.frow-form .ferr { flex-basis: 100%; margin: 0; }
+.notice.small { font-size: 13px; }
+.start-choice .btn.on-navy { background: transparent; border-color: rgba(255, 255, 255, .75); color: #fff; }
+.start-choice .btn.on-navy:hover:not(:disabled) { background: rgba(255, 255, 255, .12); }
+.frow--wide { grid-template-columns: minmax(0, 1fr); }
+.frow--wide .frow-val { justify-self: start; text-align: left; padding-left: 0; }

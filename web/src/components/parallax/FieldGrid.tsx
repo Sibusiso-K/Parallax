@@ -208,3 +208,96 @@ export function FieldGrid({ editable }: { editable: boolean }) {
     </div>
   );
 }
+
+// The check screen's few short cards. Each groups figures the founder thinks of together; every value is a button that
+// turns into a box in place, so fixing a figure is one tap and Enter.
+const GROUPS: { title: string; keys: FieldKey[] }[] = [
+  { title: "The decision", keys: ["decision", "offerRevenue", "paymentDays", "hireCost", "upfrontCost", "priceRisePercent"] },
+  { title: "Each month", keys: ["revenue", "directCosts", "overheads", "payroll", "founderPay", "debtRepayments"] },
+  { title: "Cash today", keys: ["cash"] },
+  { title: "You and the business", keys: ["business", "location", "riskComfort", "goals"] },
+];
+
+function FieldRow({ card }: { card: Card }) {
+  const { fields, set } = useParallax();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [err, setErr] = useState("");
+  const open = () => {
+    const m = money(fields[card.k]);
+    setDraft(m ? moneyDraft(m) : String(fields[card.k] ?? ""));
+    setErr("");
+    setEditing(true);
+  };
+  const save = (e: FormEvent) => {
+    e.preventDefault();
+    const r = readValue(card.k, draft);
+    if (!r.ok) return setErr(r.msg);
+    set((s) => ({
+      fields: { ...s.fields, [card.k]: r.value },
+      quotes: { ...s.quotes, [card.k]: draft.trim() },
+      assumed: s.assumed.filter((k) => k !== card.k),
+      followed: s.followed.filter((k) => k !== card.k),
+    }));
+    setEditing(false);
+  };
+  return (
+    <li className={cx("frow", card.value.length > 22 && "frow--wide")}>
+      <span className="frow-lab">
+        {card.label} <Src kind={card.kind} />
+      </span>
+      {editing ? (
+        <form className="frow-form" onSubmit={save} onKeyDown={(e) => e.key === "Escape" && setEditing(false)}>
+          <label className="sr-only" htmlFor={`fr-${card.k}`}>
+            {card.label}
+          </label>
+          <input id={`fr-${card.k}`} className="field-input" autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} aria-invalid={!!err} />
+          <Button type="submit" variant="primary" size="sm">
+            Save
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+          {err && (
+            <p className="ferr" role="alert">
+              {err}
+            </p>
+          )}
+        </form>
+      ) : (
+        <button type="button" className="frow-val" onClick={open} aria-label={`${card.label}: ${card.value}. Change`}>
+          {card.value} <span aria-hidden="true">✎</span>
+        </button>
+      )}
+      {!editing && (card.sub || card.quote) && (
+        <span className="frow-sub" title={card.quote ? `You said: “${card.quote}”` : undefined}>
+          {card.quote ? `“${card.quote}”` : card.sub}
+        </span>
+      )}
+    </li>
+  );
+}
+
+/** What was heard, as a few short cards with each figure editable in place. */
+export function FieldCards() {
+  const { fields, quotes, assumed, followed } = useParallax();
+  const cards = cardsFor(fields, quotes, assumed, followed);
+  return (
+    <div className="fcards">
+      {GROUPS.map((g) => {
+        const rows = g.keys.map((k) => cards.find((c) => c.k === k)).filter((c): c is Card => !!c);
+        if (rows.length === 0) return null;
+        return (
+          <section key={g.title} className="fcard">
+            <h2 className="caps">{g.title}</h2>
+            <ul>
+              {rows.map((c) => (
+                <FieldRow key={c.k} card={c} />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
