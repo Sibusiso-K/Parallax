@@ -296,3 +296,13 @@
 .world .photo-person { animation: photo-head-breath 7s ease-in-out infinite alternate; transform-origin: 50% 76%; }
 @keyframes photo-camera-breath { from { transform: translate(var(--photo-x,0px),var(--photo-y,0px)) scale(1); } to { transform: translate(var(--photo-x,0px),var(--photo-y,0px)) scale(1.008); } }
 @keyframes photo-head-breath { from { transform: translate(calc(var(--photo-x,0px) * .3),calc(var(--photo-y,0px) * .2)) rotate(-.06deg); } to { transform: translate(calc(var(--photo-x,0px) * .3),calc(var(--photo-y,0px) * .2 - 1px)) rotate(.06deg); } }
+
+/* The panel leads with the controls: which future, which month, then the question box. */
+.world .panel .paths--panel { margin: 4px 0 12px; }
+.world .panel .pathchip { border-color: var(--line, #d8dce8); background: #fff; color: var(--ink); }
+.world .panel .pathchip b { background: var(--ink); color: #fff; }
+.world .panel .pathchip[aria-selected='true'] { background: var(--lav); color: var(--lav-ink); border-color: var(--lav-edge); }
+.world .panel .months--panel { display: grid; gap: 6px; margin: 0 0 10px; }
+.world .panel .months--panel .rowlabel { display: block; font-size: 14px; }
+.world .panel .room-working { margin-top: 10px; }
+.world .panel .foot__actions--quiet .btn { min-height: 34px; font-size: 12px; }

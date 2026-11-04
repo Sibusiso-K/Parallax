@@ -6,6 +6,7 @@ import { useParallax, type Letter } from "@/lib/parallax-store";
 import { buildRoadmap, type RoadmapNode, type RoadmapQuestion } from "@/lib/roadmap";
 import { pathFigures, type Figures } from "@/lib/stress";
 import { Badge, NoPaths, PATH_COLOR, cx } from "./shared";
+import { StepNav } from "./StepNav";
 
 function Item({ node, onOpen }: { node: RoadmapNode; onOpen: (node: RoadmapNode) => void }) {
   const body = (
@@ -59,11 +60,10 @@ export function RoadmapScreen() {
   return (
     <section className="screen roadmap" aria-labelledby="roadmap-title">
       <div className="pagehead">
-        <div className="eyebrow">Your roadmap</div>
-        <h1 id="roadmap-title">Every future, and every question on the way</h1>
+        <div className="eyebrow">Decide · your journey</div>
+        <h1 id="roadmap-title">Your whole journey</h1>
         <div className="sub">
-          Start from the decision. The questions the app asked branch off it, and each future breaks out below, with what can happen to it
-          and the conversations you have had with it. Open any branch to go there.
+          Your decision, the questions asked, and what can happen on each future. Tap any part to go there.
         </div>
       </div>
 
@@ -110,6 +110,7 @@ export function RoadmapScreen() {
           </section>
         ))}
       </div>
+      <StepNav />
     </section>
   );
 }

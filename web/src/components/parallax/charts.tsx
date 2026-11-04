@@ -1,5 +1,5 @@
 // Charts for the path and compare screens, drawn from the engine's cash by month (see lib/stress.ts).
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { formatMoney } from "@/lib/format";
 import type { Letter } from "@/lib/parallax-store";
 import { PATH_COLOR } from "./shared";
@@ -180,10 +180,15 @@ export function Spark({ letter, values }: { letter: Letter; values: number[] }) 
   const span = hi - lo || 1;
   const xs = values.map((_, i) => (i / (values.length - 1)) * w);
   const ys = values.map((v) => h - 40 - ((v - lo) / span) * (h - 80));
+  const d = linePath(xs, ys);
   return (
     <svg className="nft-spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
       <path
-        d={linePath(xs, ys)}
+        className="spark-line"
+        pathLength={1}
+        // Set as a style too, so a browser that can animate it morphs the curve when a what-if changes the figures.
+        style={{ d: `path("${d}")` } as CSSProperties}
+        d={d}
         fill="none"
         stroke={SPARK_TINT[letter]}
         strokeWidth="3"

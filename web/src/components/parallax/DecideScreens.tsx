@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { FIELD_LABELS } from "@/lib/parallax-api";
 import { useParallax, type Letter } from "@/lib/parallax-store";
 import { formatField, formatMoney, memoQuestion } from "@/lib/format";
@@ -6,9 +6,9 @@ import type { FieldKey, PathCard } from "@/lib/types";
 import { pathFigures, type Figures } from "@/lib/stress";
 import { Avatar, Badge, Button, NoPaths, Src, type Kind } from "./shared";
 import { RangeBar, domainOf } from "./charts";
+import { StepNav } from "./StepNav";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
-const at = (a: number[], month: number) => a[month] ?? 0;
 
 /** The three paths side by side, with the comfort check beside them. */
 export function CompareScreen() {
@@ -19,18 +19,7 @@ export function CompareScreen() {
 
   const rows: { label: string; cell: (p: PathCard, f: Figures) => ReactNode }[] = [
     {
-      label: "Cash at month 12, likely",
-      cell: (_, f) => (
-        <>
-          <div className="v">{formatMoney(at(f.likely, 12))}</div>
-          <div className="r">
-            <span>Bad {formatMoney(at(f.bad, 12))}</span> · <span>Good {formatMoney(at(f.good, 12))}</span>
-          </div>
-        </>
-      ),
-    },
-    {
-      label: "Cash at month 36, likely",
+      label: "Month 36, likely",
       cell: (p, f) => (
         <>
           <div className="v">{formatMoney(end(f.likely))}</div>
@@ -51,7 +40,7 @@ export function CompareScreen() {
       ),
     },
     {
-      label: "Lowest cash with a 2-month late payment",
+      label: "Lowest, with a late payment",
       cell: (_, f) => (
         <>
           <div className="v">{formatMoney(f.late.lowest.cash)}</div>
@@ -63,7 +52,7 @@ export function CompareScreen() {
       ),
     },
     {
-      label: "Cash runs out, bad case",
+      label: "Runs out, bad case",
       cell: (_, f) =>
         f.runsOutBad ? (
           <>
@@ -78,19 +67,7 @@ export function CompareScreen() {
         ),
     },
     {
-      label: "Three months of fixed costs covered",
-      cell: (_, f) =>
-        f.bufferMonth ? (
-          <>
-            <div className="t">Month {f.bufferMonth}</div>
-            <div className="s">Likely case</div>
-          </>
-        ) : (
-          <div className="t none">Not reached</div>
-        ),
-    },
-    {
-      label: "Worst setback, likely case",
+      label: "Worst setback",
       cell: (_, f) => (
         <>
           <div className="t">{f.worst.name}</div>
@@ -100,19 +77,21 @@ export function CompareScreen() {
         </>
       ),
     },
-    { label: "The plan", cell: (p) => <div className="quote">{p.summary}</div> },
   ];
 
   return (
+    <>
+    <div className="pagehead">
+      <div className="eyebrow">Decide</div>
+      <h1>Which future sits best with you?</h1>
+      <div className="sub">Rate each one, note what still bothers you, then write your memo.</div>
+    </div>
     <div className="row pagecols3">
       <section className="panel">
         <div className="panel-head">
           <div>
-            <h2>Three paths on one scale</h2>
-            <div className="sub">
-              Bars share one scale, from {formatMoney(domain[0])} to {formatMoney(domain[1])}; the dot is the likely case. A late payment
-              is a big client paying two months late.
-            </div>
+            <h2>The three, on one scale</h2>
+            <div className="sub">Bars run from {formatMoney(domain[0])} to {formatMoney(domain[1])}. The dot is the likely case.</div>
           </div>
         </div>
         <div className="tablewrap">
@@ -146,8 +125,8 @@ export function CompareScreen() {
           <div className="panel-head">
             <div>
               <div className="caps">Comfort check</div>
-              <h2>How does each future sit with you?</h2>
-              <div className="sub">Rate each one from 1 (very uneasy) to 5 (at peace). You can rate again later; the last rating is the one shown.</div>
+              <h2>How does each one feel?</h2>
+              <div className="sub">1 is very uneasy, 5 is at peace.</div>
             </div>
           </div>
           <div className="crows">
@@ -188,24 +167,16 @@ export function CompareScreen() {
             onChange={(e) => set({ bothering: e.target.value })}
             placeholder="Whether the client will really pay on 30-day terms."
           />
-          <div className="actions-row">
-            <Button variant="ghost" onClick={() => go("chat")}>
-              Back to chat
-            </Button>
-            <Button
-              variant="primary"
-              className="ml-auto"
-              onClick={() => {
-                set((s) => ({ questions: s.questions || s.bothering }));
-                go("summary");
-              }}
-            >
-              Decision memo
-            </Button>
-          </div>
+          <StepNav
+            onNext={() => {
+              set((s) => ({ questions: s.questions || s.bothering }));
+              go("summary");
+            }}
+          />
         </section>
       </div>
     </div>
+    </>
   );
 }
 
@@ -213,9 +184,8 @@ const BASIS: FieldKey[] = ["revenue", "directCosts", "overheads", "payroll", "fo
 
 /** The decision memo the founder leaves with. It names no choice the founder has not made. */
 export function SummaryScreen() {
-  const { paths, fields, assumed, followed, chosen, decision, reasons, questions, set, go, reset, pathOf } = useParallax();
+  const { paths, fields, assumed, followed, chosen, decision, reasons, questions, set, pathOf } = useParallax();
   const figures = useMemo(() => paths.map((p) => pathFigures(p)), [paths]);
-  const [confirming, setConfirming] = useState(false);
   if (paths.length === 0) return <NoPaths />;
 
   const chosenPath = chosen ? pathOf(chosen) : undefined;
@@ -236,8 +206,7 @@ export function SummaryScreen() {
       </>
     ) : (
       <>
-        <b>Not chosen yet.</b> You pick a path, or “Not ready yet”, before this prints. Parallax never names a choice you have not
-        made.
+        <b>Not chosen yet.</b> Pick a path or “Not ready yet”. Parallax never chooses for you.
       </>
     );
 
@@ -378,28 +347,11 @@ export function SummaryScreen() {
             <textarea className="field-area" rows={3} value={questions} onChange={(e) => set({ questions: e.target.value })} />
           </label>
         </div>
-        <div className="actions-row">
-          <Button variant="ghost" onClick={() => go("compare")}>
-            Back to side by side
-          </Button>
+        <StepNav>
           <Button variant="outline" onClick={() => window.print()}>
             Print memo
           </Button>
-          {confirming ? (
-            <>
-              <Button variant="outline" onClick={() => setConfirming(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={reset}>
-                Yes, delete everything
-              </Button>
-            </>
-          ) : (
-            <Button variant="ghost" className="ml-auto" onClick={() => setConfirming(true)}>
-              Delete everything
-            </Button>
-          )}
-        </div>
+        </StepNav>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { Avatar, Badge, Button, Drawer, NoPaths, Src, cx } from "./shared";
 import { speak, setReadAloud, useSpeech } from "@/lib/speech";
 import { Listen } from "./Listen";
 import { CashChart } from "./charts";
+import { StepNav } from "./StepNav";
 
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
 const end = (a: number[]) => a[a.length - 1] ?? 0;
@@ -37,7 +38,7 @@ function Typing() {
 
 /** The future founder on the active path: the chat, with the cash chart and the stress test beside it. */
 export function ChatScreen() {
-  const { active, chats, pathOf, send, set, go, traceOpen } = useParallax();
+  const { active, chats, pathOf, send, set, traceOpen } = useParallax();
   const path = pathOf(active);
   const figures = useMemo(() => (path ? pathFigures(path) : null), [path]);
   const [text, setText] = useState("");
@@ -77,6 +78,7 @@ export function ChatScreen() {
   };
 
   return (
+    <>
     <div className="row pagecols">
       <section className="panel chat">
         <header className="chat-head">
@@ -85,26 +87,17 @@ export function ChatScreen() {
             <div className="avcap">AI-generated</div>
           </div>
           <div className="chead">
-            <div className="caps">You, as the founder, 36 months on</div>
+            <div className="caps">You, 36 months on</div>
             <h2>
               <Badge letter={active} /> {path.name}
             </h2>
             <div className="sub">{path.summary}</div>
             <div className="quietrow">
-              <button type="button" onClick={() => go("paths")}>
-                All paths
-              </button>
               <button type="button" onClick={() => set({ panel: { letter: active } })}>
                 Assumptions
               </button>
               <button type="button" aria-expanded={traceOpen} onClick={() => set({ traceOpen: true })}>
                 Trace
-              </button>
-              <button type="button" onClick={() => go("compare")}>
-                Compare
-              </button>
-              <button type="button" onClick={() => go("compare")}>
-                Comfort check
               </button>
               {speech.supported && (
                 <button type="button" aria-pressed={speech.readAloud} onClick={() => setReadAloud(!speech.readAloud)}>
@@ -118,7 +111,7 @@ export function ChatScreen() {
         <div ref={list} className="chat-body">
           {msgs.length === 0 && (
             <div className="suggest">
-              <p className="sub">Ask the founder who chose {path.name} anything.</p>
+              <p className="sub">Ask the you who chose “{path.name}” anything.</p>
               <div className="actions-row">
                 {PROMPTS.map((q) => (
                   <button key={q} type="button" className="chip" onClick={() => send(active, q)}>
@@ -214,7 +207,7 @@ export function ChatScreen() {
             <div>
               <h2>Cash in the business, 36 months</h2>
               <div className="sub">
-                Path {active}. Solid: the likely case. Dashed: the same case with {selected.name.toLowerCase()} ({selected.detail}).
+                Solid: likely case. Dashed: with {selected.name.toLowerCase()}.
               </div>
             </div>
           </div>
@@ -239,7 +232,7 @@ export function ChatScreen() {
             <div>
               <h2>Stress test on this path</h2>
               <div className="sub">
-                One setback at a time, likely case. Sizes are <Src kind="placeholder" /> except the client's own payment terms.
+                One setback at a time. Sizes are <Src kind="placeholder" /> except the client's payment terms.
               </div>
             </div>
           </div>
@@ -288,5 +281,7 @@ export function ChatScreen() {
         </ol>
       </Drawer>
     </div>
+    <StepNav />
+    </>
   );
 }

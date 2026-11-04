@@ -1,0 +1,34 @@
+# Every pull request and every push to main: typecheck, the full test suite, then the production build.
+# Vercel builds and deploys on its own, but it does not run the tests; this does. No secrets are used, and the tests
+# block all network access (shared/testing/offline.ts), so CI can never spend Meta credits.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npx vite build

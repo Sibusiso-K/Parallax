@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { mockApi } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
-import { Button, cx } from "./shared";
+import { cx } from "./shared";
 import { FieldGrid } from "./FieldGrid";
+import { StepNav } from "./StepNav";
 
-const STEPS = ["Reading your business", "Computing 36 months of cash in code", "Drawing the founder you could become"];
+const STEPS = ["Reading your business", "Running 36 months of cash, in code", "Drawing the founder you could become"];
 
 export function GeneratingScreen() {
   const { profile, intake, set, go, startWorld } = useParallax();
@@ -42,7 +43,7 @@ export function GeneratingScreen() {
       if (!alive) return;
       setReady(3);
       await new Promise((r) => setTimeout(r, 700));
-      if (alive) go("profile");
+      if (alive) go("paths");
     })();
     return () => {
       alive = false;
@@ -53,8 +54,8 @@ export function GeneratingScreen() {
   return (
     <section className="screen">
       <div className="pagehead">
-        <div className="eyebrow">Step 3 of 3</div>
-        <h1>Drawing three possible futures</h1>
+        <div className="eyebrow">Futures</div>
+        <h1>Building three futures</h1>
       </div>
       <ol className="gensteps" aria-live="polite">
         {STEPS.map((s, i) => (
@@ -79,14 +80,7 @@ export function ProfileScreen() {
         <div className="sub">Every future starts here. Anything marked “assumed” is a default you can change.</div>
       </div>
       <FieldGrid editable={false} />
-      <div className="actions-row">
-        <Button variant="ghost" onClick={() => go("heard")}>
-          Edit what I heard
-        </Button>
-        <Button variant="primary" size="lg" className="ml-auto" onClick={() => go("paths")}>
-          Meet your three futures
-        </Button>
-      </div>
+      <StepNav nextLabel="See my futures" onNext={() => go("paths")} />
     </section>
   );
 }

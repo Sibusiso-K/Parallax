@@ -86,3 +86,10 @@ button.rm-item:hover { background: var(--panel); }
   .rm-node:nth-child(5) { animation-delay: .24s; }
   .rm-node:nth-child(6) { animation-delay: .3s; }
 }
+
+/* The strip is the flow navigation: a station not open yet is dimmed; the selected future's pill is ringed. */
+.rm-st.off .rm-label { opacity: .45; }
+.rm-pill.sel { box-shadow: 0 0 0 2px var(--page), 0 0 0 4px var(--c); }
+.rm-label { font-size: 13px; }
+button.rm-label { cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+button.rm-label:hover { text-decoration-color: currentColor; }
