@@ -7,6 +7,10 @@ const keys: Record<string, MoveAction> = {
 /** One set of physical keys avoids releasing W when ArrowUp is still held. */
 export class MovementInput {
   private held = new Set<string>();
+  /** On-screen buttons and touch, kept apart from keys so lifting a finger never releases a held key. */
+  private pressed = new Set<MoveAction>();
+  press(action: MoveAction): void { this.pressed.add(action); }
+  release(action: MoveAction): void { this.pressed.delete(action); }
   keyDown(code: string, editable = false): boolean {
     if (editable) { this.clear(); return false; }
     if (!keys[code]) return false;
@@ -14,9 +18,9 @@ export class MovementInput {
     return true;
   }
   keyUp(code: string): void { this.held.delete(code); }
-  clear(): void { this.held.clear(); }
+  clear(): void { this.held.clear(); this.pressed.clear(); }
   vector(): { x: number; z: number } {
-    const active = (a: MoveAction) => [...this.held].some((code) => keys[code] === a) ? 1 : 0;
+    const active = (a: MoveAction) => this.pressed.has(a) || [...this.held].some((code) => keys[code] === a) ? 1 : 0;
     const x = active('right') - active('left');
     const z = active('back') - active('forward');
     const length = Math.hypot(x, z);

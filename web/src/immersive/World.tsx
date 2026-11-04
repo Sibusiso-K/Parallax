@@ -16,6 +16,7 @@ import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailabl
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
 import { exploreSession } from './session-adapter';
 import { OBJECT_IDS, WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
+import type { WalkHandle } from './courtyard/WalkCamera';
 import { applyDressing, type SceneDressing } from '../../../shared/scene/dressing';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
@@ -128,6 +129,9 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [place, setPlace] = useState<PlaceId>('spawn');
   const [walk, setWalk] = useState(false);
   const [walkError, setWalkError] = useState('');
+  const walkHandle = useRef<WalkHandle | null>(null);
+  // The draft characters stay out of the room unless asked for: they are not accepted as realistic yet.
+  const people = useMemo(() => new URLSearchParams(location.search).has('people'), []);
   // The founder's own names for the room, applied over the built manifest; positions never change.
   const dressing = binding?.dressing ?? null;
   const dressingRef = useRef(dressing);
@@ -191,11 +195,12 @@ function World({ binding }: { binding?: ExploreBinding }) {
     (id: ObjectId) => {
       setFocus(id);
       if (manifest) {
-        setPlace(manifest.objects[id].place);
+        // A walker selects what they already stand beside; only the guided camera needs sending there.
+        if (!walk) setPlace(manifest.objects[id].place);
         say(`${manifest.objects[id].label} selected. Its details are in the panel.`);
       }
     },
-    [manifest, say],
+    [manifest, say, walk],
   );
 
   const toggleLever = useCallback(() => {
@@ -380,7 +385,10 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 manifest={manifest}
                 place={shownPlace}
                 walk={walk && !inReplay}
+                walkHandle={walkHandle}
                 onWalkError={(message) => { setWalk(false); setWalkError(message); }}
+                onPlaceNear={setPlace}
+                people={people}
                 selected={focus}
                 hovered={hoverObject}
                 onHover={setHoverObject}
@@ -433,15 +441,14 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 aria-pressed={shownPlace === id}
                 disabled={inReplay}
                 onClick={() => {
-                  setWalk(false);
                   setPlace(id);
-                  say(`Moved to ${manifest?.places[id].label ?? id}.`);
+                  say(`${walk ? 'Walking to' : 'Moved to'} ${manifest?.places[id].label ?? id}.`);
                 }}
               >
                 {manifest?.places[id].label ?? id}
               </button>
             ))}
-            <span className="hint">{!webgl ? 'Still image · select a place or object' : walk ? 'Walk from the courtyard entrance' : 'Drag to look · click an object'}</span>
+            <span className="hint">{!webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
           </div>
           <div className="months">
             <span className="rowlabel">
@@ -552,9 +559,9 @@ function World({ binding }: { binding?: ExploreBinding }) {
         </div>
 
         {manifest && <details className="object">
-          <summary>Explore objects in Guided mode</summary>
+          <summary>Objects in the courtyard</summary>
           <div className="object-links" role="group" aria-label="Courtyard objects">
-            {OBJECT_IDS.map((id) => <button key={id} className="btn btn--ghost btn--sm" onClick={() => { setWalk(false); inspect(id); }}>{manifest.objects[id].label}</button>)}
+            {OBJECT_IDS.map((id) => <button key={id} className="btn btn--ghost btn--sm" onClick={() => { if (walk && walkHandle.current) walkHandle.current.inspect(id); else inspect(id); }}>{manifest.objects[id].label}</button>)}
           </div>
         </details>}
 

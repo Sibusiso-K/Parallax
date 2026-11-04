@@ -84,11 +84,12 @@ export class CourtyardController {
       if (![pos.x, pos.y, pos.z].every(Number.isFinite) || pos.y < this.manifest.bounds.min[1]) this.recover();
     }
   }
-  recover(): void {
-    const s = this.manifest.places[this.manifest.spawn].stand;
-    const p = { x: s[0], y: s[1] + CENTER_HEIGHT + 0.03, z: s[2] };
+  recover(): void { this.standAt(this.manifest.places[this.manifest.spawn].stand); }
+  /** Moves the capsule straight to a floor point, feet on the ground: recovery, and entering Walk at a place. */
+  standAt(stand: readonly number[]): void {
+    const p = { x: stand[0]!, y: stand[1]! + CENTER_HEIGHT + 0.03, z: stand[2]! };
     this.body.setTranslation(p, true); this.body.setNextKinematicTranslation(p);
-    this.world.propagateModifiedBodyPositionsToColliders(); this.world.updateSceneQueries();
+    this.world.propagateModifiedBodyPositionsToColliders(); this.world.step();
     this.vertical = 0; this.grounded = false; this.accumulator = 0;
   }
   /** Only an in-range object with a clear proxy-collider ray can be selected. */
@@ -103,7 +104,7 @@ export class CourtyardController {
       const d = c.distance;
       const ray = new RAPIER.Ray(origin, { x: c.delta.x / d, y: c.delta.y / d, z: c.delta.z / d });
       const hit = this.world.castRay(ray, d, true, undefined, undefined, this.collider, undefined, (collider) => this.colliderIds.get(collider.handle) !== c.id);
-      if (!hit || hit.toi >= d - 0.05) return c.id;
+      if (!hit || hit.timeOfImpact >= d - 0.05) return c.id;
     }
     return null;
   }

@@ -1,11 +1,10 @@
 import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from '@react-three/fiber';
 import { BakeShadows, Html, useGLTF } from '@react-three/drei';
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import PeoplePreview from './PeoplePreview';
-import { CourtyardController } from './controller';
-import { MovementInput } from './input';
+import { WalkCamera, WalkControls, type WalkHandle } from './WalkCamera';
 import { OBJECT_IDS, WORLD_BASE, objectForNode, skyRotationY, type CourtyardManifest, type ObjectId, type PlaceId } from './manifest';
 
 // The courtyard: the Blender-built environment.glb, lit by the real Johannesburg sunset panorama (fill and
@@ -16,7 +15,13 @@ export interface CourtyardProps {
   manifest: CourtyardManifest;
   place: PlaceId;
   walk: boolean;
+  /** Filled while walking, so the panel can send the walker to an object. */
+  walkHandle: RefObject<WalkHandle | null>;
   onWalkError: (message: string) => void;
+  /** The walker has come to a place on foot, so the Places row can say where they are. */
+  onPlaceNear: (id: PlaceId) => void;
+  /** Whether the draft characters stand in the courtyard. */
+  people: boolean;
   selected: ObjectId | null;
   hovered: ObjectId | null;
   onHover: (id: ObjectId | null) => void;
@@ -27,10 +32,16 @@ export interface CourtyardProps {
   onContextLost: () => void;
 }
 
+/** Integrated and phone GPUs are fill-bound, so they draw at ratio 1. Read from the live context: a probe would cost a second one. */
+const FILL_BOUND = /Intel|Mali|Adreno|PowerVR|SwiftShader|llvmpipe/i;
+
 export default function Courtyard(p: CourtyardProps) {
   const start = p.manifest.places[p.place];
-  const command = useRef<(action: string) => void>(() => {});
-  const [walkNotice, setWalkNotice] = useState('Move closer to an object, then click it or choose Inspect nearby.');
+  const [walkNotice, setWalkNotice] = useState('Walk up to an object, or press a place to walk there.');
+  const [near, setNear] = useState<ObjectId | null>(null);
+  // After a walk the guided camera eases back from where the walker stood, instead of jumping.
+  const hasWalked = useRef(false);
+  if (p.walk) hasWalked.current = true;
   return (
     <>
     <Canvas
@@ -38,9 +49,13 @@ export default function Courtyard(p: CourtyardProps) {
       dpr={1}
       camera={{ fov: 50, near: 0.05, far: 600, position: start.camera }}
       gl={{ antialias: !p.lowTier, toneMapping: THREE.AgXToneMapping, toneMappingExposure: p.manifest.lighting.exposure, powerPreference: 'high-performance' }}
-      onCreated={({ gl, scene, camera }) => {
-        // Development builds expose the renderer so frame cost can be measured even when the window is throttled.
-        if (import.meta.env.DEV) (window as unknown as { __courtyard?: unknown }).__courtyard = { gl, scene, camera };
+      onCreated={({ gl, scene, camera, setDpr }) => {
+        // Development and test builds expose the renderer so frame cost can be measured even when the window is throttled.
+        if (import.meta.env.DEV || import.meta.env.VITE_COURTYARD_DEBUG === '1') (window as unknown as { __courtyard?: unknown }).__courtyard = { gl, scene, camera };
+        const context = gl.getContext();
+        const info = context.getExtension('WEBGL_debug_renderer_info');
+        const renderer = info ? String(context.getParameter(info.UNMASKED_RENDERER_WEBGL)) : 'Intel';
+        if (!p.lowTier && !FILL_BOUND.test(renderer)) setDpr(Math.min(window.devicePixelRatio || 1, 1.5));
         gl.domElement.addEventListener('webglcontextlost', (e) => {
           e.preventDefault();
           p.onContextLost();
@@ -49,21 +64,21 @@ export default function Courtyard(p: CourtyardProps) {
     >
       <Suspense fallback={null}>
         <Sky manifest={p.manifest} />
-        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered} onHover={p.onHover} onSelect={(id) => p.walk ? command.current(`inspect:${id}`) : p.onSelect(id)} />
-        <PeoplePreview reduced={p.reduced} selected={p.selected} />
+        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered ?? (p.walk ? near : null)} onHover={p.onHover} onSelect={(id) => (p.walk ? p.walkHandle.current?.inspect(id) : p.onSelect(id))} />
+        {p.people && <PeoplePreview reduced={p.reduced} selected={p.selected} />}
         {/* Sun and architecture never move, so the shadow map is drawn once instead of every frame. */}
         <BakeShadows />
         <Ready onReady={p.onReady} />
       </Suspense>
       <Sun manifest={p.manifest} lowTier={p.lowTier} />
       <Lamps manifest={p.manifest} lowTier={p.lowTier} />
-      {p.walk ? <WalkCamera manifest={p.manifest} onSelect={p.onSelect} onError={p.onWalkError} onNotice={setWalkNotice} command={command} /> : <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} />}
+      {p.walk ? (
+        <WalkCamera manifest={p.manifest} place={p.place} reduced={p.reduced} onSelect={p.onSelect} onError={p.onWalkError} onNotice={setWalkNotice} onNear={setNear} onPlaceNear={p.onPlaceNear} handle={p.walkHandle} />
+      ) : (
+        <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} easeIn={hasWalked.current} />
+      )}
     </Canvas>
-    {p.walk && <div className="walk-controls glass" role="group" aria-label="Walk controls">
-      <span>Click the scene to look · WASD or arrows to move · E to inspect · Esc releases mouse</span>
-      <p className="walk-controls__notice" role="status" aria-live="polite">{walkNotice}</p>
-      <div><button onClick={() => command.current('leftTurn')}>Turn left</button><button onClick={() => command.current('forward')}>Forward</button><button onClick={() => command.current('rightTurn')}>Turn right</button><button onClick={() => command.current('back')}>Back</button><button onClick={() => command.current('inspect')}>Inspect nearby</button><button onClick={() => command.current('recover')}>Return to entrance</button></div>
-    </div>}
+    {p.walk && <WalkControls handle={p.walkHandle} notice={walkNotice} near={near} manifest={p.manifest} />}
     </>
   );
 }
@@ -261,7 +276,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
 /** Eases the camera between places along a straight line inside the courtyard; drag adds a bounded look offset. */
-function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifest; place: PlaceId; reduced: boolean }) {
+function GuidedCamera({ manifest, place, reduced, easeIn }: { manifest: CourtyardManifest; place: PlaceId; reduced: boolean; easeIn: boolean }) {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
   const v3 = (a: readonly number[]) => new THREE.Vector3(a[0], a[1], a[2]);
@@ -278,9 +293,18 @@ function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifes
     drag: null as null | { x: number; y: number },
   });
 
+  const mounted = useRef(false);
   useEffect(() => {
     const s = state.current;
     const next = manifest.places[place];
+    if (!mounted.current) {
+      mounted.current = true;
+      if (easeIn) {
+        // Coming back from a walk: start from where the walker stands and looks.
+        s.pos.copy(camera.position);
+        s.target.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(6));
+      }
+    }
     s.fromPos.copy(s.pos);
     s.fromTarget.copy(s.target);
     s.toPos.copy(v3(next.camera));
@@ -288,7 +312,7 @@ function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifes
     s.t = reduced ? 1 : 0;
     s.yaw = 0;
     s.pitch = 0;
-  }, [manifest, place, reduced]);
+  }, [camera, easeIn, manifest, place, reduced]);
 
   useEffect(() => {
     const el = gl.domElement;
@@ -336,85 +360,6 @@ function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifes
     dir.applyAxisAngle(right, s.pitch);
     camera.position.copy(s.pos);
     camera.lookAt(s.pos.clone().add(dir.multiplyScalar(len)));
-  });
-  return null;
-}
-
-
-/** Walking owns the camera only while mounted. The physics world is disposed on every exit. */
-function WalkCamera({ manifest, onSelect, onError, onNotice, command }: { manifest: CourtyardManifest; onSelect: (id: ObjectId) => void; onError: (message: string) => void; onNotice: (message: string) => void; command: React.RefObject<(action: string) => void> }) {
-  const camera = useThree((s) => s.camera);
-  const gl = useThree((s) => s.gl);
-  const state = useRef({ controller: null as CourtyardController | null, input: new MovementInput(), yaw: 0, pitch: 0 });
-  const callbacks = useRef({ onSelect, onError, onNotice });
-  callbacks.current = { onSelect, onError, onNotice };
-  useEffect(() => {
-    let live = true;
-    const s = state.current;
-    const el = gl.domElement;
-    el.tabIndex = 0;
-    el.setAttribute('aria-label', 'Courtyard walking view. Use WASD or arrow keys to move, E to inspect nearby.');
-    CourtyardController.create(manifest).then((controller) => {
-      if (!live) { controller.dispose(); return; }
-      s.controller = controller;
-    }).catch(() => { if (live) callbacks.current.onError('Walking could not start.'); });
-    const inspect = (target?: ObjectId) => {
-      const id = s.controller?.nearestVisible(target);
-      if (id) {
-        s.input.clear();
-        if (document.pointerLockElement === el) document.exitPointerLock();
-        callbacks.current.onSelect(id);
-        callbacks.current.onNotice(`${manifest.objects[id].label} selected. Details are in the panel.`);
-      }
-      else callbacks.current.onNotice(s.controller ? 'Move closer with a clear view to inspect this object.' : 'Walking is starting. Please try again.');
-    };
-    command.current = (action) => {
-      if (action === 'inspect') inspect();
-      else if (action.startsWith('inspect:')) { const id = action.slice(8); if (OBJECT_IDS.some((item) => item === id)) inspect(id as ObjectId); }
-      else if (action === 'recover') { s.controller?.recover(); callbacks.current.onNotice('Returned to the courtyard entrance.'); }
-      else if (action === 'leftTurn') s.yaw += Math.PI / 8;
-      else if (action === 'rightTurn') s.yaw -= Math.PI / 8;
-      else if (action === 'forward' || action === 'back') s.controller?.advance(5 / 60, { x: 0, z: action === 'forward' ? -1 : 1 }, s.yaw);
-    };
-    const down = (e: KeyboardEvent) => {
-      if (document.activeElement !== el && document.pointerLockElement !== el) return;
-      if (e.code === 'KeyE' && !e.repeat) { e.preventDefault(); e.stopPropagation(); inspect(); return; }
-      if (s.input.keyDown(e.code)) { e.preventDefault(); e.stopPropagation(); }
-    };
-    const up = (e: KeyboardEvent) => s.input.keyUp(e.code);
-    const clear = () => s.input.clear();
-    const lockChange = () => { if (document.pointerLockElement !== el) clear(); };
-    const look = (e: MouseEvent) => {
-      if (document.pointerLockElement !== el) return;
-      s.yaw -= e.movementX * 0.0025;
-      s.pitch = Math.max(-1.2, Math.min(1.2, s.pitch - e.movementY * 0.0025));
-    };
-    const click = (e: PointerEvent) => {
-      el.focus();
-      if (e.pointerType === 'mouse' && document.pointerLockElement !== el) {
-        try { Promise.resolve(el.requestPointerLock()).catch(() => {}); } catch { /* buttons and keyboard remain available */ }
-      }
-    };
-    el.addEventListener('pointerdown', click); el.addEventListener('blur', clear);
-    window.addEventListener('keydown', down, true); window.addEventListener('keyup', up, true); window.addEventListener('blur', clear);
-    document.addEventListener('visibilitychange', clear); document.addEventListener('pointerlockchange', lockChange); document.addEventListener('mousemove', look);
-    return () => {
-      live = false; clear(); command.current = () => {};
-      if (document.pointerLockElement === el) document.exitPointerLock();
-      el.removeEventListener('pointerdown', click); el.removeEventListener('blur', clear);
-      window.removeEventListener('keydown', down, true); window.removeEventListener('keyup', up, true); window.removeEventListener('blur', clear);
-      document.removeEventListener('visibilitychange', clear); document.removeEventListener('pointerlockchange', lockChange); document.removeEventListener('mousemove', look);
-      el.removeAttribute('tabindex'); el.removeAttribute('aria-label');
-      s.controller?.dispose(); s.controller = null;
-    };
-  }, [command, gl, manifest]);
-  useFrame((_, dt) => {
-    const s = state.current, c = s.controller;
-    if (!c) return;
-    c.advance(dt, s.input.vector(), s.yaw);
-    const p = c.eye;
-    camera.position.set(p.x, p.y, p.z);
-    camera.rotation.order = 'YXZ'; camera.rotation.set(s.pitch, s.yaw, 0);
   });
   return null;
 }

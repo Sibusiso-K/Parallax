@@ -189,8 +189,20 @@
   .world .memo { box-shadow: none; border: 0; width: 100%; background: #fff; backdrop-filter: none; }
 }
 
-.world .walk-controls { position: absolute; z-index: 3; right: 14px; bottom: 145px; max-width: min(540px, calc(100% - 28px)); padding: 8px 10px; font-size: 12px; }
-.world .walk-controls__notice { margin: 5px 0 0; color: var(--lav-ink); font-weight: 600; }
-.world .walk-controls div { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.world .walk-controls button { min-height: 36px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--ivory); cursor: pointer; }
-@media (max-width: 960px) { .world .walk-controls { bottom: 135px; left: 8px; right: 8px; max-width: none; } .world .walk-controls button { min-height: 44px; } }
+/* ---- walking ---- */
+.world .walk-prompt { position: absolute; z-index: 3; left: 50%; bottom: 150px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px 8px 10px; border: 1px solid var(--lav-edge); border-radius: 14px; background: var(--paper); color: var(--lav-ink); font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 8px 28px rgba(30, 22, 60, 0.22); }
+.world .walk-prompt kbd { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--lav); font: 700 12px 'Geist Mono Variable', monospace; }
+.world .walk-controls { position: absolute; z-index: 3; right: 14px; bottom: 145px; display: grid; justify-items: end; gap: 6px; width: 250px; padding: 10px 12px; font-size: 12px; }
+.world .walk-controls__hint { margin: 0; width: 100%; line-height: 1.35; opacity: 0.8; }
+.world .walk-controls__notice { margin: 0; width: 100%; color: var(--lav-ink); font-weight: 600; line-height: 1.35; }
+.world .walk-pad { display: grid; grid-template-columns: repeat(3, 44px); gap: 4px; justify-content: center; width: 100%; }
+.world .walk-pad button { min-height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--ivory); font-size: 18px; line-height: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
+.world .walk-pad button:active { background: var(--lav); border-color: var(--lav-edge); }
+.world .walk-controls__home { width: 100%; min-height: 34px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--ivory); font-size: 12px; cursor: pointer; }
+@media (max-width: 960px) {
+  .world .walk-controls { bottom: 135px; left: 8px; right: auto; width: auto; padding: 8px; }
+  .world .walk-controls__hint, .world .walk-controls__notice, .world .walk-controls__home { display: none; }
+  .world .walk-pad { grid-template-columns: repeat(3, 48px); }
+  .world .walk-pad button { min-height: 48px; }
+  .world .walk-prompt { left: auto; right: 8px; bottom: 135px; transform: none; white-space: normal; max-width: 44%; }
+}
