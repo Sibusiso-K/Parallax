@@ -159,7 +159,7 @@
   .world .placecard > span { display: none; }
   .world .paths { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .world .pathchip { flex: none; min-height: 36px; font-size: 12px; padding-right: 9px; }
-  .world .modes button:not([aria-pressed='true']) { display: none; }
+  .world .modes button:disabled { display: none; }
   .world .stage__bottom { left: 8px; right: 8px; bottom: 8px; padding: 8px 10px; }
   .world .places { overflow-x: auto; scrollbar-width: none; }
   .world .places .hint, .world .rowlabel { display: none; }
@@ -175,3 +175,9 @@
   .world .memo-wrap { position: static; background: none; padding: 0; overflow: visible; display: block; }
   .world .memo { box-shadow: none; border: 0; width: 100%; background: #fff; backdrop-filter: none; }
 }
+
+.world .walk-controls { position: absolute; z-index: 3; right: 14px; bottom: 145px; max-width: min(540px, calc(100% - 28px)); padding: 8px 10px; font-size: 12px; }
+.world .walk-controls__notice { margin: 5px 0 0; color: var(--lav-ink); font-weight: 600; }
+.world .walk-controls div { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.world .walk-controls button { min-height: 36px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--ivory); cursor: pointer; }
+@media (max-width: 960px) { .world .walk-controls { bottom: 135px; left: 8px; right: 8px; max-width: none; } .world .walk-controls button { min-height: 44px; } }

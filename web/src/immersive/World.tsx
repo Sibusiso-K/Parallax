@@ -8,11 +8,14 @@ import type { Edit } from '../../../shared/engine/simulate';
 import { resolveClaim, type ClaimRef, type ResolvedClaim } from '../../../shared/scene/claims';
 import { RequestGate, type PathLetter, type RoomSnapshot } from '../../../shared/scene/room-model';
 import { FIXTURE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorAnswer } from './advisor-fixture';
+import { DemoVoice } from './DemoVoice';
+import { CashStory } from './story-media/CashStory';
+import { buildReelPlan } from './story-media/reel-plan';
 import { EMPTY_MEMO, choiceLabel, evidenceAppendix, memoFooter, type Choice, type Memo } from './memo';
 import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type CameraStation, type Replay } from './replay';
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
 import { exploreSession } from './session-adapter';
-import { WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
+import { OBJECT_IDS, WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
 
@@ -23,15 +26,6 @@ const MONTH_TICKS = [1, 6, 12, 18, 24, 30, 36];
 
 const SUGGESTIONS = ['Why did cash run out here?', 'What is the lowest point?', 'What does the late payment do?'];
 const PATH_ORDER: PathLetter[] = ['B', 'C', 'A'];
-
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
 
 const mq = (q: string) => (typeof matchMedia === 'function' ? matchMedia(q).matches : false);
 
@@ -56,6 +50,14 @@ class Boundary extends Component<{ children: ReactNode; embedded: boolean }, { f
       </div>
     );
   }
+}
+
+/** Keep an unavailable or failed renderer inside the stage so the decision stays usable. */
+class SceneBoundary extends Component<{ children: ReactNode; onFailure: (error: Error) => void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(error: Error) { this.props.onFailure(error); }
+  render() { return this.state.failed ? null : this.props.children; }
 }
 
 /** Where the founder is in Explore: a path, the late-payment lever per path, and a month. */
@@ -96,7 +98,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const gate = useMemo(() => new RequestGate(), []);
   const reduced = useMemo(() => mq('(prefers-reduced-motion: reduce)'), []);
   const lowTier = useMemo(() => mq('(max-width: 768px)') || ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 8) <= 4 || (navigator.hardwareConcurrency ?? 8) <= 4, []);
-  const [webgl, setWebgl] = useState(() => hasWebGL());
+  const [webgl, setWebgl] = useState(true);
   const [pathId, setPathId] = useState<PathLetter>(binding?.initial.pathId ?? 'B');
   const [stressed, setStressed] = useState<Record<PathLetter, boolean>>(binding?.initial.stressed ?? { A: false, B: false, C: false });
   const [month, setMonth] = useState(binding?.initial.month ?? 2);
@@ -121,6 +123,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [worldError, setWorldError] = useState('');
   const [sceneReady, setSceneReady] = useState(false);
   const [place, setPlace] = useState<PlaceId>('spawn');
+  const [walk, setWalk] = useState(false);
+  const [walkError, setWalkError] = useState('');
   const [focus, setFocus] = useState<ObjectId | null>(null);
   const [hoverObject, setHoverObject] = useState<ObjectId | null>(null);
   useEffect(() => {
@@ -290,6 +294,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
   const startReplay = () => {
     gate.invalidate();
+    setWalk(false);
     setReplay(buildReplay(session));
     setReplayT(0);
     setPlaying(!reduced);
@@ -354,10 +359,13 @@ function World({ binding }: { binding?: ExploreBinding }) {
         <div className="stage__view">
           <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />
           {webgl && manifest && (
+            <SceneBoundary onFailure={(error) => { console.error('Courtyard renderer failed:', error); setWalk(false); setWebgl(false); }}>
             <Suspense fallback={null}>
               <Courtyard
                 manifest={manifest}
                 place={shownPlace}
+                walk={walk && !inReplay}
+                onWalkError={(message) => { setWalk(false); setWalkError(message); }}
                 selected={focus}
                 hovered={hoverObject}
                 onHover={setHoverObject}
@@ -365,16 +373,19 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 reduced={reduced}
                 lowTier={lowTier}
                 onReady={markReady}
-                onContextLost={() => setWebgl(false)}
+                onContextLost={() => { setWalk(false); setWebgl(false); }}
               />
             </Suspense>
+            </SceneBoundary>
           )}
+          {walkError && <p className="stage__status stage__status--warn" role="alert">{walkError} Guided mode is available.</p>}
           {webgl && !sceneReady && !worldError && (
             <p className="stage__status" role="status">Loading the 3D courtyard. Until it is ready you see a still render of the same model.</p>
           )}
           {(!webgl || worldError) && (
             <p className="stage__status stage__status--warn" role="note">
-              {worldError || '3D is not available on this device, so this is a still render of the courtyard model.'} The figures, objects and advisor work without it.
+              {worldError || 'The 3D courtyard could not be loaded or was interrupted, so this is a still render of the courtyard model.'} The figures, objects and advisor work without it.
+              {!worldError && <><br /><button className="btn btn--ghost btn--sm" onClick={() => { setSceneReady(false); setWebgl(true); }}>Try 3D again</button></>}
             </p>
           )}
         </div>
@@ -392,8 +403,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
             </div>
           </div>
           <div className="modes glass" role="group" aria-label="View mode">
-            <button aria-pressed="true">Guided</button>
-            <button disabled title="Walking with collision is the next build step">Walk</button>
+            <button aria-pressed={!walk} onClick={() => setWalk(false)}>Guided</button>
+            <button aria-pressed={walk} disabled={!webgl || !sceneReady || inReplay} onClick={() => { setWalkError(''); setWalk(true); }}>Walk</button>
             <button disabled title="Not offered until it is tested on a real headset">VR</button>
           </div>
         </div>
@@ -407,6 +418,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 aria-pressed={shownPlace === id}
                 disabled={inReplay}
                 onClick={() => {
+                  setWalk(false);
                   setPlace(id);
                   say(`Moved to ${manifest?.places[id].label ?? id}.`);
                 }}
@@ -414,7 +426,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 {manifest?.places[id].label ?? id}
               </button>
             ))}
-            <span className="hint">Drag to look · click an object</span>
+            <span className="hint">{!webgl ? 'Still image · select a place or object' : walk ? 'Walk from the courtyard entrance' : 'Drag to look · click an object'}</span>
           </div>
           <div className="months">
             <span className="rowlabel">
@@ -491,6 +503,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             {isStress ? snapshot.terms.stressRule : 'The switch applies the engine’s late-payment rule to this path.'}
             {firstPay ? ` The first contract payment lands in month ${firstPay}.` : ' This path has no contract.'}
           </p>
+          <details className="table"><summary>Show cash graph</summary><CashStory snapshot={snapshot} selectedMonth={shownMonth} onSelectMonth={select} disabled={inReplay} /></details>
           <details className="table">
             <summary>All 36 months as a table</summary>
             <table>
@@ -523,6 +536,13 @@ function World({ binding }: { binding?: ExploreBinding }) {
           </details>
         </div>
 
+        {manifest && <details className="object">
+          <summary>Explore objects in Guided mode</summary>
+          <div className="object-links" role="group" aria-label="Courtyard objects">
+            {OBJECT_IDS.map((id) => <button key={id} className="btn btn--ghost btn--sm" onClick={() => { setWalk(false); inspect(id); }}>{manifest.objects[id].label}</button>)}
+          </div>
+        </details>}
+
         {focus && focusInfo && (
           <section className="object" aria-label={focusInfo.label}>
             <div className="object__head">
@@ -532,6 +552,15 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 ×
               </button>
             </div>
+            {focus !== 'intake_desk' && (
+              <details className="table">
+                <summary>Preview reel storyboard</summary>
+                <p className="muted small">A preview based on this scenario and month. Video and audio have not been generated.</p>
+                <ol>{buildReelPlan(snapshot, shownMonth, focus).scenes.map((scene, index) => (
+                  <li key={`${scene.kind}-${index}`}>{scene.text} <span className="muted small">({scene.durationSeconds} seconds)</span></li>
+                ))}</ol>
+              </details>
+            )}
             {focus === 'contract' && (
               <>
                 <p>
@@ -619,12 +648,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
               Ask
             </button>
           </form>
-          <div className="voice">
-            <button className="btn btn--talk" disabled aria-describedby="voice-note">
-              Hold to talk
-            </button>
-            <span id="voice-note" className="muted small">Voice arrives in a later phase. Type instead.</span>
-          </div>
+          <DemoVoice answer={answers.at(-1)} snapshotKey={snapshot.key} month={shownMonth} demo={isDemo} disabled={inReplay} working={working} />
         </section>
 
         <footer className="panel__foot">
@@ -637,7 +661,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
           </div>
           <p className="muted small">
-            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky; people and walking are not in it yet. The advisor is a fixture: no
+            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky; the fictional characters are work-in-progress previews. The advisor is a fixture: no
             model is connected. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
           </p>
         </footer>

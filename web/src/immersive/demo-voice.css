@@ -1,0 +1,14 @@
+.world .demo-voice { display: grid; gap: 9px; padding: 14px; border: 1px solid #d3c8ec; border-radius: 14px; background: #f4f0fc; color: #211747; }
+.world .demo-voice__header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.world .demo-voice__header > span:first-child { font-size: 21px; line-height: 1; }
+.world .demo-voice__badge { margin-left: auto; border-radius: 999px; padding: 3px 8px; background: #e3daf9; font-size: 11px; font-weight: 650; }
+.world .demo-voice p { margin: 0; font-size: 12.5px; line-height: 1.45; }
+.world .demo-voice__choice { display: grid; gap: 5px; font-size: 12px; font-weight: 650; }
+.world .demo-voice__choice select { width: 100%; min-height: 42px; padding: 8px; border: 1px solid #b9a9d8; border-radius: 9px; background: white; color: #211747; font: inherit; }
+.world .demo-voice__controls { display: flex; gap: 8px; }
+.world .demo-voice__action { flex: 1; min-height: 44px; background: #4a3484; color: #fff; border: 0; }
+.world .demo-voice__stop { min-height: 44px; border: 1px solid #a79ac2; background: #fff; color: #211747; }
+.world .demo-voice__action:disabled { opacity: .55; }
+.world .demo-voice__action:focus-visible, .world .demo-voice__stop:focus-visible, .world .demo-voice__choice select:focus-visible { outline: 3px solid #2b1761; outline-offset: 3px; }
+.world .demo-voice__note { color: #51476a; }
+.world .demo-voice__status:empty { display: none; }

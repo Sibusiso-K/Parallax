@@ -1,8 +1,11 @@
 import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from '@react-three/fiber';
 import { BakeShadows, Html, useGLTF } from '@react-three/drei';
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import PeoplePreview from './PeoplePreview';
+import { CourtyardController } from './controller';
+import { MovementInput } from './input';
 import { OBJECT_IDS, WORLD_BASE, objectForNode, skyRotationY, type CourtyardManifest, type ObjectId, type PlaceId } from './manifest';
 
 // The courtyard: the Blender-built environment.glb, lit by the real Johannesburg sunset panorama (fill and
@@ -12,6 +15,8 @@ import { OBJECT_IDS, WORLD_BASE, objectForNode, skyRotationY, type CourtyardMani
 export interface CourtyardProps {
   manifest: CourtyardManifest;
   place: PlaceId;
+  walk: boolean;
+  onWalkError: (message: string) => void;
   selected: ObjectId | null;
   hovered: ObjectId | null;
   onHover: (id: ObjectId | null) => void;
@@ -22,30 +27,15 @@ export interface CourtyardProps {
   onContextLost: () => void;
 }
 
-/**
- * Integrated GPUs are fill-bound here: on an Intel UHD GPU a forced render at 1102x807 cost 25.8 ms at pixel ratio
- * 1.25 and 20.9 ms at 882x646, ratio 1 (2 Nov 2026), so they render at ratio 1. Three r187 removed soft PCF shadows,
- * so every tier uses PCF.
- */
-function integratedGpu(): boolean {
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    const ext = gl?.getExtension('WEBGL_debug_renderer_info');
-    const name = gl && ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    return /Intel|Mali|Adreno|PowerVR|SwiftShader|llvmpipe/i.test(name);
-  } catch {
-    return true;
-  }
-}
-
 export default function Courtyard(p: CourtyardProps) {
   const start = p.manifest.places[p.place];
-  const integrated = useMemo(integratedGpu, []);
+  const command = useRef<(action: string) => void>(() => {});
+  const [walkNotice, setWalkNotice] = useState('Move closer to an object, then click it or choose Inspect nearby.');
   return (
+    <>
     <Canvas
       shadows={p.lowTier ? false : 'percentage'}
-      dpr={p.lowTier || integrated ? 1 : [1, 1.5]}
+      dpr={1}
       camera={{ fov: 50, near: 0.05, far: 600, position: start.camera }}
       gl={{ antialias: !p.lowTier, toneMapping: THREE.AgXToneMapping, toneMappingExposure: p.manifest.lighting.exposure, powerPreference: 'high-performance' }}
       onCreated={({ gl, scene, camera }) => {
@@ -59,15 +49,22 @@ export default function Courtyard(p: CourtyardProps) {
     >
       <Suspense fallback={null}>
         <Sky manifest={p.manifest} />
-        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered} onHover={p.onHover} onSelect={p.onSelect} />
+        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered} onHover={p.onHover} onSelect={(id) => p.walk ? command.current(`inspect:${id}`) : p.onSelect(id)} />
+        <PeoplePreview reduced={p.reduced} selected={p.selected} />
         {/* Sun and architecture never move, so the shadow map is drawn once instead of every frame. */}
         <BakeShadows />
         <Ready onReady={p.onReady} />
       </Suspense>
       <Sun manifest={p.manifest} lowTier={p.lowTier} />
       <Lamps manifest={p.manifest} lowTier={p.lowTier} />
-      <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} />
+      {p.walk ? <WalkCamera manifest={p.manifest} onSelect={p.onSelect} onError={p.onWalkError} onNotice={setWalkNotice} command={command} /> : <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} />}
     </Canvas>
+    {p.walk && <div className="walk-controls glass" role="group" aria-label="Walk controls">
+      <span>Click the scene to look · WASD or arrows to move · E to inspect · Esc releases mouse</span>
+      <p className="walk-controls__notice" role="status" aria-live="polite">{walkNotice}</p>
+      <div><button onClick={() => command.current('leftTurn')}>Turn left</button><button onClick={() => command.current('forward')}>Forward</button><button onClick={() => command.current('rightTurn')}>Turn right</button><button onClick={() => command.current('back')}>Back</button><button onClick={() => command.current('inspect')}>Inspect nearby</button><button onClick={() => command.current('recover')}>Return to entrance</button></div>
+    </div>}
+    </>
   );
 }
 
@@ -339,6 +336,85 @@ function GuidedCamera({ manifest, place, reduced }: { manifest: CourtyardManifes
     dir.applyAxisAngle(right, s.pitch);
     camera.position.copy(s.pos);
     camera.lookAt(s.pos.clone().add(dir.multiplyScalar(len)));
+  });
+  return null;
+}
+
+
+/** Walking owns the camera only while mounted. The physics world is disposed on every exit. */
+function WalkCamera({ manifest, onSelect, onError, onNotice, command }: { manifest: CourtyardManifest; onSelect: (id: ObjectId) => void; onError: (message: string) => void; onNotice: (message: string) => void; command: React.RefObject<(action: string) => void> }) {
+  const camera = useThree((s) => s.camera);
+  const gl = useThree((s) => s.gl);
+  const state = useRef({ controller: null as CourtyardController | null, input: new MovementInput(), yaw: 0, pitch: 0 });
+  const callbacks = useRef({ onSelect, onError, onNotice });
+  callbacks.current = { onSelect, onError, onNotice };
+  useEffect(() => {
+    let live = true;
+    const s = state.current;
+    const el = gl.domElement;
+    el.tabIndex = 0;
+    el.setAttribute('aria-label', 'Courtyard walking view. Use WASD or arrow keys to move, E to inspect nearby.');
+    CourtyardController.create(manifest).then((controller) => {
+      if (!live) { controller.dispose(); return; }
+      s.controller = controller;
+    }).catch(() => { if (live) callbacks.current.onError('Walking could not start.'); });
+    const inspect = (target?: ObjectId) => {
+      const id = s.controller?.nearestVisible(target);
+      if (id) {
+        s.input.clear();
+        if (document.pointerLockElement === el) document.exitPointerLock();
+        callbacks.current.onSelect(id);
+        callbacks.current.onNotice(`${manifest.objects[id].label} selected. Details are in the panel.`);
+      }
+      else callbacks.current.onNotice(s.controller ? 'Move closer with a clear view to inspect this object.' : 'Walking is starting. Please try again.');
+    };
+    command.current = (action) => {
+      if (action === 'inspect') inspect();
+      else if (action.startsWith('inspect:')) { const id = action.slice(8); if (OBJECT_IDS.some((item) => item === id)) inspect(id as ObjectId); }
+      else if (action === 'recover') { s.controller?.recover(); callbacks.current.onNotice('Returned to the courtyard entrance.'); }
+      else if (action === 'leftTurn') s.yaw += Math.PI / 8;
+      else if (action === 'rightTurn') s.yaw -= Math.PI / 8;
+      else if (action === 'forward' || action === 'back') s.controller?.advance(5 / 60, { x: 0, z: action === 'forward' ? -1 : 1 }, s.yaw);
+    };
+    const down = (e: KeyboardEvent) => {
+      if (document.activeElement !== el && document.pointerLockElement !== el) return;
+      if (e.code === 'KeyE' && !e.repeat) { e.preventDefault(); e.stopPropagation(); inspect(); return; }
+      if (s.input.keyDown(e.code)) { e.preventDefault(); e.stopPropagation(); }
+    };
+    const up = (e: KeyboardEvent) => s.input.keyUp(e.code);
+    const clear = () => s.input.clear();
+    const lockChange = () => { if (document.pointerLockElement !== el) clear(); };
+    const look = (e: MouseEvent) => {
+      if (document.pointerLockElement !== el) return;
+      s.yaw -= e.movementX * 0.0025;
+      s.pitch = Math.max(-1.2, Math.min(1.2, s.pitch - e.movementY * 0.0025));
+    };
+    const click = (e: PointerEvent) => {
+      el.focus();
+      if (e.pointerType === 'mouse' && document.pointerLockElement !== el) {
+        try { Promise.resolve(el.requestPointerLock()).catch(() => {}); } catch { /* buttons and keyboard remain available */ }
+      }
+    };
+    el.addEventListener('pointerdown', click); el.addEventListener('blur', clear);
+    window.addEventListener('keydown', down, true); window.addEventListener('keyup', up, true); window.addEventListener('blur', clear);
+    document.addEventListener('visibilitychange', clear); document.addEventListener('pointerlockchange', lockChange); document.addEventListener('mousemove', look);
+    return () => {
+      live = false; clear(); command.current = () => {};
+      if (document.pointerLockElement === el) document.exitPointerLock();
+      el.removeEventListener('pointerdown', click); el.removeEventListener('blur', clear);
+      window.removeEventListener('keydown', down, true); window.removeEventListener('keyup', up, true); window.removeEventListener('blur', clear);
+      document.removeEventListener('visibilitychange', clear); document.removeEventListener('pointerlockchange', lockChange); document.removeEventListener('mousemove', look);
+      el.removeAttribute('tabindex'); el.removeAttribute('aria-label');
+      s.controller?.dispose(); s.controller = null;
+    };
+  }, [command, gl, manifest]);
+  useFrame((_, dt) => {
+    const s = state.current, c = s.controller;
+    if (!c) return;
+    c.advance(dt, s.input.vector(), s.yaw);
+    const p = c.eye;
+    camera.position.set(p.x, p.y, p.z);
+    camera.rotation.order = 'YXZ'; camera.rotation.set(s.pitch, s.yaw, 0);
   });
   return null;
 }
