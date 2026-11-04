@@ -92,11 +92,21 @@ export function runPlan(req: PlanRequest, s: PlanSettings): PlanResult {
   };
 }
 
-/** Best first: meets the goal, then the higher lowest cash, then the smaller price rise (asks less of customers). */
+/**
+ * Best first: meets the goal; then the smallest change from the plan as it stands (a smaller price change asks less of
+ * customers, a contract nearer its offered size changes less); then the higher lowest cash.
+ */
 export function rank(list: PlanResult[]): PlanResult[] {
   const key = (r: PlanResult) => `${r.path}:${r.contractPercent}:${r.pricePercent}`;
   const unique = [...new Map(list.map((r) => [key(r), r])).values()];
-  return unique.sort((a, b) => Number(b.meetsGoal) - Number(a.meetsGoal) || b.lowestCash - a.lowestCash || a.pricePercent - b.pricePercent);
+  const change = (r: PlanResult) => Math.abs(r.pricePercent) + Math.abs(r.contractPercent - 100) / 5;
+  return unique.sort((a, b) => Number(b.meetsGoal) - Number(a.meetsGoal) || change(a) - change(b) || b.lowestCash - a.lowestCash);
+}
+
+/** The first plan per path, in rank order: three different futures rather than three versions of one. */
+export function onePerPath(ranked: PlanResult[]): PlanResult[] {
+  const seen = new Set<string>();
+  return ranked.filter((r) => (seen.has(r.path) ? false : (seen.add(r.path), true)));
 }
 
 const hasContract = (req: PlanRequest, letter: Letter) => req.paths.find((p) => p.letter === letter)?.assumptions.some((a) => a.role === 'contract') ?? false;
@@ -109,7 +119,7 @@ export function searchInCode(req: PlanRequest): PlanAnswer {
     for (const c of sizes) for (const pr of PRICE_STEPS) results.push(runPlan(req, { path: p.letter, contractPercent: c, pricePercent: pr }));
   }
   const ranked = rank(results);
-  const found = ranked.filter((r) => r.meetsGoal).slice(0, 3);
+  const found = onePerPath(ranked.filter((r) => r.meetsGoal)).slice(0, 3);
   return {
     mode: 'fixture',
     steps: [{ tool: 'compare_all', args: { searched: results.length }, results: ranked.slice(0, 3) }],
@@ -277,6 +287,6 @@ export async function planWithModel(cfg: MetaConfig, req: PlanRequest, deps: Dep
   // Code reruns every plan the model named, and keeps only those that really meet the goal.
   const checked = rank(named.map((s) => runPlan(req, s))).filter((r) => r.meetsGoal);
   const tried = rank(steps.flatMap((s) => s.results));
-  const found = (checked.length ? checked : tried.filter((r) => r.meetsGoal)).slice(0, 3);
+  const found = onePerPath(checked.length ? checked : tried.filter((r) => r.meetsGoal)).slice(0, 3);
   return { mode: 'model', steps, found, closest: found.length ? null : (tried[0] ?? null), note, model: usedModel, calls };
 }
