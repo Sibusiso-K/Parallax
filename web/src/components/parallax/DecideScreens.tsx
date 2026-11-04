@@ -9,7 +9,6 @@ import { RangeBar, domainOf } from "./charts";
 import { StepNav } from "./StepNav";
 
 const end = (a: number[]) => a[a.length - 1] ?? 0;
-const at = (a: number[], month: number) => a[month] ?? 0;
 
 /** The three paths side by side, with the comfort check beside them. */
 export function CompareScreen() {
@@ -20,18 +19,7 @@ export function CompareScreen() {
 
   const rows: { label: string; cell: (p: PathCard, f: Figures) => ReactNode }[] = [
     {
-      label: "Cash at month 12, likely",
-      cell: (_, f) => (
-        <>
-          <div className="v">{formatMoney(at(f.likely, 12))}</div>
-          <div className="r">
-            <span>Bad {formatMoney(at(f.bad, 12))}</span> · <span>Good {formatMoney(at(f.good, 12))}</span>
-          </div>
-        </>
-      ),
-    },
-    {
-      label: "Cash at month 36, likely",
+      label: "Month 36, likely",
       cell: (p, f) => (
         <>
           <div className="v">{formatMoney(end(f.likely))}</div>
@@ -52,7 +40,7 @@ export function CompareScreen() {
       ),
     },
     {
-      label: "Lowest cash with a 2-month late payment",
+      label: "Lowest, with a late payment",
       cell: (_, f) => (
         <>
           <div className="v">{formatMoney(f.late.lowest.cash)}</div>
@@ -64,7 +52,7 @@ export function CompareScreen() {
       ),
     },
     {
-      label: "Cash runs out, bad case",
+      label: "Runs out, bad case",
       cell: (_, f) =>
         f.runsOutBad ? (
           <>
@@ -79,19 +67,7 @@ export function CompareScreen() {
         ),
     },
     {
-      label: "Three months of fixed costs covered",
-      cell: (_, f) =>
-        f.bufferMonth ? (
-          <>
-            <div className="t">Month {f.bufferMonth}</div>
-            <div className="s">Likely case</div>
-          </>
-        ) : (
-          <div className="t none">Not reached</div>
-        ),
-    },
-    {
-      label: "Worst setback, likely case",
+      label: "Worst setback",
       cell: (_, f) => (
         <>
           <div className="t">{f.worst.name}</div>
@@ -101,19 +77,21 @@ export function CompareScreen() {
         </>
       ),
     },
-    { label: "The plan", cell: (p) => <div className="quote">{p.summary}</div> },
   ];
 
   return (
+    <>
+    <div className="pagehead">
+      <div className="eyebrow">Decide</div>
+      <h1>Which future sits best with you?</h1>
+      <div className="sub">Rate each one, note what still bothers you, then write your memo.</div>
+    </div>
     <div className="row pagecols3">
       <section className="panel">
         <div className="panel-head">
           <div>
-            <h2>Three paths on one scale</h2>
-            <div className="sub">
-              Bars share one scale, from {formatMoney(domain[0])} to {formatMoney(domain[1])}; the dot is the likely case. A late payment
-              is a big client paying two months late.
-            </div>
+            <h2>The three, on one scale</h2>
+            <div className="sub">Bars run from {formatMoney(domain[0])} to {formatMoney(domain[1])}. The dot is the likely case.</div>
           </div>
         </div>
         <div className="tablewrap">
@@ -147,8 +125,8 @@ export function CompareScreen() {
           <div className="panel-head">
             <div>
               <div className="caps">Comfort check</div>
-              <h2>How does each future sit with you?</h2>
-              <div className="sub">Rate each one from 1 (very uneasy) to 5 (at peace). You can rate again later; the last rating is the one shown.</div>
+              <h2>How does each one feel?</h2>
+              <div className="sub">1 is very uneasy, 5 is at peace.</div>
             </div>
           </div>
           <div className="crows">
@@ -198,6 +176,7 @@ export function CompareScreen() {
         </section>
       </div>
     </div>
+    </>
   );
 }
 
@@ -227,8 +206,7 @@ export function SummaryScreen() {
       </>
     ) : (
       <>
-        <b>Not chosen yet.</b> You pick a path, or “Not ready yet”, before this prints. Parallax never names a choice you have not
-        made.
+        <b>Not chosen yet.</b> Pick a path or “Not ready yet”. Parallax never chooses for you.
       </>
     );
 

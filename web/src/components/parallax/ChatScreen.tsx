@@ -87,7 +87,7 @@ export function ChatScreen() {
             <div className="avcap">AI-generated</div>
           </div>
           <div className="chead">
-            <div className="caps">You, as the founder, 36 months on</div>
+            <div className="caps">You, 36 months on</div>
             <h2>
               <Badge letter={active} /> {path.name}
             </h2>
@@ -111,7 +111,7 @@ export function ChatScreen() {
         <div ref={list} className="chat-body">
           {msgs.length === 0 && (
             <div className="suggest">
-              <p className="sub">Ask the founder who chose {path.name} anything.</p>
+              <p className="sub">Ask the you who chose “{path.name}” anything.</p>
               <div className="actions-row">
                 {PROMPTS.map((q) => (
                   <button key={q} type="button" className="chip" onClick={() => send(active, q)}>
@@ -207,7 +207,7 @@ export function ChatScreen() {
             <div>
               <h2>Cash in the business, 36 months</h2>
               <div className="sub">
-                Path {active}. Solid: the likely case. Dashed: the same case with {selected.name.toLowerCase()} ({selected.detail}).
+                Solid: likely case. Dashed: with {selected.name.toLowerCase()}.
               </div>
             </div>
           </div>
@@ -232,7 +232,7 @@ export function ChatScreen() {
             <div>
               <h2>Stress test on this path</h2>
               <div className="sub">
-                One setback at a time, likely case. Sizes are <Src kind="placeholder" /> except the client's own payment terms.
+                One setback at a time. Sizes are <Src kind="placeholder" /> except the client's payment terms.
               </div>
             </div>
           </div>

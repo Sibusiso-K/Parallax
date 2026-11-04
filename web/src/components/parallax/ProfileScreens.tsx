@@ -5,7 +5,7 @@ import { cx } from "./shared";
 import { FieldGrid } from "./FieldGrid";
 import { StepNav } from "./StepNav";
 
-const STEPS = ["Reading your business", "Computing 36 months of cash in code", "Drawing the founder you could become"];
+const STEPS = ["Reading your business", "Running 36 months of cash, in code", "Drawing the founder you could become"];
 
 export function GeneratingScreen() {
   const { profile, intake, set, go, startWorld } = useParallax();
@@ -54,8 +54,8 @@ export function GeneratingScreen() {
   return (
     <section className="screen">
       <div className="pagehead">
-        <div className="eyebrow">Step 3 of 3</div>
-        <h1>Drawing three possible futures</h1>
+        <div className="eyebrow">Futures</div>
+        <h1>Building three futures</h1>
       </div>
       <ol className="gensteps" aria-live="polite">
         {STEPS.map((s, i) => (
