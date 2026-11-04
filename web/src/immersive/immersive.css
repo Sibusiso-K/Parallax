@@ -223,6 +223,13 @@
 .world .walk-pad button { min-height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--ivory); font-size: 18px; line-height: 1; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
 .world .walk-pad button:active { background: var(--lav); border-color: var(--lav-edge); }
 .world .walk-controls__home { width: 100%; min-height: 34px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--ivory); font-size: 12px; cursor: pointer; }
+/* Inside the app the stepper takes the top of the screen, so the room and its panel share what is left: the place and
+   month controls stay in view, and only the panel scrolls. */
+@media (min-width: 961px) {
+  .world.world--embedded { height: calc(100dvh - 216px); min-height: 560px; grid-template-rows: minmax(0, 1fr); }
+  .world.world--embedded .stage { min-height: 0; }
+  .world.world--embedded .panel { max-height: none; min-height: 0; position: static; }
+}
 @media (max-width: 960px) {
   .world .walk-controls { bottom: 135px; left: 8px; right: auto; width: auto; padding: 8px; }
   .world .walk-controls__hint, .world .walk-controls__notice, .world .walk-controls__home { display: none; }

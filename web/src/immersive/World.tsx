@@ -490,6 +490,9 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const lastAnswer = answers.at(-1);
   const heardAnswer = lastAnswer && lastAnswer.snapshotKey === snapshot.key && lastAnswer.month === shownMonth ? answerTranscript(lastAnswer) : null;
   const objectLabel = (id: string) => manifest?.objects[id as ObjectId]?.label ?? id;
+  // A suggestion to go where the founder already is would be a button that does nothing.
+  const wouldChange = (action: AdvisorAction) =>
+    !((action.type === 'show_month' && action.month === shownMonth) || (action.type === 'late_payment' && action.on === isStress) || (action.type === 'switch_path' && action.path === snapshot.ref.pathId));
 
   return (
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
@@ -803,6 +806,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision}
                 fromPath={a.pathId}
                 onAction={i === answers.slice(-3).length - 1 && !inReplay ? runAction : undefined}
+                wouldChange={wouldChange}
                 onAsk={i === answers.slice(-3).length - 1 && !inReplay ? ask : undefined}
                 objectLabel={objectLabel}
               />
@@ -932,7 +936,8 @@ function cellText(n: number) {
   return `${n < 0 ? '-' : ''}R${Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 }
 
-function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, onAction, onAsk, objectLabel }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter; onAction?: (action: AdvisorAction) => void; onAsk?: (q: string) => void; objectLabel: (id: string) => string }) {
+function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, onAction, wouldChange, onAsk, objectLabel }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter; onAction?: (action: AdvisorAction) => void; wouldChange: (action: AdvisorAction) => boolean; onAsk?: (q: string) => void; objectLabel: (id: string) => string }) {
+  const actions = (a.actions ?? []).filter(wouldChange);
   const targets = (['B', 'C', 'A'] as PathLetter[]).filter((p) => p !== fromPath);
   return (
     <article className={`answer answer--${a.status}`}>
@@ -954,9 +959,9 @@ function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, on
           <p className="muted small">{a.source === 'model' ? 'Muse Spark wrote the sentences. Code checked each one and filled in every figure from the engine.' : 'Local execution only: the engine and the claim checks. No model was called.'}</p>
         </details>
       )}
-      {onAction && a.actions && a.actions.length > 0 && (
+      {onAction && actions.length > 0 && (
         <div className="carry" role="group" aria-label="Suggested next">
-          {a.actions.map((action) => (
+          {actions.map((action) => (
             <button key={JSON.stringify(action)} className="btn btn--sm" onClick={() => onAction(action)}>{actionLabel(action, objectLabel)}</button>
           ))}
         </div>
