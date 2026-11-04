@@ -18,6 +18,8 @@ export interface RoomReadout {
   shortfall: number | null;
   firstPayment: number | null;
   stressed: boolean;
+  /** The scenario on screen goes below zero at some point, whichever month is showing. */
+  strained: boolean;
   revision: number;
   rows: readonly number[];
   baselineRows: readonly number[];
@@ -34,6 +36,7 @@ export function buildReadout(snapshot: RoomSnapshot, month: number): RoomReadout
     cash: formatRand(row.cash),
     baselineCash: stressed ? formatRand(snapshot.baseline.rows[row.month - 1]!.cash) : null,
     below: row.cash < 0,
+    strained: snapshot.active.lowest.cash < 0,
     lowest: formatRand(snapshot.active.lowest.cash),
     lowestMonth: snapshot.active.lowest.month,
     end: formatRand(snapshot.active.rows[snapshot.active.rows.length - 1]!.cash),

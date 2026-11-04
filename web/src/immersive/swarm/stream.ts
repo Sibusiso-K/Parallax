@@ -12,7 +12,7 @@ export async function reviewStream(request: SwarmRequest, receive: (event: Swarm
     if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
     if (!text.trim()) return;
     const value: unknown = JSON.parse(text);
-    if (!value || typeof value !== 'object' || !('type' in value) || !['start', 'trace', 'result', 'error'].includes(String(value.type))) throw new Error('The review sent an unreadable update.');
+    if (!value || typeof value !== 'object' || !('type' in value) || !['start', 'trace', 'result', 'sources', 'error'].includes(String(value.type))) throw new Error('The review sent an unreadable update.');
     const event = value as SwarmEvent;
     if (event.type === 'error') throw new Error(event.message);
     if (event.type === 'result') ended = true;

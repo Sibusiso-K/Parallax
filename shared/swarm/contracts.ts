@@ -12,7 +12,7 @@ export const swarmRequest = advisorRequest.pick({ path: true, month: true, stres
 export type SwarmRequest = z.infer<typeof swarmRequest>;
 export type Actor = Agent | 'orchestrator' | 'synthesiser' | 'verifier' | 'painter' | 'art';
 export const LABELS: Record<Actor, string> = { orchestrator: 'Conductor', cash: 'Cash Forensics', market: 'Market Scout', devil: "Devil’s Advocate", world: 'World Builder', director: 'Director', painter: 'Muse Image', art: 'Art Director', synthesiser: 'Future self', verifier: 'Verifier' };
-export interface Source { url: string; quote: string; title?: string; label: 'External source'; checked: 'quote-found-on-page' | 'url-and-snippet-in-search-results' | 'url-in-search-results'; }
+export interface Source { url: string; quote: string; fact?: string; title?: string; label: 'External source'; checked: 'quote-found-on-page' | 'url-and-snippet-in-search-results' | 'url-in-search-results'; }
 export interface Proposal { id: string; assumptionId: string; label: string; values: Edit; beforeLowest: number; afterLowest: number; delta: number; inputKey: string; }
 export const SCENE_EDITS = {
   bare_shelves: 'Keep this exact room, camera angle, light and every object in place. Change only the storage shelves on the left and right: they are now nearly empty, with a few jars and flat boxes left.',
@@ -40,6 +40,8 @@ export interface SwarmResult {
 export type SwarmEvent = { type: 'start'; mode: 'fixture' | 'live'; inputKey: string }
   | { type: 'trace'; trace: Trace }
   | { type: 'result'; result: SwarmResult }
+  /** Live search can finish after the board has spoken. Its sources arrive on their own. */
+  | { type: 'sources'; sources: Source[] }
   | { type: 'error'; message: string };
 
 export const agentReply = z.object({

@@ -37,7 +37,7 @@ function runSize(result: SwarmResult) {
   const tokens = result.traces.reduce((sum, t) => sum + (t.inputTokens ?? 0) + (t.outputTokens ?? 0), 0);
   return result.mode === 'fixture' ? `${steps} steps · no model calls` : `${steps} steps · ${tokens.toLocaleString('en-ZA')} tokens`;
 }
-const SOURCE_NOTE: Record<string, string> = { 'quote-found-on-page': 'quote found on the live page by code', 'url-and-snippet-in-search-results': 'quote found in the search result by code', 'url-in-search-results': 'found by search, quote not confirmed' };
+const SOURCE_NOTE: Record<string, string> = { 'quote-found-on-page': 'found on the live page by code', 'url-and-snippet-in-search-results': 'found in the search result by code', 'url-in-search-results': 'found by search, not confirmed on the page' };
 const actors = Object.keys(NODE_POSITIONS) as Actor[];
 function Segments({ value }: { value: AdvisorSegment[] }) {
   return <>{value.map((s, i) => s.kind === 'figure' ? <strong key={i} title={`${s.scenario}: ${s.metric.replaceAll('_', ' ')}`}>{s.text}</strong> : <span key={i}>{s.text}</span>)}</>;
@@ -90,6 +90,7 @@ export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger,
         if (controller.signal.aborted || ticket !== generation.current) return;
         if (event.type === 'start') setMode(event.mode === 'fixture' ? 'Offline fixture replay · no model calls' : 'Live Meta review');
         if (event.type === 'trace') setTraces(old => ({ ...old, [event.trace.agent]: event.trace }));
+        if (event.type === 'sources') setResult(old => old ? { ...old, sources: event.sources } : old);
         if (event.type === 'result') {
           // The room answers as soon as the board does: the light changes, she speaks, and the walls change behind her.
           const mood = event.result.worldOps.find((op): op is Extract<WorldOp, { type: 'mood' }> => op.type === 'mood');
@@ -150,7 +151,7 @@ export function MissionControl({ request, onApply, onSpeech, onWorldOp, trigger,
       <p className="mc-caveat">Conditional engine projections. Claims matched to the simulation do not verify your assumptions.</p>
       {result.findings.filter(f => f.agent !== 'synthesiser').map((finding, i) => <p className="mc-finding" key={i}><span>{LABELS[finding.agent]}</span><Segments value={finding.segments} /></p>)}
       {result.speech.length > 0 && <div className="mc-speech"><p><Segments value={result.speech} /></p>{onSpeech && <button onClick={() => onSpeech(result.speech)} disabled={!current}>Hear my future self</button>}<small>Fictional person. Synthetic image and voice.</small></div>}
-      {result.sources.length > 0 && <div className="mc-sources"><h4>From the web, just now</h4>{result.sources.map(s => <blockquote key={s.url + s.quote}>{s.checked === 'url-in-search-results' ? <p>{s.title ?? new URL(s.url).hostname}</p> : <p>“{s.quote}”</p>}<a href={s.url} target="_blank" rel="noopener noreferrer">{new URL(s.url).hostname} · {SOURCE_NOTE[s.checked]}</a></blockquote>)}<small>External facts. They never enter the cash engine.</small></div>}
+      {result.sources.length > 0 && <div className="mc-sources"><h4>From the web, just now</h4>{result.sources.map(s => <blockquote key={s.url + s.quote}><p>{s.fact ?? s.title ?? new URL(s.url).hostname}</p><a href={s.url} target="_blank" rel="noopener noreferrer">{new URL(s.url).hostname} · {s.checked === 'url-in-search-results' ? SOURCE_NOTE[s.checked] : `“${s.quote.slice(0, 80)}” ${SOURCE_NOTE[s.checked]}`}</a></blockquote>)}<small>External facts. They never enter the cash engine.</small></div>}
       {result.proposals.map(p => <div className="mc-proposal" key={p.id}><div><h4>Explore a different assumption: {p.label}</h4><p>Set the base to {formatRand(p.values.base)} within your existing range. Lowest cash: {formatRand(p.beforeLowest)} → {formatRand(p.afterLowest)} ({p.delta >= 0 ? '+' : ''}{formatRand(p.delta)}).</p><small>This assumes the change is achievable. Nothing changes until you apply it.</small></div><button disabled={!current || applying !== null || applied.includes(p.id)} onClick={() => void apply(p)}>{applied.includes(p.id) ? 'Applied' : applying === p.id ? 'Applying…' : 'Apply assumption'}</button></div>)}
       {result.shots.length > 0 && <p className="mc-shot-list"><b>Director’s sequence</b> {result.shots.join(' → ')}</p>}
       <details className="mc-verification"><summary>Claim verification · {result.verification.filter(v => v.pass).length} passed / {result.verification.length} checks</summary>{result.verification.map((v, i) => <p key={i}>{v.pass ? 'Matched' : 'Withheld or repaired'} · {LABELS[v.agent]} · {v.reason}</p>)}</details>

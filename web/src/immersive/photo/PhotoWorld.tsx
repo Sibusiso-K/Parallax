@@ -102,7 +102,8 @@ export default function PhotoWorld({readout,place,selected,onSelect,reduced,tran
   const roomX=Math.max(0,(frameW*camZ-stage.w)/2),roomY=Math.max(0,(frameH*camZ-stage.h)/2);
   const camX=Math.max(-roomX,Math.min(roomX,-(camU-.5)*frameW*camZ-free/2)),camY=Math.max(-roomY,Math.min(roomY,-(camV-.5)*frameH*camZ));
   const person=manifest.people[readout.pathLetter as 'A'|'B'|'C']??manifest.people.B;
-  const isNight=mood?mood==='night':nightMood(readout.below,readout.stressed);
+  // The lever alone does not turn out the lights: a plan that survives the delay keeps its daylight.
+  const isNight=mood?mood==='night':nightMood(readout.below,readout.stressed&&readout.strained);
   const contractPaper=manifest.objects.find(o=>o.id==='contract')?.paper;
   const memoPaper=manifest.objects.find(o=>o.id==='memo')?.paper;
   return <div ref={root} className={`photo-world ${isNight?'is-night':''} ${mood==='calm'?'is-calm':''} ${reduced?'is-reduced':''} ${aside?'is-aside':''}`}>

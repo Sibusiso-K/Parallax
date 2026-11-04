@@ -46,6 +46,7 @@ export function checkedSources(raw: unknown): Source[] {
   const output = (raw as { output?: unknown }).output;
   if (!Array.isArray(output)) return [];
   const results = new Map<string, string[]>();
+  const titles = new Map<string, string>();
   const collect = (v: unknown) => {
     if (!v || typeof v !== 'object') return;
     if (Array.isArray(v)) { v.forEach(collect); return; }
@@ -53,6 +54,7 @@ export function checkedSources(raw: unknown): Source[] {
     if (typeof o.url === 'string') {
       const snippets = [o.snippet, o.text, o.content].filter((s): s is string => typeof s === 'string' && s.length > 0);
       results.set(o.url, [...(results.get(o.url) ?? []), ...snippets]);
+      if (typeof o.title === 'string' && o.title.trim()) titles.set(plainWords(o.title), o.url);
     }
     Object.values(o).forEach(collect);
   };
@@ -64,12 +66,15 @@ export function checkedSources(raw: unknown): Source[] {
       if (typeof content.text !== 'string') continue;
       let value: unknown;
       try { value = JSON.parse(jsonIn(content.text)); } catch { continue; }
-      const parsed = z.object({ sources: z.array(z.object({ url: z.string().url(), title: z.string().max(200).optional(), quote: z.string().min(1).max(600) })).max(6) }).safeParse(value);
+      const parsed = z.object({ sources: z.array(z.object({ url: z.string().url(), title: z.string().max(240).optional(), fact: z.string().max(300).optional(), evidence: z.string().min(1).max(600).optional(), quote: z.string().min(1).max(600).optional() })).max(6) }).safeParse(value);
       if (!parsed.success) continue;
       for (const s of parsed.data.sources) {
-        const snippets = results.get(s.url);
-        if (!/^https?:\/\//.test(s.url) || !snippets || (snippets.length > 0 && !snippets.some(text => text.includes(s.quote)))) continue;
-        if (!citations.some(c => c.url === s.url && c.quote === s.quote)) citations.push({ ...s, label: 'External source', checked: snippets.length ? 'url-and-snippet-in-search-results' : 'url-in-search-results' });
+        const quote = s.evidence ?? s.quote;
+        const url = results.has(s.url) ? s.url : s.title ? titles.get(plainWords(s.title)) : undefined;
+        const snippets = url ? results.get(url) : undefined;
+        if (!quote || !url || !/^https?:\/\//.test(url) || !snippets || (snippets.length > 0 && !snippets.some(text => text.includes(quote)))) continue;
+        if (/\.(?:vercel|netlify|pages|github)\.(?:app|dev|io)$/i.test(new URL(url).hostname)) continue;
+        if (!citations.some(c => c.url === url && c.quote === quote)) citations.push({ url, quote, ...(s.fact ? { fact: s.fact } : {}), ...(s.title ? { title: s.title } : {}), label: 'External source', checked: snippets.length ? 'url-and-snippet-in-search-results' : 'url-in-search-results' });
       }
     }
   }
@@ -147,7 +152,7 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
     } else { orchestrator.status = 'done'; orchestrator.step = 'Authored fixture dispatch'; }
     orchestrator.latencyMs = cfg ? now() - start : 0; publish(orchestrator);
 
-    await Promise.all(roster.map(async agent => {
+    const review = async (agent: Agent) => {
       const began = now();
       const context = graph.contextFor(agent, req.focus ?? `month:${req.month}`, 1400);
       const trace = newTrace(agent, context); trace.graphContext = context; publish(trace);
@@ -157,9 +162,9 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
         const messages: Message[] = [{ role: 'system', content: instructions }, { role: 'user', content: JSON.stringify({ event: req.event, graph: context, figures: figureMenu, candidates: candidates.map(p => ({ id: p.id, label: p.label })), business: req.context.business ?? '', location: req.context.location ?? '' }) }];
         if (agent === 'market') {
           if (cfg) {
-            const searchInput = [{ role: 'user', content: 'Search the web for what a South African small business owner needs today: the current SARB repo rate and prime lending rate, the latest Stats SA food inflation figure, and late payment of small businesses in South Africa. Prefer official sources and major news. Then return only JSON {"sources":[{"url":"https://...","title":"page title","quote":"one exact sentence copied word for word from that page, containing the fact"}]} with two to four entries. Never invent a quote. These are external context, not business-engine figures.' }];
+            const searchInput = [{ role: 'user', content: 'Search the web once for what a South African small business owner needs to know today: the current SARB repo rate or prime lending rate, the latest food inflation figure, and how late payment hurts small businesses in South Africa. Prefer official sources and major news. Use the search results you get, do not open pages. Then return only JSON {"sources":[{"url":"the full result url","title":"the result title, copied exactly","fact":"one short plain sentence stating the fact","evidence":"the exact number or short phrase as it appears on that page, for example 10.75%"}]} with two or three entries. Never invent anything. These are external context, not business-engine figures.' }];
             trace.context = searchInput; trace.step = 'Searching external sources'; publish(trace);
-            const raw = await post('responses', { model: SPARK, stream: false, input: searchInput, tools: [{ type: 'web_search' }], include: ['web_search_call.results'], reasoning: { effort: 'low' }, max_output_tokens: 2400 });
+            const raw = await post('responses', { model: SPARK, stream: false, input: searchInput, tools: [{ type: 'web_search' }], include: ['web_search_call.results'], reasoning: { effort: 'minimal' }, max_output_tokens: 3000 });
             const cited = checkedSources(raw).slice(0, 4);
             trace.step = 'Opening the pages to check the quotes'; publish(trace);
             trace.sources = await Promise.all(cited.map(source => source.checked === 'url-in-search-results' ? confirmOnPage(source, fetcher, controller.signal) : source));
@@ -223,7 +228,10 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
         trace.status = 'done';
       } catch { trace.status = 'failed'; trace.step = 'Could not complete this review'; result.mode = 'partial'; }
       trace.latencyMs = cfg ? now() - began : 0; publish(trace);
-    }));
+    };
+    // Live search is the slowest step and her words never use it, so she can speak before it returns.
+    const scouting = cfg && roster.includes('market') ? review('market') : null;
+    await Promise.all(roster.filter(agent => !(scouting && agent === 'market')).map(review));
 
     // Stable ordering also makes fixture replays byte-for-byte repeatable.
     result.findings.sort((a, b) => a.agent.localeCompare(b.agent));
@@ -234,7 +242,7 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
       const scenario = req.stressed ? 'active' : 'baseline';
       let text = `In this future, the hardest month took me to {{fig:${req.path.letter}.room.${scenario}.lowest}}. Before you sign, get the payment date in writing.`;
       if (cfg) {
-        const message = await chat(synth, [{ role: 'system', content: 'You are the fictional future self of this founder, on this path, talking to your past self across a kitchen counter. You lived it. Start with "In this future," and then speak in the first person and past tense, warm and direct, like one person telling another what happened. Use only what these checked findings show. Two or three short sentences, at most 45 words. Say the one amount that mattered, using only a supplied {{fig:key}} placeholder. Never type any other amount. You may say the longest delay in whole months if it is supplied. End with the one thing you would check first. Avoid the words might, could, would have, projection, assumptions. No promises. Return JSON {"reply":"..."}.' }, { role: 'user', content: JSON.stringify({ findings: result.findings, figures: Object.keys(figures.table).map(k => `{{fig:${k}}}`), pathName: req.path.name, longestDelayMonths: survivable[0] ?? null }) }]);
+        const message = await chat(synth, [{ role: 'system', content: 'You are the fictional future self of this founder, on this path, talking to your past self across a kitchen counter. You lived it. Start with "In this future," and then speak in the first person and past tense, warm and direct, like one person telling another what happened. Use only what these checked findings show. Two or three short sentences, at most 45 words. Say the one amount that mattered, using only a supplied {{fig:key}} placeholder. Never type any other amount. longestDelayMonths is how late the client could have paid before your cash went below zero. It is not how late they did pay, so only use it in those words. End with the one thing you would check first. Avoid the words might, could, would have, projection, assumptions. No promises. Return JSON {"reply":"..."}.' }, { role: 'user', content: JSON.stringify({ findings: result.findings, figures: Object.keys(figures.table).map(k => `{{fig:${k}}}`), pathName: req.path.name, longestDelayMonths: survivable[0] ?? null }) }]);
         text = agentReply.parse(JSON.parse(message.content ?? '')).reply;
       }
       result.speech = accept('synthesiser', text);
@@ -246,6 +254,10 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
     result.verification.sort((a, b) => a.agent.localeCompare(b.agent));
     result.costUsd = result.traces.every(t => t.costUsd !== null) ? result.traces.reduce((sum, t) => sum + t.costUsd!, 0) : null;
     emit({ type: 'result', result });
+    if (scouting) {
+      await scouting;
+      if (result.sources.length) emit({ type: 'sources', sources: result.sources });
+    }
     return result;
   } finally { clearTimeout(timer); options.signal?.removeEventListener('abort', abort); }
 }

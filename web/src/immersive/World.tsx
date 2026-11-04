@@ -672,10 +672,16 @@ function World({ binding }: { binding?: ExploreBinding }) {
             onWorldOp={(op) => { if (op.type === 'mood') setBoardMood({ key: swarmKey, value: op.value }); setPhoto(true); }}
             onApply={(proposal) => {
               if (proposal.inputKey !== swarmKey) return { ok: false, error: 'The decision changed. Run a new review first.' };
-              if (binding) return binding.onRevise(swarmPathId, proposal.assumptionId, proposal.values);
+              if (binding) {
+                const applied = binding.onRevise(swarmPathId, proposal.assumptionId, proposal.values);
+                if (applied.ok) setBoardTrigger((n) => (n ?? 0) + 1);
+                return applied;
+              }
               const revised = session.revise(swarmPathId, proposal.assumptionId, proposal.values);
               if (!revised.ok) return revised;
               setOwnSession(revised.session);
+              // The numbers moved, so the board looks again and the room follows.
+              setBoardTrigger((n) => (n ?? 0) + 1);
               return { ok: true };
             }}
           />
