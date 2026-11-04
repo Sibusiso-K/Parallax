@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "stress": "vitest run stress",
+    "eval": "node --import ./evals/register.mjs evals/run.ts",
     "preview": "vite preview"
   },
   "dependencies": {

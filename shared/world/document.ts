@@ -45,12 +45,12 @@ export interface DocumentProposal {
 export function proposalFor(clause: DocumentClause): DocumentProposal | null {
   if (clause.kind === 'payment_terms') {
     const matches = [...clause.quote.matchAll(/\b(?:net\s+|within\s+|after\s+)?(\d{1,3})\s*(?:calendar\s+)?days\b/gi)];
-    if (matches.length !== 1 || /business|working|deposit|instalment/i.test(clause.quote)) return null;
+    if (matches.length !== 1 || /business|working|trading|deposit|instalment|\bor\b|either|unless|subject to|may|up to|at least|no later|extend|approx|about|depend|condition|weekend|holiday|only if|otherwise|not due|undecided|\d\s*[-\u2013]\s*\d/i.test(clause.quote)) return null;
     return { kind: 'paymentDays', value: Number(matches[0]![1]), quote: clause.quote, page: clause.page, source: 'document-unverified' };
   }
   if (clause.kind === 'amount') {
-    const matches = [...clause.quote.matchAll(/(?:\bZAR\s*|\bR\s*)(\d{1,3}(?:[, ]\d{3})+(?:\.\d{2})?|\d+(?:\.\d{2})?)(?![\d,.])/g)];
-    if (matches.length !== 1) return null;
+    const matches = [...clause.quote.matchAll(/(?<![-\u2212\u2013])(?:\bZAR\s*|\bR\s*)(\d{1,3}(?:[, ]\d{3})+(?:\.\d{2})?|\d+(?:\.\d{2})?)(?![\d,]|\.\d|\s?[kKmM]\b)/g)];
+    if (matches.length !== 1 || /possible|subject to|negotiat|approx|estimate|up to|about/i.test(clause.quote)) return null;
     const value = Number(matches[0]![1]!.replace(/[, ]/g, ''));
     if (!Number.isFinite(value) || value < 0 || value > 1e10) return null;
     return { kind: 'amount', value, quote: clause.quote, page: clause.page, source: 'document-unverified' };

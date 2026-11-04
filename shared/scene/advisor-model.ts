@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { PathInput } from '../engine/simulate.js';
-import { guardText } from '../guard/figures.js';
+import { guardText, namesWrongMonth, plainDigits } from '../guard/figures.js';
 import { chatJson, type Deps, type MetaConfig } from '../providers/meta.js';
 import type { Metric } from './claims.js';
 import { buildSnapshot, type RoomSnapshot } from './room-model.js';
@@ -204,10 +204,10 @@ export function checkAdvisorText(
   const segments: AdvisorSegment[] = [];
   let dropped = 0;
   // Split only on whitespace after . ! ? so the dots inside a placeholder never break a sentence.
-  for (const sentence of raw.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)) {
+  for (const sentence of plainDigits(raw).split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)) {
     const parts = sentence.split(new RegExp(PLACEHOLDER.source, 'g'));
     const out: AdvisorSegment[] = [];
-    let ok = true;
+    let ok = !namesWrongMonth(sentence);
     parts.forEach((part, i) => {
       if (!ok) return;
       if (i % 2 === 1) {
