@@ -32,7 +32,7 @@ const dataURL = async (p) => `data:image/jpeg;base64,${(await readFile(p)).toStr
 const python = (code, args = []) => execFileSync('python', ['-c', code, ...args], { stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 16 * 1024 * 1024 });
 async function compress(input, name) {
   const dest = join(out, name);
-  if (!await exists(dest)) python("from PIL import Image; import sys; im=Image.open(sys.argv[1]); im.thumbnail((1920,960)); im.save(sys.argv[2],quality=85,method=6)", [input, dest]);
+  if (!await exists(dest)) python("from PIL import Image; import sys; im=Image.open(sys.argv[1]); im.thumbnail((2240,1120)); im.save(sys.argv[2],quality=90,method=6)", [input, dest]);
   return name;
 }
 async function edit(name, reference, prompt) {
@@ -92,7 +92,7 @@ for r in json.loads(sys.argv[3]):
  m=Image.frombytes('L',(r['maskWidth'],r['maskHeight']),raw).point(lambda p:255 if p else 0).resize((w,h)); layer=Image.new('L',im.size); layer.paste(m,(b['left'],b['top'])); mask=ImageChops.lighter(mask,layer)
 if sys.argv[4]=='true': im.putalpha(mask)
 else: im=Image.new('RGBA',im.size,(255,255,255,0)); im.putalpha(mask)
-im.thumbnail((1920,960)); im.save(sys.argv[2],quality=88,method=6)`, [input, dest, JSON.stringify(records), String(cutout)]);
+im.thumbnail((2240,1120)); im.save(sys.argv[2],quality=92,method=6)`, [input, dest, JSON.stringify(records), String(cutout)]);
   return `${name}.webp`;
 }
 const objects = [];
