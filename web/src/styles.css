@@ -170,6 +170,35 @@ button { cursor: pointer; }
 .hero-b { left: 30%; top: 0; border-color: var(--B); }
 .hero-a { left: 4%; top: 46%; border-color: var(--A); }
 .hero-c { left: 58%; top: 52%; border-color: var(--C); }
+/* The start-up animation (Splash.tsx): the mark's three paths slide apart from one point, then the name rises. */
+.splash {
+  position: fixed; inset: 0; z-index: 1000; display: grid; place-content: center; justify-items: center; gap: 12px;
+  padding: 24px; background: var(--navy); color: #fff; text-align: center; cursor: pointer; transition: opacity .45s ease;
+}
+.splash-out { opacity: 0; pointer-events: none; }
+.splash .sq { transform-box: fill-box; transform-origin: center; animation: splash-sq .9s cubic-bezier(.2, .8, .2, 1) both; }
+.splash .sq-a { --dx: 5.5px; --dy: -.5px; animation-delay: .1s; }
+.splash .sq-b { --dx: -.5px; --dy: 3.5px; animation-delay: .25s; }
+.splash .sq-c { --dx: -5.5px; --dy: -2.5px; animation-delay: .4s; }
+@keyframes splash-sq { from { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.55); } to { opacity: 1; transform: none; } }
+.splash-word { font-size: 46px; font-weight: 800; font-stretch: 125%; letter-spacing: .01em; animation: splash-rise .6s .6s both; }
+.splash-tag { max-width: 30ch; font-size: 15px; line-height: 1.45; color: rgba(255, 255, 255, .78); animation: splash-rise .6s .8s both; }
+@keyframes splash-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .splash, .splash * { animation: none !important; transition-duration: .2s !important; }
+}
+
+/* The saved decision, offered back on the navy band. Nothing is restored until the founder picks it up. */
+.resume-card {
+  display: flex; flex-direction: column; gap: 6px; margin: 4px 0 18px; padding: 18px 20px; max-width: 560px;
+  border: 1px solid rgba(255, 255, 255, .22); border-radius: 22px; background: rgba(255, 255, 255, .08);
+  font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .86);
+}
+.resume-card .eyebrow { color: rgba(255, 255, 255, .72); }
+.resume-card b { font-size: 18px; font-weight: 800; color: #fff; overflow-wrap: anywhere; }
+.resume-card .actions-row { margin-top: 8px; }
+.btn.on-navy { color: #fff; }
+.btn.on-navy:hover { background: rgba(255, 255, 255, .12); }
 .how-to { display: flex; flex-direction: column; gap: 18px; padding: 40px 72px 0; }
 .how-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
 .how-head h2 { font-size: 26px; font-weight: 800; font-stretch: 112%; letter-spacing: -.01em; }

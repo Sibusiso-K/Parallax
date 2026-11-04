@@ -11,6 +11,7 @@ import { AssumptionsPanel, PathsScreen } from "@/components/parallax/PathScreens
 import { ChatScreen } from "@/components/parallax/ChatScreen";
 import { CompareScreen, SummaryScreen } from "@/components/parallax/DecideScreens";
 import { ExploreScreen } from "@/components/parallax/ExploreScreen";
+import { Splash } from "@/components/parallax/Splash";
 
 const SCREENS = {
   start: StartScreen,
@@ -73,6 +74,7 @@ createRoot(document.getElementById("root")!).render(
     ) : (
       <ParallaxProvider>
         <Shell />
+        <Splash />
       </ParallaxProvider>
     )}
   </StrictMode>,
