@@ -89,7 +89,7 @@ describe('bounded live review with stubbed fetch', () => {
     expect(result.verification.some(v => !v.pass)).toBe(true);
     expect(result.proposals.map(p => p.id)).toEqual(['bound:B2']);
     expect(result.traces.find(t => t.agent === 'cash')?.tools[0]?.name).toBe('find_breakpoint');
-    expect(result.worldOps[0]?.value).toBe('night'); expect(result.costUsd).toBeNull();
+    expect(result.worldOps[0]?.value).toBe('golden'); expect(result.costUsd).toBeNull();
     expect(events.filter(e => e.type === 'trace').length).toBeGreaterThan(10);
   });
   it('provider errors are partial results, never disguised as a live fixture', async () => {
