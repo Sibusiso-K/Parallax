@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { flushSync } from "react-dom";
 import { mockApi } from "./parallax-api";
 import { eraseSaved, loadSaved, saveState } from "./session";
+import { buildWorld, type SceneDressing, type WorldContext } from "./world";
 import { applyPatch } from "./store-patch";
 import type { FieldKey, IntakeResponse, PathCard, Profile, Simulation } from "./types";
 
@@ -71,6 +72,10 @@ interface State {
   /** Rises by one whenever any path card changes; Explore and every figure key to it. */
   revision: number;
   explore: ExploreView;
+  /** This founder's room, named by Muse Spark from their story (null: the demo courtyard as built). */
+  scene: SceneDressing | null;
+  /** This founder's portrait from Muse Image, shown for all three paths (null: the path's own picture or silhouette). */
+  portrait: string | null;
 }
 
 const initial: State = {
@@ -99,6 +104,8 @@ const initial: State = {
   panel: null,
   traceOpen: false,
   announce: "",
+  scene: null,
+  portrait: null,
 };
 
 type Ctx = State & {
@@ -113,6 +120,8 @@ type Ctx = State & {
   resume: Resume | null;
   resumeSaved: () => void;
   dismissResume: () => void;
+  /** Builds this founder's room and portrait with Meta's models, once per decision. Does nothing in demo mode. */
+  startWorld: () => void;
 };
 
 const C = createContext<Ctx | null>(null);
@@ -149,6 +158,7 @@ const fresh = (): State => ({ ...initial, sessionId: `decision-${++decisionSeq}`
 const SAVED_KEYS = [
   "step", "agreed", "story", "intake", "fields", "quotes", "assumed", "missing", "followed", "paths", "active", "chats",
   "comfort", "bothering", "pinned", "chosen", "decision", "reasons", "questions", "sessionId", "revision", "explore",
+  "scene", "portrait",
 ] as const satisfies readonly (keyof State)[];
 const STEPS: readonly Step[] = ["start", "intake", "heard", "generating", "profile", "paths", "chat", "explore", "compare", "comfort", "summary"];
 const NEEDS_PATHS: readonly Step[] = ["paths", "chat", "explore", "compare", "comfort", "summary"];
@@ -254,6 +264,37 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
     setResume(null);
   }, []);
 
+  // The founder's own room and portrait, built once per decision in the background (lib/world.ts).
+  const worldFor = useRef<string | null>(null);
+  const startWorld = useCallback(() => {
+    const cur = ref.current;
+    if (worldFor.current === cur.sessionId || cur.scene) return;
+    worldFor.current = cur.sessionId;
+    const f = cur.fields;
+    const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+    const kind = str(f.decisionType);
+    const context: WorldContext = {
+      business: str(f.business),
+      location: str(f.location),
+      decision: str(f.decision),
+      decisionType: kind === "contract" || kind === "hire" || kind === "pricing" ? kind : undefined,
+      story: str(cur.story)?.slice(0, 4000),
+    };
+    const sessionId = cur.sessionId;
+    void buildWorld(context).then((world) => {
+      // A reset or a new decision while it was drawing: this world belongs to the old one.
+      if (!world || ref.current.sessionId !== sessionId) return;
+      setS((prev) => ({ ...prev, scene: world.dressing, portrait: world.portrait ?? prev.portrait }));
+    });
+  }, []);
+
+  // Every screen shows the founder's own portrait once there is one; the path cards themselves are not changed, so
+  // the figures' revision (which the 3D room keys to) does not move for a picture.
+  const shownPaths = useMemo(
+    () => (s.portrait ? s.paths.map((p) => ({ ...p, avatarUrl: s.portrait! })) : s.paths),
+    [s.paths, s.portrait],
+  );
+
   const set = useCallback((p: Partial<State> | ((s: State) => Partial<State>)) => {
     setS((prev) => applyPatch(prev, typeof p === "function" ? p(prev) : p));
   }, []);
@@ -272,7 +313,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
     return out;
   }, [s.paths]);
 
-  const pathOf = useCallback((l: Letter) => s.paths.find((p) => p.letter === l), [s.paths]);
+  const pathOf = useCallback((l: Letter) => shownPaths.find((p) => p.letter === l), [shownPaths]);
 
   const send = useCallback(
     async (letter: Letter, text: string, askedFrom?: Letter) => {
@@ -338,7 +379,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
 
   const profile = useMemo<Profile>(() => ({ fields: s.fields, assumed: s.assumed }), [s.fields, s.assumed]);
 
-  const value: Ctx = { ...s, set, go, sims, pathOf, send, reset, profile, resume, resumeSaved, dismissResume };
+  const value: Ctx = { ...s, paths: shownPaths, set, go, sims, pathOf, send, reset, profile, resume, resumeSaved, dismissResume, startWorld };
   return <C.Provider value={value}>{children}</C.Provider>;
 }
 

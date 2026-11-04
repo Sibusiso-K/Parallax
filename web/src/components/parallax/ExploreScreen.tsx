@@ -12,7 +12,7 @@ import { Button, NoPaths } from "./shared";
 const World = lazy(() => import("@/immersive/World"));
 
 export function ExploreScreen() {
-  const { paths, fields, story, sessionId, revision, active, explore, set, go } = useParallax();
+  const { paths, fields, story, sessionId, revision, active, explore, scene, set, go } = useParallax();
   // One snapshot registry per decision, kept across revisions so earlier answers still resolve as historical.
   const registry = useRef<{ id: string; snapshots: SnapshotRegistry } | null>(null);
   if (registry.current?.id !== sessionId) registry.current = { id: sessionId, snapshots: new SnapshotRegistry() };
@@ -53,10 +53,10 @@ export function ExploreScreen() {
   const binding = useMemo<ExploreBinding | null>(
     () =>
       result?.ok
-        ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel }
+        ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel, dressing: scene }
         : null,
     // The initial view only matters when the room mounts; later selection changes flow out, not back in.
-    [result, onSelection, onRevise, founderLabel],
+    [result, onSelection, onRevise, founderLabel, scene],
   );
 
   if (paths.length === 0) return <NoPaths />;
