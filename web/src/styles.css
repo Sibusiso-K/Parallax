@@ -594,3 +594,62 @@ button.chip:hover { background: #e6ecf8; }
   .cmp .v { font-size: 14px; }
   .cmp .r { font-size: 9.5px; white-space: normal; }
 }
+
+/* ---------- Frame without a sidebar: logo, decision, Tools ---------- */
+.topbar .logo { width: 40px; height: 40px; margin: 0; flex: none; }
+.topbar .tools-btn { flex: none; }
+.tools-group { display: grid; gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+.tools-group:last-child { border-bottom: 0; }
+.tools-group .sub { margin: 0; }
+.tools-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tools-row .btn { display: inline-flex; align-items: center; gap: 8px; }
+.btn.danger { background: var(--warn); border-color: var(--warn); }
+.stepnav { margin-top: 24px; }
+.stepnav-hint { text-align: right; }
+@media (max-width: 760px) {
+  .topbar { gap: 10px 12px; flex-wrap: nowrap; }
+  .decision-block { flex: 1 1 auto; }
+  .decision-title { font-size: 16px; }
+}
+
+/* ---------- Getting started: two choices, short cards editable in place ---------- */
+.start-choice { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.start-sub { margin: 10px 0 0; font-size: 14px; opacity: .8; }
+.fcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 18px 0; }
+.fcard { padding: 18px 20px; border-radius: 18px; background: var(--panel); }
+.fcard h2 { margin: 0 0 8px; }
+.fcard ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.frow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; padding: 8px 0; border-top: 1px solid var(--line-2); }
+.frow:first-child { border-top: 0; }
+.frow-lab { font-size: 13.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.frow-val { justify-self: end; border: 0; background: transparent; padding: 4px 6px; border-radius: 8px; font: inherit; font-weight: 800; color: var(--ink); text-align: right; cursor: pointer; }
+.frow-val span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.frow-val:hover, .frow-val:focus-visible { background: #fff; }
+.frow-sub { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.frow-form { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.frow-form .field-input { flex: 1 1 140px; min-width: 0; }
+.frow-form .ferr { flex-basis: 100%; margin: 0; }
+.notice.small { font-size: 13px; }
+.start-choice .btn.on-navy { background: transparent; border-color: rgba(255, 255, 255, .75); color: #fff; }
+.start-choice .btn.on-navy:hover:not(:disabled) { background: rgba(255, 255, 255, .12); }
+.frow--wide { grid-template-columns: minmax(0, 1fr); }
+.frow--wide .frow-val { justify-self: start; text-align: left; padding-left: 0; }
+
+/* ---------- Futures side by side: what-ifs, three figures, the safest marker ---------- */
+.whatif { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin: 6px 0 20px; padding: 16px 22px; border-radius: 20px; background: var(--panel); }
+.whatif h2 { margin: 0; }
+.wi-toggle { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.wi-toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+.wi-range { display: grid; gap: 4px; min-width: 170px; font-size: 13px; color: var(--ink-2); }
+.wi-range b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.wi-range input { width: 100%; accent-color: var(--accent); }
+.wi-reset { margin-left: auto; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; }
+.wi-reset:disabled { color: var(--muted); opacity: .5; cursor: default; }
+.fut-figs { display: grid; gap: 8px; margin: 0; padding: 0 8px; }
+.fut-figs > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+.fut-figs dt { margin: 0; }
+.fut-figs dd { margin: 0; font-size: 17px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+.fut-figs small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.nft.is-safest { box-shadow: 0 0 0 3px var(--good); }
+.safest-tag { position: absolute; left: 14px; bottom: 14px; padding: 5px 12px; border-radius: 999px; background: var(--good); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+@media (max-width: 520px) { .whatif { padding: 14px 16px; } .wi-range { min-width: 0; flex: 1 1 100%; } .wi-reset { margin-left: 0; } }

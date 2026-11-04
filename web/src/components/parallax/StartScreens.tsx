@@ -3,15 +3,16 @@ import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABE
 import { useParallax } from "@/lib/parallax-store";
 import { Avatar, Button, Src } from "./shared";
 import { Listen } from "./Listen";
-import { DecisionStrip, FieldGrid, readValue } from "./FieldGrid";
+import { DecisionStrip, FieldCards, readValue } from "./FieldGrid";
 import { MicButton } from "./MicButton";
+import { StepNav } from "./StepNav";
 
-// The four steps of a run, for a founder (or a judge) opening Parallax for the first time.
+// The run in four lines, for a founder (or a judge) opening Parallax for the first time.
 const HOW_TO: [string, string][] = [
-  ["Tell it your decision", "Type it the way you would tell a cofounder, or press Speak instead. Sales, costs, cash and the choice on the table."],
-  ["Check what it heard", "Every figure shows the words it came from. Answer the follow-ups, or press I don't know to use a marked default."],
-  ["Meet three futures", "Paths A, B and C, each with 36 months of cash computed in code. Stress-test them and ask each future you why."],
-  ["Compare and decide", "Put the paths side by side, check how much risk you are comfortable with, and print a decision memo."],
+  ["Tell", "Type or say your decision, like you'd tell a cofounder."],
+  ["Check", "Fix any figure it got wrong."],
+  ["See three futures", "36 months of cash on each path, computed in code."],
+  ["Step inside and ask", "Walk into each future and question the founder you'd become."],
 ];
 
 /**
@@ -28,22 +29,16 @@ function ModelNotes() {
     };
   }, []);
   const meta = !!(health?.modelReady || health?.voiceReady);
-  const toMeta = meta ? ` To be read, your ${health?.modelReady ? "text" : "recording"} also goes to Meta's Model API, which does not keep it for Parallax.` : "";
+  const toMeta = meta ? " Meta's Model API reads it too, and keeps nothing for Parallax." : "";
   const privacy = health?.savingReady ? (
     <div className="note">
-      <b>Saved, privately</b>
-      <span>
-        Your decision is saved in Parallax's database under a private code only this browser holds, so you can come back to it.
-        Delete everything erases it.{toMeta}
-      </span>
+      <b>Saved privately</b>
+      <span>Saved under a code only this browser holds. Delete everything erases it.{toMeta}</span>
     </div>
   ) : (
     <div className="note">
       <b>Kept on this device</b>
-      <span>
-        Parallax's server reads your text and keeps nothing; a copy stays in this browser so a reload picks up where you were. Delete
-        everything erases it.{toMeta}
-      </span>
+      <span>The server keeps nothing; this browser keeps a copy. Delete everything erases it.{toMeta}</span>
     </div>
   );
   if (!meta) {
@@ -51,37 +46,37 @@ function ModelNotes() {
       <>
         {privacy}
         <div className="note">
-          <b>No model connected yet</b>
-          <span>This demo reads only the demo story and writes canned replies. Every figure is computed in code.</span>
+          <b>Demo mode</b>
+          <span>No model is connected: it reads the demo story only, with canned replies. Figures are computed in code.</span>
         </div>
       </>
     );
   }
-  const reads = [health?.modelReady && "Muse Spark reads your story and answers as each future you", health?.voiceReady && "Muse Voice Transcribe turns your voice into text"]
+  const reads = [health?.modelReady && "Muse Spark reads your story and speaks as each future you", health?.voiceReady && "Muse Voice Transcribe hears you"]
     .filter(Boolean)
-    .join(", and ");
+    .join("; ");
   return (
     <>
       {privacy}
       <div className="note">
-        <b>Read by Meta's Muse models</b>
-        <span>{reads}. Every figure is still computed in code, never by the model.</span>
+        <b>Meta's Muse models</b>
+        <span>{reads}. Every figure is computed in code, never by a model.</span>
       </div>
     </>
   );
 }
 
 const STEP_NAMES: Partial<Record<string, string>> = {
-  intake: "telling it your decision",
-  heard: "checking what it heard",
-  profile: "your business today",
-  paths: "the three paths",
-  chat: "talking to a future you",
-  explore: "the 3D room",
-  compare: "comparing the paths",
-  comfort: "comparing the paths",
-  summary: "the decision memo",
-  roadmap: "your roadmap",
+  intake: "telling your story",
+  heard: "checking the figures",
+  profile: "checking the figures",
+  paths: "the three futures",
+  chat: "asking a future you",
+  explore: "the room",
+  compare: "deciding",
+  comfort: "deciding",
+  summary: "your memo",
+  roadmap: "your journey",
 };
 
 /** Offers the saved decision back. Nothing is restored until the founder says so. */
@@ -100,35 +95,51 @@ function ResumeCard() {
           Pick up where I left off
         </Button>
         <Button variant="ghost" className="on-navy" onClick={dismissResume}>
-          Start a new decision
+          Start fresh
         </Button>
       </div>
     </div>
   );
 }
 
+/** Reads a story into figures and opens the check screen. Shared by the demo button and the story screen. */
+function useReadStory() {
+  const { set, go } = useParallax();
+  const [busy, setBusy] = useState(false);
+  async function read(story: string) {
+    setBusy(true);
+    const res = await mockApi.intake(story);
+    set({ story, intake: res, fields: res.fields, quotes: res.quotes ?? {}, missing: res.missing, assumed: [], followed: [] });
+    setBusy(false);
+    go("heard");
+  }
+  return { busy, read };
+}
+
 export function StartScreen() {
   const { agreed, set, go } = useParallax();
+  const { busy, read } = useReadStory();
   return (
     <>
       <section className="hero">
         <div className="hero-copy">
           <div className="eyebrow">Parallax · for founders</div>
-          <h1>Rehearse the decision before you bet the business</h1>
-          <p className="lead">
-            Take the contract? Hire now? Raise prices? See 36 months of cash on each path, stress-test it, and question the founder
-            you would become.
-          </p>
+          <h1>Rehearse a big decision before you make it</h1>
+          <p className="lead">Take the contract? Hire? Raise prices? See three futures, 36 months of cash each, then ask the founder you'd become.</p>
           <ResumeCard />
           <label className="agree">
             <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
             <span>I am 18 or older</span>
           </label>
-          <div className="actions-row">
-            <Button variant="primary" size="lg" disabled={!agreed} onClick={() => go("intake")}>
-              Begin
+          <div className="start-choice">
+            <Button variant="primary" size="lg" disabled={!agreed || busy} onClick={() => void read(DEMO_STORY)}>
+              {busy ? "Reading the demo…" : "Try the demo"}
+            </Button>
+            <Button variant="outline" size="lg" className="on-navy" disabled={!agreed || busy} onClick={() => go("intake")}>
+              Tell my own story
             </Button>
           </div>
+          <p className="start-sub">The demo is a fictional caterer weighing a big contract. About two minutes.</p>
         </div>
         <div className="hero-art" aria-hidden="true">
           <Avatar letter="B" src="/avatars/B.png" size={210} className="hero-face hero-b" />
@@ -139,9 +150,6 @@ export function StartScreen() {
       <section className="how-to" aria-labelledby="how-to-title">
         <div className="how-head">
           <h2 id="how-to-title">How it works</h2>
-          <p>
-            First time? Tick the box, press <b>Begin</b>, then <b>Use the demo story</b> to see a full run in about two minutes.
-          </p>
         </div>
         <ol className="how-steps">
           {HOW_TO.map(([title, text], i) => (
@@ -167,24 +175,14 @@ export function StartScreen() {
 }
 
 export function IntakeScreen() {
-  const { story, set, go } = useParallax();
-  const [busy, setBusy] = useState(false);
-  async function next() {
-    setBusy(true);
-    const res = await mockApi.intake(story);
-    set({ intake: res, fields: res.fields, quotes: res.quotes ?? {}, missing: res.missing, assumed: [], followed: [] });
-    setBusy(false);
-    go("heard");
-  }
+  const { story, set } = useParallax();
+  const { busy, read } = useReadStory();
   return (
     <section className="screen intake">
       <div className="pagehead">
-        <div className="eyebrow">Step 1 of 3</div>
+        <div className="eyebrow">Tell</div>
         <h1>What are you deciding?</h1>
-        <div className="sub">
-          Write it the way you would tell a cofounder: what the business does, what it sells and spends each month, the cash in the
-          bank, the decision on the table, and what matters most.
-        </div>
+        <div className="sub">Say it like you'd tell a cofounder: what you sell and spend a month, the cash in the bank, and the choice on the table.</div>
       </div>
       <label htmlFor="story" className="sr-only">
         What are you deciding?
@@ -192,29 +190,26 @@ export function IntakeScreen() {
       <textarea
         id="story"
         className="field-area"
-        rows={9}
+        rows={8}
         value={story}
         onChange={(e) => set({ story: e.target.value })}
-        placeholder="A client has offered us a contract, but…"
+        placeholder="We sell about R90k a month. A client has offered us a 12-month contract, but they pay 90 days late…"
       />
-      <div className="actions-row">
+      <StepNav nextLabel={busy ? "Reading…" : undefined} onNext={() => void read(story)} nextDisabled={!story.trim() || busy}>
         <Button variant="outline" onClick={() => set({ story: DEMO_STORY })}>
-          Use the demo story (fictional founder)
+          Use the demo story
         </Button>
         <MicButton onText={(text) => set((s) => ({ story: s.story.trim() ? `${s.story.trimEnd()} ${text}` : text }))} />
-        <Button variant="primary" className="ml-auto" onClick={next} disabled={!story.trim() || busy}>
-          {busy ? "Reading…" : "Continue"}
-        </Button>
-      </div>
+      </StepNav>
       <p className="hint" aria-live="polite">
-        {busy ? "Reading your situation" : ""}
+        {busy ? "Reading your story" : ""}
       </p>
     </section>
   );
 }
 
 export function HeardScreen() {
-  const { missing, intake, set, go } = useParallax();
+  const { missing, followed, assumed, intake, set, go } = useParallax();
   const current = missing[0];
   // F4: a blocking check (under 18, out of scope, not supported yet) stops the paths until the founder changes what
   // they wrote. The others are questions to confirm; they never stop anything.
@@ -223,6 +218,9 @@ export function HeardScreen() {
   const checks = issues.filter((i) => !i.blocking);
   const [answer, setAnswer] = useState("");
   const [err, setErr] = useState("");
+  // Questions answered so far plus the ones left: shown as "2 of 4", one question at a time.
+  const asked = followed.length + assumed.length;
+  const total = asked + missing.length;
 
   const resolve = (value: unknown, isDefault: boolean) => {
     if (!current) return;
@@ -247,11 +245,9 @@ export function HeardScreen() {
   return (
     <section className="screen">
       <div className="pagehead">
-        <div className="eyebrow">Step 2 of 3 · Your business, today</div>
-        <h1>Here is what I heard</h1>
-        <div className="sub">
-          Check each line. The quotes are your own words. Anything marked as a default or a follow-up is one tap from changing.
-        </div>
+        <div className="eyebrow">Check</div>
+        <h1>{current ? "A few quick questions" : "Is this right?"}</h1>
+        <div className="sub">{current ? "One at a time. Not sure? Press I don't know and a marked default is used." : "Tap any figure to fix it."}</div>
       </div>
       {intake?.notice && <p className="notice">{intake.notice}</p>}
 
@@ -284,7 +280,7 @@ export function HeardScreen() {
       {current && blocking.length === 0 && (
         <form key={current} className="followup-box" onSubmit={submit}>
           <div className="caps">
-            One more thing{missing.length > 1 ? ` · ${missing.length} left` : ""}
+            Question {asked + 1} of {total}
           </div>
           {current === "decisionType" ? (
             <>
@@ -323,7 +319,7 @@ export function HeardScreen() {
               )}
               <div className="row-btns">
                 <Button type="submit" variant="primary">
-                  Add
+                  Next
                 </Button>
                 <Button variant="outline" onClick={() => resolve(FIELD_DEFAULTS[current] ?? "Not sure", true)}>
                   I don't know
@@ -334,25 +330,20 @@ export function HeardScreen() {
         </form>
       )}
 
-      <DecisionStrip />
-      <FieldGrid editable />
-      <div className="notice">
-        <Src kind="placeholder" /> Behind the three paths, not yet sourced: the cost shares, the rented-equipment share and the setback
-        sizes come from the defaults file. Each is marked on the path pages.
-      </div>
-      <div className="actions-row">
-        <Button variant="ghost" onClick={() => go("intake")}>
-          Back
-        </Button>
-        <Button variant="primary" size="lg" className="ml-auto" disabled={!!current || blocking.length > 0} onClick={() => go("generating")}>
-          This is right
-        </Button>
-      </div>
-      {blocking.length > 0 ? (
-        <p className="hint">Change what you wrote to go on.</p>
-      ) : (
-        current && <p className="hint">Answer the question above first.</p>
+      {!current && (
+        <>
+          <DecisionStrip />
+          <FieldCards />
+          <p className="notice small">
+            <Src kind="placeholder" /> Some numbers behind the futures are placeholders, such as cost shares and setback sizes. Change
+            them any time under Tools.
+          </p>
+        </>
       )}
+      <StepNav
+        nextDisabled={!!current || blocking.length > 0}
+        hint={blocking.length > 0 ? "Change what you wrote to go on." : "Answer the question above first."}
+      />
     </section>
   );
 }

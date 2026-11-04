@@ -31,7 +31,7 @@ const PLACE_FOR_STATION: Record<CameraStation, PlaceId> = { overview: 'spawn', c
 const PLACE_ORDER: PlaceId[] = ['spawn', 'offer', 'intake', 'bridge', 'memo'];
 const MONTH_TICKS = [1, 6, 12, 18, 24, 30, 36];
 
-const SUGGESTIONS = ['Why did cash run out here?', 'What is the lowest point?', 'What does the late payment do?'];
+const SUGGESTIONS = ['What happens to cash this month?', 'What is the lowest point?', 'What does the late payment do?'];
 /** What is worth asking at each object. The advisor is told which object the founder stands at. */
 const OBJECT_QUESTIONS: Record<ObjectId, string[]> = {
   contract: ['What happens if they pay late?', 'Why does the first payment matter so much?'],
@@ -364,6 +364,13 @@ function World({ binding }: { binding?: ExploreBinding }) {
     [binding, gate, session],
   );
 
+  // The journey strip can pick a future while the room is open: follow it.
+  const wanted = binding?.initial.pathId;
+  useEffect(() => {
+    if (wanted && wanted !== pathId) switchPath(wanted);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wanted]);
+
   const switchPath = (p: PathLetter) => {
     gate.invalidate();
     setWorking(false);
@@ -532,13 +539,6 @@ function World({ binding }: { binding?: ExploreBinding }) {
           <div className="placecard glass">
             <b>{dressing?.title ?? (isDemo ? 'Ayanda’s courtyard' : 'The courtyard')}</b>
             <span>{binding ? binding.founderLabel : 'Fictional founder'} · 3D model, illustrative setting</span>
-            <div role="tablist" aria-label="Path" className="paths">
-              {PATH_ORDER.map((p) => (
-                <button key={p} role="tab" aria-selected={snapshot.ref.pathId === p} className={`pathchip pathchip--${p}`} onClick={() => switchPath(p)} disabled={inReplay}>
-                  <b>{p}</b> {session.paths[p].name}
-                </button>
-              ))}
-            </div>
           </div>
           <div className="modes glass" role="group" aria-label="View mode">
             <button aria-pressed={!walk} onClick={() => setWalk(false)}>Guided</button>
@@ -565,29 +565,33 @@ function World({ binding }: { binding?: ExploreBinding }) {
             ))}
             <span className="hint">{!webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
           </div>
-          <div className="months">
-            <span className="rowlabel">
-              Month <b>{shownMonth}</b> of 36
-            </span>
-            <div className="months__track">
-              <input type="range" min={1} max={36} value={shownMonth} disabled={inReplay} onChange={(e) => select(Number(e.target.value))} aria-label="Month" aria-valuetext={`Month ${shownMonth} of 36`} />
-              <div className="months__ticks" aria-hidden="true">
-                {MONTH_TICKS.map((m) => (
-                  <span key={m} style={{ left: tickAt(m) }}>
-                    {m}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
       <aside className="panel" ref={panelRef} aria-label="The payment gap, from the engine">
-        <h2 className="panel__h">Explore the payment gap</h2>
-        <p className="panel__sub">
-          Path {snapshot.ref.pathId} · Month {shownMonth} · {isStress ? 'late payment applied' : 'baseline'}
-        </p>
+        <h2 className="panel__h">Path {snapshot.ref.pathId}: {session.paths[snapshot.ref.pathId].name}</h2>
+        <div role="tablist" aria-label="Path" className="paths paths--panel">
+          {PATH_ORDER.map((p) => (
+            <button key={p} role="tab" aria-selected={snapshot.ref.pathId === p} className={`pathchip pathchip--${p}`} onClick={() => switchPath(p)} disabled={inReplay}>
+              <b>{p}</b> {session.paths[p].name}
+            </button>
+          ))}
+        </div>
+        <div className="months months--panel">
+          <span className="rowlabel">
+            Month <b>{shownMonth}</b> of 36
+          </span>
+          <div className="months__track">
+            <input type="range" min={1} max={36} value={shownMonth} disabled={inReplay} onChange={(e) => select(Number(e.target.value))} aria-label="Month" aria-valuetext={`Month ${shownMonth} of 36`} />
+            <div className="months__ticks" aria-hidden="true">
+              {MONTH_TICKS.map((m) => (
+                <span key={m} style={{ left: tickAt(m) }}>
+                  {m}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
         <p className="note">
           {isDemo ? 'Fictional demo founder. ' : 'Your confirmed answers. '}Every figure comes from the engine
           {session.profileRevision > 1 ? `; revision ${session.profileRevision}, so earlier answers are historical` : ''}.
@@ -611,6 +615,62 @@ function World({ binding }: { binding?: ExploreBinding }) {
               <b>First shortfall: month {snapshot.active.firstShortfall}.</b> Later months are still projected; the engine does not model funding or closing.
             </p>
           )}
+          </div>
+          <section className="advisor" ref={advisorRef} aria-label="Ask the advisor">
+            <h3 className="panel__h3">Ask about month {shownMonth}</h3>
+            <p className="fixture">{abilities.model ? LIVE_LABEL : FIXTURE_LABEL}</p>
+            <div className="answers" aria-live="polite">
+              {answers.slice(-3).map((a, i) => (
+                <AnswerCard
+                  key={i}
+                  a={a}
+                  onEvidence={setEvidence}
+                  onCarry={(t) => carry(a, t)}
+                  canCarry={a.status === 'answered' && session.registry.get(a.snapshotKey)?.ref.profileRevision === session.profileRevision}
+                  historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision}
+                  fromPath={a.pathId}
+                  onAction={i === answers.slice(-3).length - 1 && !inReplay ? runAction : undefined}
+                  onAsk={i === answers.slice(-3).length - 1 && !inReplay ? ask : undefined}
+                  objectLabel={objectLabel}
+                />
+              ))}
+              {working && <p className="working" role="status">{abilities.model ? 'The advisor is thinking. Muse Spark can take about 10 seconds.' : 'Running the local tools…'}</p>}
+            </div>
+            <div className="chips">
+              {SUGGESTIONS.map((s) => (
+                <button key={s} className="chip chip--btn" onClick={() => ask(s)} disabled={inReplay}>
+                  {s}
+                </button>
+              ))}
+            </div>
+            <form
+              className="ask"
+              onSubmit={(e) => {
+                e.preventDefault();
+                ask(question);
+              }}
+            >
+              <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about this month or the delay" aria-label="Your question" disabled={inReplay} />
+              <button className="btn" type="submit" disabled={inReplay || !question.trim()}>
+                Ask
+              </button>
+              {abilities.voice && (
+                <button
+                  type="button"
+                  className={`btn btn--ghost ask__mic ${voice.state === 'recording' ? 'is-on' : ''}`}
+                  aria-pressed={voice.state === 'recording'}
+                  disabled={inReplay || voice.state === 'working'}
+                  onClick={() => (voice.state === 'recording' ? voice.stop() : void voice.start())}
+                >
+                  {voice.state === 'recording' ? 'Stop' : voice.state === 'working' ? 'Hearing…' : 'Speak'}
+                </button>
+              )}
+            </form>
+            {voice.state === 'recording' && <p className="muted small" role="status">Listening. Press Stop when you have asked your question. Nothing is kept.</p>}
+            {voice.message && !voice.message.startsWith('Check the words') && <p className="muted small" role="status">{voice.message}</p>}
+            <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />
+          </section>
+        <div className="evidence">
           <dl className="minor">
             <dt>Lowest cash</dt>
             <dd>
@@ -633,6 +693,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
               )}
             </dd>
           </dl>
+          <details className="table room-working">
+          <summary>How this is worked out</summary>
           <button className="calc" onClick={() => setEvidence((isStress ? cells.cashA : cells.cashB) ?? null)}>
             Show calculation <span aria-hidden="true">›</span>
           </button>
@@ -670,6 +732,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 ))}
               </tbody>
             </table>
+          </details>
           </details>
         </div>
 
@@ -783,69 +846,15 @@ function World({ binding }: { binding?: ExploreBinding }) {
           </section>
         )}
 
-        <section className="advisor" ref={advisorRef} aria-label="Ask the advisor">
-          <h3 className="panel__h3">Ask the advisor</h3>
-          <p className="fixture">{abilities.model ? LIVE_LABEL : FIXTURE_LABEL}</p>
-          <div className="answers" aria-live="polite">
-            {answers.slice(-3).map((a, i) => (
-              <AnswerCard
-                key={i}
-                a={a}
-                onEvidence={setEvidence}
-                onCarry={(t) => carry(a, t)}
-                canCarry={a.status === 'answered' && session.registry.get(a.snapshotKey)?.ref.profileRevision === session.profileRevision}
-                historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision}
-                fromPath={a.pathId}
-                onAction={i === answers.slice(-3).length - 1 && !inReplay ? runAction : undefined}
-                onAsk={i === answers.slice(-3).length - 1 && !inReplay ? ask : undefined}
-                objectLabel={objectLabel}
-              />
-            ))}
-            {working && <p className="working" role="status">{abilities.model ? 'The advisor is thinking. Muse Spark can take about 10 seconds.' : 'Running the local tools…'}</p>}
-          </div>
-          <div className="chips">
-            {SUGGESTIONS.map((s) => (
-              <button key={s} className="chip chip--btn" onClick={() => ask(s)} disabled={inReplay}>
-                {s}
-              </button>
-            ))}
-          </div>
-          <form
-            className="ask"
-            onSubmit={(e) => {
-              e.preventDefault();
-              ask(question);
-            }}
-          >
-            <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Type a question about this month or the delay" aria-label="Your question" disabled={inReplay} />
-            <button className="btn" type="submit" disabled={inReplay || !question.trim()}>
-              Ask
-            </button>
-            {abilities.voice && (
-              <button
-                type="button"
-                className={`btn btn--ghost ask__mic ${voice.state === 'recording' ? 'is-on' : ''}`}
-                aria-pressed={voice.state === 'recording'}
-                disabled={inReplay || voice.state === 'working'}
-                onClick={() => (voice.state === 'recording' ? voice.stop() : void voice.start())}
-              >
-                {voice.state === 'recording' ? 'Stop' : voice.state === 'working' ? 'Hearing…' : 'Speak'}
-              </button>
-            )}
-          </form>
-          {voice.state === 'recording' && <p className="muted small" role="status">Listening. Press Stop when you have asked your question. Nothing is kept.</p>}
-          {voice.message && !voice.message.startsWith('Check the words') && <p className="muted small" role="status">{voice.message}</p>}
-          <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />
-        </section>
 
         <footer className="panel__foot">
-          <div className="foot__actions">
+          <div className="foot__actions foot__actions--quiet">
             {!inReplay ? (
               <button className="btn btn--ghost" onClick={startReplay}>▶ Play 15 s replay</button>
             ) : (
               <button className="btn btn--ghost" onClick={closeReplay}>Close replay</button>
             )}
-            <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
+            <button className="btn btn--ghost" onClick={() => setSheet('memo')}>Room memo</button>
           </div>
           <p className="muted small">
             The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky{people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.

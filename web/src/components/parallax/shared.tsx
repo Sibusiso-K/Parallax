@@ -87,11 +87,11 @@ export function NoPaths() {
   return (
     <section className="screen">
       <div className="pagehead">
-        <h1>Your three paths are not ready yet</h1>
-        <div className="sub">The paths are drawn from what you confirm, so confirm what you heard first.</div>
+        <h1>Your futures aren't ready yet</h1>
+        <div className="sub">Check your figures first; the futures are built from them.</div>
       </div>
       <div className="actions-row">
-        <Button variant="primary" onClick={() => go("heard")}>Back to what I heard</Button>
+        <Button variant="primary" onClick={() => go("heard")}>Check my figures</Button>
       </div>
     </section>
   );

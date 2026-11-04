@@ -8,6 +8,7 @@ import { LETTERS, useParallax, type Letter } from "@/lib/parallax-store";
 import { exploreSession, reviseCards } from "@/immersive/session-adapter";
 import type { ExploreBinding, ExploreSelection } from "@/immersive/World";
 import { Button, NoPaths } from "./shared";
+import { StepNav } from "./StepNav";
 
 const World = lazy(() => import("@/immersive/World"));
 
@@ -59,8 +60,10 @@ export function ExploreScreen() {
       result?.ok
         ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel, dressing: scene, context }
         : null,
-    // The initial view only matters when the room mounts; later selection changes flow out, not back in.
-    [result, onSelection, onRevise, founderLabel, scene, context],
+    // The month and the late-payment lever only matter when the room mounts. The path also flows back in, so the
+    // journey strip can switch the future while the room is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [result, onSelection, onRevise, founderLabel, scene, context, active],
   );
 
   if (paths.length === 0) return <NoPaths />;
@@ -72,10 +75,9 @@ export function ExploreScreen() {
       <section className="screen">
         <div className="pagehead">
           <div className="eyebrow">Explore</div>
-          <h1>The 3D room covers contract decisions for now</h1>
+          <h1>The room is for contract decisions, for now</h1>
           <div className="sub">
-            Your decision is “{label}”. Its paths, figures and stress tests are all in Paths and Compare. A room built for this kind of
-            decision is not ready yet, so none is shown.
+            Your decision is “{label}”. Its futures, figures and stress tests are all under Futures and Ask.
           </div>
         </div>
         <div className="actions-row">
@@ -108,11 +110,12 @@ export function ExploreScreen() {
     <Suspense
       fallback={
         <div className="explore-loading" role="status">
-          Loading the 3D room. Your figures are ready in Paths while it loads.
+          Loading the room. Your figures are ready under Futures meanwhile.
         </div>
       }
     >
       <World key={sessionId} binding={binding} />
+      <StepNav />
     </Suspense>
   );
 }
