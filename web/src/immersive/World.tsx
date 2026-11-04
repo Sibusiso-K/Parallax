@@ -7,10 +7,14 @@ import { Component, Suspense, lazy, useCallback, useEffect, useMemo, useRef, use
 import type { Edit } from '../../../shared/engine/simulate';
 import { resolveClaim, type ClaimRef, type ResolvedClaim } from '../../../shared/scene/claims';
 import { RequestGate, type PathLetter, type RoomSnapshot } from '../../../shared/scene/room-model';
-import { FIXTURE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorAnswer } from './advisor-fixture';
-import { DemoVoice } from './DemoVoice';
+import { DEMO_TEXT } from '../../../shared/intake/fixture';
+import type { AdvisorAction } from '../../../shared/scene/advisor-model';
+import { useVoiceInput } from '../lib/voice';
+import { FIXTURE_LABEL, LIVE_LABEL, MATCHED_LABEL, answerQuestion, type AdvisorAnswer } from './advisor-fixture';
+import { DemoVoice, answerTranscript } from './DemoVoice';
+import { actionLabel, askLive, serverAbilities, type AdvisorContext, type ServerAbilities } from './live-advisor';
 import { CashStory } from './story-media/CashStory';
-import { buildReelPlan } from './story-media/reel-plan';
+import { buildReelPlan, listenScript } from './story-media/reel-plan';
 import { EMPTY_MEMO, choiceLabel, evidenceAppendix, memoFooter, type Choice, type Memo } from './memo';
 import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailable, type CameraStation, type Replay } from './replay';
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
@@ -27,6 +31,22 @@ const PLACE_ORDER: PlaceId[] = ['spawn', 'offer', 'intake', 'bridge', 'memo'];
 const MONTH_TICKS = [1, 6, 12, 18, 24, 30, 36];
 
 const SUGGESTIONS = ['Why did cash run out here?', 'What is the lowest point?', 'What does the late payment do?'];
+/** What is worth asking at each object. The advisor is told which object the founder stands at. */
+const OBJECT_QUESTIONS: Record<ObjectId, string[]> = {
+  contract: ['What happens if they pay late?', 'Why does the first payment matter so much?'],
+  pan: ['How much of the contract do these costs eat?', 'Why does cash go out before it comes in?'],
+  fridge: ['Do I need to buy this now?', 'What does this do to my cash early on?'],
+  intake_desk: ['Which of these figures are only assumptions?', 'Which figure matters most?'],
+  memo: ['What should I watch before deciding?', 'What would make me say no?'],
+};
+const OBJECT_TABS = [
+  { id: 'explore', label: 'Explore' },
+  { id: 'visualise', label: 'Visualise' },
+  { id: 'listen', label: 'Listen' },
+  { id: 'create', label: 'Create' },
+] as const;
+type ObjectTab = (typeof OBJECT_TABS)[number]['id'];
+const DEMO_CONTEXT: AdvisorContext = { business: 'Meal-prep and catering', location: 'Johannesburg', story: DEMO_TEXT };
 const PATH_ORDER: PathLetter[] = ['B', 'C', 'A'];
 
 const mq = (q: string) => (typeof matchMedia === 'function' ? matchMedia(q).matches : false);
@@ -62,6 +82,8 @@ class SceneBoundary extends Component<{ children: ReactNode; onFailure: (error: 
   render() { return this.state.failed ? null : this.props.children; }
 }
 
+type LiveExtrasShape = Parameters<typeof askLive>[4];
+
 /** Where the founder is in Explore: a path, the late-payment lever per path, and a month. */
 export interface ExploreSelection {
   pathId: PathLetter;
@@ -80,6 +102,8 @@ export interface ExploreBinding {
   founderLabel: string;
   /** This founder's names for the places and objects, from Muse Spark (shared/scene/dressing.ts). Absent: the courtyard as built. */
   dressing?: SceneDressing | null;
+  /** The founder's own business and words, so the advisor can talk about this decision and not a generic one. */
+  context?: AdvisorContext;
 }
 
 export default function WorldRoot({ binding }: { binding?: ExploreBinding }) {
@@ -113,6 +137,24 @@ function World({ binding }: { binding?: ExploreBinding }) {
   }, [onSelection, pathId, stressed, month]);
   const [answers, setAnswers] = useState<AdvisorAnswer[]>([]);
   const [working, setWorking] = useState(false);
+  // What this deployment has connected: the model behind the advisor, and speech to text.
+  const [abilities, setAbilities] = useState<ServerAbilities>({ model: false, voice: false });
+  useEffect(() => {
+    let live = true;
+    void serverAbilities().then((found) => {
+      if (live) setAbilities(found);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  // Rises each time the founder asks out loud, so the reply is read back without a second press.
+  const [spokenAsk, setSpokenAsk] = useState(0);
+  const pendingAsk = useRef<AbortController | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const advisorRef = useRef<HTMLElement>(null);
+  const objectRef = useRef<HTMLElement>(null);
+  const [objectTab, setObjectTab] = useState<ObjectTab>('explore');
   const [question, setQuestion] = useState('');
   const [evidence, setEvidence] = useState<ResolvedClaim | null>(null);
   const [sheet, setSheet] = useState<null | 'memo'>(null);
@@ -219,33 +261,63 @@ function World({ binding }: { binding?: ExploreBinding }) {
     } else say(`Late payment removed. Showing the baseline for path ${pathId}.`);
   }, [gate, pathId, say, session, stressed]);
 
+  // What the advisor is told about this moment. Read when the question is sent, so it is never a stale copy.
+  const latest = useRef({ abilities, extras: (_target: PathLetter): LiveExtrasShape => ({ object: null, context: {}, history: [] }) });
+  latest.current = {
+    abilities,
+    extras: (target) => ({
+      object: focus && manifest ? { id: focus, label: manifest.objects[focus].label, ...(dressing?.objects[focus]?.caption ? { caption: dressing.objects[focus].caption } : {}) } : null,
+      context: { ...(binding?.context ?? DEMO_CONTEXT), decision: binding?.context?.decision ?? session.title },
+      history: answers
+        .filter((a) => a.pathId === target && a.status === 'answered')
+        .slice(-3)
+        .flatMap((a) => [{ role: 'user' as const, text: a.question }, { role: 'advisor' as const, text: answerTranscript(a) ?? '' }]),
+    }),
+  };
+
   const runAnswer = useCallback(
     async (target: PathLetter, stress: boolean, m: number, q: string) => {
       const snap = session.snapshotFor(target, stress);
       currentKey.current = snap.key;
       const ticket = gate.begin(snap.key);
       setWorking(true);
-      await Promise.resolve();
-      const a = answerQuestion(session, { pathId: target, snapshotKey: snap.key, month: m }, q);
+      pendingAsk.current?.abort();
+      const abort = new AbortController();
+      pendingAsk.current = abort;
+      const scope = { pathId: target, snapshotKey: snap.key, month: m };
+      let a: AdvisorAnswer;
+      try {
+        const live = latest.current.abilities.model ? await askLive(session, scope, stress, q, latest.current.extras(target), abort.signal) : ({ kind: 'fixture' } as const);
+        if (live.kind === 'answer') a = live.answer;
+        else if (live.kind === 'failed') a = { status: 'declined', intent: 'live', question: q, pathId: target, snapshotKey: snap.key, month: m, segments: [{ kind: 'text', text: live.message }], claims: [], trace: [] };
+        else {
+          await Promise.resolve();
+          a = answerQuestion(session, scope, q);
+        }
+      } catch {
+        return; // A newer question replaced this one.
+      }
       // Publish only if nothing relevant changed while this was pending (B -> C -> B, a double tap, a lever pull).
       if (gate.isCurrent(ticket, currentKey.current)) {
         setAnswers((prev) => [...prev, a]);
         setWorking(false);
-        say(a.status === 'answered' ? `Advisor answered on path ${target}.` : a.status === 'declined' ? 'The fixture advisor declined that question.' : 'The answer was withheld because it did not match the simulation.');
+        say(a.status === 'answered' ? `Advisor answered on path ${target}.` : a.status === 'declined' ? 'The advisor could not answer that.' : 'The answer was withheld because it did not match the simulation.');
       }
     },
     [gate, say, session],
   );
 
   const ask = useCallback(
-    (q: string) => {
+    (q: string, spoken = false) => {
       const t = q.trim();
       if (!t) return;
       setQuestion('');
+      if (spoken) setSpokenAsk((n) => n + 1);
       void runAnswer(pathId, stressed[pathId], month, t);
     },
     [month, pathId, runAnswer, stressed],
   );
+  const voice = useVoiceInput(useCallback((heard: string) => ask(heard, true), [ask]));
 
   const carry = useCallback(
     (a: AdvisorAnswer, target: PathLetter) => {
@@ -289,6 +361,37 @@ function World({ binding }: { binding?: ExploreBinding }) {
     setPathId(p);
     say(`Path ${p}: ${session.paths[p].name}.`);
   };
+
+  // The advisor's suggestions move the view and nothing else: an assumption can only change through an object's own Apply.
+  const runAction = (action: AdvisorAction) => {
+    if (action.type === 'show_month') {
+      select(action.month);
+      say(`Showing month ${action.month}.`);
+    } else if (action.type === 'late_payment') {
+      if (stressed[pathId] !== action.on) toggleLever();
+    } else if (action.type === 'switch_path') switchPath(action.path);
+    else if (walk && walkHandle.current) walkHandle.current.inspect(action.object);
+    else inspect(action.object);
+  };
+
+  // Keep the result of what was just done in view: the panel scrolls inside itself, and a phone scrolls the page.
+  const reveal = useCallback(
+    (el: HTMLElement | null) => {
+      const panel = panelRef.current;
+      if (!el || !panel) return;
+      if (panel.scrollHeight <= panel.clientHeight) return el.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+      panel.scrollTo({ top: el.getBoundingClientRect().top - panel.getBoundingClientRect().top + panel.scrollTop - 8, behavior: reduced ? 'auto' : 'smooth' });
+    },
+    [reduced],
+  );
+  useEffect(() => {
+    if (!focus) return;
+    setObjectTab('explore');
+    reveal(objectRef.current);
+  }, [focus, reveal]);
+  useEffect(() => {
+    if (working || answers.length > 0) reveal(advisorRef.current);
+  }, [answers.length, reveal, working]);
 
   // Replay clock: real time, one frame at a time. Seeking and stepping use the same track.
   useEffect(() => {
@@ -372,6 +475,9 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
   const focusInfo = focus && manifest ? manifest.objects[focus] : null;
   const tickAt = (m: number) => `${((m - 1) / 35) * 100}%`;
+  const lastAnswer = answers.at(-1);
+  const heardAnswer = lastAnswer && lastAnswer.snapshotKey === snapshot.key && lastAnswer.month === shownMonth ? answerTranscript(lastAnswer) : null;
+  const objectLabel = (id: string) => manifest?.objects[id as ObjectId]?.label ?? id;
 
   return (
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
@@ -468,7 +574,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
         </div>
       </section>
 
-      <aside className="panel" aria-label="The payment gap, from the engine">
+      <aside className="panel" ref={panelRef} aria-label="The payment gap, from the engine">
         <h2 className="panel__h">Explore the payment gap</h2>
         <p className="panel__sub">
           Path {snapshot.ref.pathId} · Month {shownMonth} · {isStress ? 'late payment applied' : 'baseline'}
@@ -566,7 +672,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
         </details>}
 
         {focus && focusInfo && (
-          <section className="object" aria-label={focusInfo.label}>
+          <section className="object" ref={objectRef} aria-label={focusInfo.label}>
             <div className="object__head">
               <span className="chip">Selected object</span>
               <b>{focusInfo.label}</b>
@@ -574,16 +680,37 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 ×
               </button>
             </div>
-            {dressing?.objects[focus]?.caption && <p className="muted small">{dressing.objects[focus].caption}</p>}
-            {focus !== 'intake_desk' && (
-              <details className="table">
-                <summary>Preview reel storyboard</summary>
-                <p className="muted small">A preview based on this scenario and month. Video and audio have not been generated.</p>
-                <ol>{buildReelPlan(snapshot, shownMonth, focus).scenes.map((scene, index) => (
-                  <li key={`${scene.kind}-${index}`}>{scene.text} <span className="muted small">({scene.durationSeconds} seconds)</span></li>
-                ))}</ol>
-              </details>
+            <div className="object__tabs" role="tablist" aria-label={`What to do with ${focusInfo.label}`}>
+              {OBJECT_TABS.map((t) => (
+                <button key={t.id} role="tab" aria-selected={objectTab === t.id} onClick={() => setObjectTab(t.id)}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            {objectTab === 'visualise' && (
+              <div role="tabpanel" aria-label="Visualise">
+                <CashStory snapshot={snapshot} selectedMonth={shownMonth} onSelectMonth={select} disabled={inReplay} />
+              </div>
             )}
+            {objectTab === 'listen' && (
+              <div role="tabpanel" aria-label="Listen" className="object__listen">
+                <p>{listenScript(buildReelPlan(snapshot, shownMonth, focus, focusInfo.label))}</p>
+                <DemoVoice transcript={listenScript(buildReelPlan(snapshot, shownMonth, focus, focusInfo.label))} resetKey={`${snapshot.key}|${shownMonth}|${focus}`} disabled={inReplay} working={false} label="Hear this month" />
+              </div>
+            )}
+            {objectTab === 'create' && (
+              <div role="tabpanel" aria-label="Create">
+                <details className="table" open>
+                  <summary>Reel storyboard</summary>
+                  <p className="muted small">A preview based on this scenario and month. Video and audio have not been generated.</p>
+                  <ol>{buildReelPlan(snapshot, shownMonth, focus, focusInfo.label).scenes.map((scene, index) => (
+                    <li key={`${scene.kind}-${index}`}>{scene.text} <span className="muted small">({scene.durationSeconds} seconds)</span></li>
+                  ))}</ol>
+                </details>
+              </div>
+            )}
+            {objectTab === 'explore' && <div role="tabpanel" aria-label="Explore" className="object__explore">
+            {dressing?.objects[focus]?.caption && <p className="muted small">{dressing.objects[focus].caption}</p>}
             {focus === 'contract' && (
               <>
                 <p>
@@ -632,14 +759,21 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 </button>
               </>
             )}
+            <div className="chips object__asks">
+              {OBJECT_QUESTIONS[focus].map((q) => (
+                <button key={q} className="chip chip--btn" onClick={() => ask(q)} disabled={inReplay}>
+                  {q}
+                </button>
+              ))}
+            </div>
+            </div>}
           </section>
         )}
 
-        <section className="advisor" aria-label="Ask the advisor">
+        <section className="advisor" ref={advisorRef} aria-label="Ask the advisor">
           <h3 className="panel__h3">Ask the advisor</h3>
-          <p className="fixture">{FIXTURE_LABEL}</p>
+          <p className="fixture">{abilities.model ? LIVE_LABEL : FIXTURE_LABEL}</p>
           <div className="answers" aria-live="polite">
-            {working && <p className="working">Running the local tools…</p>}
             {answers.slice(-3).map((a, i) => (
               <AnswerCard
                 key={i}
@@ -649,8 +783,12 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 canCarry={a.status === 'answered' && session.registry.get(a.snapshotKey)?.ref.profileRevision === session.profileRevision}
                 historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision}
                 fromPath={a.pathId}
+                onAction={i === answers.slice(-3).length - 1 && !inReplay ? runAction : undefined}
+                onAsk={i === answers.slice(-3).length - 1 && !inReplay ? ask : undefined}
+                objectLabel={objectLabel}
               />
             ))}
+            {working && <p className="working" role="status">{abilities.model ? 'The advisor is thinking. Muse Spark can take about 10 seconds.' : 'Running the local tools…'}</p>}
           </div>
           <div className="chips">
             {SUGGESTIONS.map((s) => (
@@ -670,8 +808,21 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn" type="submit" disabled={inReplay || !question.trim()}>
               Ask
             </button>
+            {abilities.voice && (
+              <button
+                type="button"
+                className={`btn btn--ghost ask__mic ${voice.state === 'recording' ? 'is-on' : ''}`}
+                aria-pressed={voice.state === 'recording'}
+                disabled={inReplay || voice.state === 'working'}
+                onClick={() => (voice.state === 'recording' ? voice.stop() : void voice.start())}
+              >
+                {voice.state === 'recording' ? 'Stop' : voice.state === 'working' ? 'Hearing…' : 'Speak'}
+              </button>
+            )}
           </form>
-          <DemoVoice answer={answers.at(-1)} snapshotKey={snapshot.key} month={shownMonth} demo={isDemo} disabled={inReplay} working={working} />
+          {voice.state === 'recording' && <p className="muted small" role="status">Listening. Press Stop when you have asked your question. Nothing is kept.</p>}
+          {voice.message && !voice.message.startsWith('Check the words') && <p className="muted small" role="status">{voice.message}</p>}
+          <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />
         </section>
 
         <footer className="panel__foot">
@@ -684,8 +835,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn" onClick={() => setSheet('memo')}>Write my decision memo</button>
           </div>
           <p className="muted small">
-            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky; the fictional characters are work-in-progress previews. The advisor is a fixture: no
-            model is connected. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
+            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky{people ? '; the fictional characters are work-in-progress previews' : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
           </p>
         </footer>
       </aside>
@@ -763,7 +913,7 @@ function cellText(n: number) {
   return `${n < 0 ? '-' : ''}R${Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 }
 
-function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter }) {
+function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, onAction, onAsk, objectLabel }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter; onAction?: (action: AdvisorAction) => void; onAsk?: (q: string) => void; objectLabel: (id: string) => string }) {
   const targets = (['B', 'C', 'A'] as PathLetter[]).filter((p) => p !== fromPath);
   return (
     <article className={`answer answer--${a.status}`}>
@@ -782,8 +932,22 @@ function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath }: 
         <details className="trace">
           <summary>What actually ran ({a.trace.length})</summary>
           <ul>{a.trace.map((t, i) => <li key={i} className={t.ok ? '' : 'neg'}>{t.ok ? '✓' : '✗'} <code>{t.tool}</code> {t.detail}{t.ms ? ` · ${t.ms} ms` : ''}</li>)}</ul>
-          <p className="muted small">Local execution only: the engine and the claim checks. No model was called.</p>
+          <p className="muted small">{a.source === 'model' ? 'Muse Spark wrote the sentences. Code checked each one and filled in every figure from the engine.' : 'Local execution only: the engine and the claim checks. No model was called.'}</p>
         </details>
+      )}
+      {onAction && a.actions && a.actions.length > 0 && (
+        <div className="carry" role="group" aria-label="Suggested next">
+          {a.actions.map((action) => (
+            <button key={JSON.stringify(action)} className="btn btn--sm" onClick={() => onAction(action)}>{actionLabel(action, objectLabel)}</button>
+          ))}
+        </div>
+      )}
+      {onAsk && a.followups && a.followups.length > 0 && (
+        <div className="chips answer__next">
+          {a.followups.map((q) => (
+            <button key={q} className="chip chip--btn" onClick={() => onAsk(q)}>{q}</button>
+          ))}
+        </div>
       )}
       {canCarry && (
         <div className="carry">

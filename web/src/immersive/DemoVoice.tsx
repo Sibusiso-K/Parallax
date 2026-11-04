@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { spokenText } from '../lib/speech';
 import type { AdvisorAnswer } from './advisor-fixture';
 import { createSpeechController, type PlaybackState } from './speech-controller';
 import './demo-voice.css';
@@ -16,18 +17,27 @@ export function answerTranscript(answer: AdvisorAnswer): string | null {
   return value.trim() || null;
 }
 
-interface Props { answer: AdvisorAnswer | undefined; snapshotKey: string; month: number; demo: boolean; disabled: boolean; working: boolean }
+interface Props {
+  /** The exact words on screen, or null when there is nothing to read. */
+  transcript: string | null;
+  /** What the words belong to. Any change stops the reading, so an old answer is never read over new figures. */
+  resetKey: string;
+  disabled: boolean;
+  working: boolean;
+  /** Reads at once when this changes to a new value: the founder has just spoken and is waiting to hear back. */
+  autoPlay?: number;
+  idleHint?: string;
+  label?: string;
+}
 const voiceId = (voice: SpeechSynthesisVoice) => JSON.stringify([voice.voiceURI, voice.lang, voice.name]);
 
-/** User-initiated browser speech only; no microphone or model provider is used. */
-export function DemoVoice({ answer, snapshotKey, month, demo, disabled, working }: Props) {
+/** User-initiated browser speech: the device's own voice reads the words on screen. Nothing is sent anywhere. */
+export function DemoVoice({ transcript, resetKey, disabled, working, autoPlay = 0, idleHint = 'Ask a question to hear its answer.', label = 'Read aloud' }: Props) {
   const [state, setState] = useState<PlaybackState>('idle');
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceKey, setVoiceKey] = useState('');
   const [discovery, setDiscovery] = useState<'loading' | 'ready' | 'empty' | 'unsupported'>('loading');
   const controller = useRef<ReturnType<typeof createSpeechController> | null>(null);
-  const current = answer && answer.snapshotKey === snapshotKey && answer.month === month ? answer : undefined;
-  const transcript = current ? answerTranscript(current) : null;
   const active = state === 'starting' || state === 'playing' || state === 'paused';
 
   useEffect(() => {
@@ -52,29 +62,39 @@ export function DemoVoice({ answer, snapshotKey, month, demo, disabled, working 
     document.addEventListener('visibilitychange', hide);
     return () => { if (timer) clearTimeout(timer); synth.removeEventListener('voiceschanged', refresh); document.removeEventListener('visibilitychange', hide); own.dispose(); if (controller.current === own) controller.current = null; };
   }, []);
-  useEffect(() => { controller.current?.stop(); }, [snapshotKey, month, answer, disabled, working, demo]);
+  useEffect(() => { controller.current?.stop(); }, [resetKey, disabled, working]);
 
-  const canPlay = demo && !disabled && !working && Boolean(transcript) && discovery !== 'unsupported';
-  const status = state === 'starting' ? 'Starting voice…' : state === 'playing' ? 'Reading the answer.' : state === 'paused' ? 'Playback paused.' : state === 'finished' ? 'Playback finished.' : state === 'error' ? 'Voice unavailable. The answer remains in text above.' : '';
+  const play = () => {
+    if (transcript) controller.current?.play(spokenText(transcript), voices.find((voice) => voiceId(voice) === voiceKey) ?? null);
+  };
+  // The founder asked out loud, so they hear the reply out loud, without a second press.
+  const spokenTo = useRef(autoPlay);
+  useEffect(() => {
+    if (autoPlay === spokenTo.current || !transcript || working || disabled) return;
+    spokenTo.current = autoPlay;
+    play();
+    // Only a new spoken question starts this; `play` reads the latest words and voice.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, transcript, working, disabled]);
+
+  const canPlay = !disabled && !working && Boolean(transcript) && discovery !== 'unsupported';
+  const status = state === 'starting' ? 'Starting voice…' : state === 'playing' ? 'Reading aloud.' : state === 'paused' ? 'Paused.' : state === 'finished' ? 'Finished.' : state === 'error' ? 'Voice unavailable. The words stay on screen.' : '';
   return (
     <div className="demo-voice">
-      <div className="demo-voice__header"><span aria-hidden="true">◖♪</span><strong>Listen to the answer</strong><span className="demo-voice__badge">Demo voice</span></div>
-      <p>Uses your browser’s voice to read the text above. Voice availability and processing depend on your browser and device.</p>
-      {!demo ? <p>Voice is available for the fictional demo only. Type to use the advisor.</p> : discovery === 'unsupported' ? <p>Voice is unavailable in this browser. The answer remains in text above.</p> : discovery === 'loading' ? <p>Finding available voices…</p> : discovery === 'empty' ? <p>No voices listed yet. You can try the browser’s default voice, or use the text above.</p> : null}
-      {demo && discovery !== 'unsupported' && voices.length > 0 && <label className="demo-voice__choice">Voice
-        <select value={voiceKey} disabled={active} onChange={(event) => setVoiceKey(event.target.value)}>
-          <option value="">Browser default</option>
-          {voices.map((voice) => <option key={voiceId(voice)} value={voiceId(voice)}>{voice.name} · {voice.lang}{voice.localService ? ' · device' : ''}</option>)}
-        </select>
-      </label>}
-      {!transcript && demo && <p>Ask a question to hear its answer.</p>}
       <div className="demo-voice__controls">
-        {!active ? <button className="btn demo-voice__action" type="button" disabled={!canPlay} onClick={() => { if (transcript) controller.current?.play(transcript, voices.find((voice) => voiceId(voice) === voiceKey) ?? null); }}>▶ Read answer aloud</button> : <>
+        {!active ? <button className="btn demo-voice__action" type="button" disabled={!canPlay} onClick={play}>▶ {label}</button> : <>
           <button className="btn demo-voice__action" type="button" disabled={state === 'starting'} onClick={() => state === 'paused' ? controller.current?.resume() : controller.current?.pause()}>{state === 'paused' ? 'Resume' : 'Pause'}</button>
           <button className="btn demo-voice__stop" type="button" onClick={() => controller.current?.stop()}>Stop</button>
         </>}
+        {discovery !== 'unsupported' && voices.length > 0 && <label className="demo-voice__choice"><span className="sr-only">Voice</span>
+          <select value={voiceKey} disabled={active} onChange={(event) => setVoiceKey(event.target.value)}>
+            <option value="">Browser default voice</option>
+            {voices.map((voice) => <option key={voiceId(voice)} value={voiceId(voice)}>{voice.name} · {voice.lang}</option>)}
+          </select>
+        </label>}
       </div>
-      <p className="demo-voice__note">No microphone is used. No live model is connected.</p>
+      {discovery === 'unsupported' ? <p>This browser has no voice. The words stay on screen.</p> : !transcript && <p>{idleHint}</p>}
+      <p className="demo-voice__note">Your device’s own voice reads the words on screen. Nothing is sent anywhere.</p>
       <span role="status" className="demo-voice__status">{status}</span>
     </div>
   );

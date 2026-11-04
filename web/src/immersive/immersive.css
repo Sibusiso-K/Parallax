@@ -189,6 +189,17 @@
   .world .memo { box-shadow: none; border: 0; width: 100%; background: #fff; backdrop-filter: none; }
 }
 
+/* ---- the selected object ---- */
+.world .object__tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 3px; border-radius: 12px; background: #f3f0ea; }
+.world .object__tabs button { min-height: 36px; padding: 0 4px; border: 0; border-radius: 9px; background: transparent; font-size: 12.5px; cursor: pointer; }
+.world .object__tabs button[aria-selected='true'] { background: var(--paper); color: var(--lav-ink); font-weight: 600; box-shadow: 0 1px 4px rgba(40, 30, 80, 0.14); }
+.world .object__explore, .world .object__listen { display: grid; gap: 8px; }
+.world .object__listen > p { font-size: 13.5px; }
+.world .object__asks { margin-top: 2px; }
+.world .answer__next { margin-top: 8px; }
+.world .ask__mic { flex: none; min-width: 70px; }
+.world .ask__mic.is-on { background: var(--neg); border-color: var(--neg); color: #fff; }
+
 /* ---- walking ---- */
 .world .walk-prompt { position: absolute; z-index: 3; left: 50%; bottom: 150px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px 8px 10px; border: 1px solid var(--lav-edge); border-radius: 14px; background: var(--paper); color: var(--lav-ink); font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 8px 28px rgba(30, 22, 60, 0.22); }
 .world .walk-prompt kbd { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--lav); font: 700 12px 'Geist Mono Variable', monospace; }

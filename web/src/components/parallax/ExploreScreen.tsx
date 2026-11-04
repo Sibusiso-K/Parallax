@@ -50,13 +50,17 @@ export function ExploreScreen() {
   );
 
   const founderLabel = story.trim() === DEMO_STORY.trim() ? "Fictional founder · demo story" : "Your decision";
+  const context = useMemo(() => {
+    const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+    return { business: str(fields.business), location: str(fields.location), decision: str(fields.decision), story: str(story)?.slice(0, 4000) };
+  }, [fields.business, fields.decision, fields.location, story]);
   const binding = useMemo<ExploreBinding | null>(
     () =>
       result?.ok
-        ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel, dressing: scene }
+        ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel, dressing: scene, context }
         : null,
     // The initial view only matters when the room mounts; later selection changes flow out, not back in.
-    [result, onSelection, onRevise, founderLabel, scene],
+    [result, onSelection, onRevise, founderLabel, scene, context],
   );
 
   if (paths.length === 0) return <NoPaths />;
