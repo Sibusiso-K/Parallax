@@ -7,6 +7,7 @@ import { speak, setReadAloud, useSpeech } from "@/lib/speech";
 import { Listen } from "./Listen";
 import { CashChart } from "./charts";
 import { StepNav } from "./StepNav";
+import { BoardMeeting } from "./BoardMeeting";
 
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
 const end = (a: number[]) => a[a.length - 1] ?? 0;
@@ -79,6 +80,7 @@ export function ChatScreen() {
 
   return (
     <>
+    <BoardMeeting />
     <div className="row pagecols">
       <section className="panel chat">
         <header className="chat-head">

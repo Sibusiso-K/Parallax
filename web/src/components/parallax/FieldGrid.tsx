@@ -57,7 +57,7 @@ export function DecisionStrip() {
   );
 }
 
-interface Card {
+export interface Card {
   k: FieldKey;
   label: string;
   value: string;
@@ -76,7 +76,7 @@ const days = (v: unknown): number | undefined => (typeof v === "number" ? v : ty
 const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The cards, in the order the founder reads them. Each figure comes from the answers; nothing is typed in here. */
-function cardsFor(
+export function cardsFor(
   fields: Partial<Record<FieldKey, unknown>>,
   quotes: Partial<Record<FieldKey, string>>,
   assumed: FieldKey[],

@@ -316,6 +316,8 @@ export interface ChatContext {
   decision?: string;
   goals?: string[];
   story?: string;
+  /** Reply in this language (see shared/chat/languages.ts). English when absent. */
+  language?: string;
 }
 
 type ModelReply = { ok?: boolean; mode?: string; text?: unknown; citations?: unknown; clean?: unknown; checks?: unknown; model?: unknown; error?: unknown };
@@ -384,12 +386,14 @@ async function* chat(
     yield { type: "done", trace: { model: "none (the answer failed)", checks: [] } };
     return;
   }
-  yield* scripted(path.id);
+  yield* scripted(path);
 }
 
-async function* scripted(pathId: string): AsyncIterable<ChatChunk> {
-  const path = lastPaths.get(pathId);
-  const letter = path?.letter ?? "A";
+// Takes the path itself: after a reload the paths come back from the saved decision, not from paths(), so looking
+// them up in lastPaths gave every future path A's script.
+async function* scripted(given: PathCard): AsyncIterable<ChatChunk> {
+  const path = lastPaths.get(given.id) ?? given;
+  const letter = path.letter;
   const list = REPLIES[lastDecision][letter];
   const key = `${lastDecision}.${letter}`;
   const i = counters[key] ?? 0;
