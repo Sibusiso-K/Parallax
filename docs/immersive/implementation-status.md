@@ -117,7 +117,9 @@ The confirmed path was run once, live, on the dev server: intake with the demo s
 
 Frame cost by the same method as the 2 Nov table: **15.6 ms average, median 14, p95 17.2 ms**, 62 draw calls, 426k triangles, 993x868, production build with the characters off. One run on one machine. This meets the pack's 22 ms p95 target there; the 2 Nov figures (25.1 / 36.2 ms) were a development build, so the build type accounts for some of the gain.
 
-First load: the guided room's chunk is 275 kB gzipped, and Rapier (843 kB gzipped) now loads only when Walk starts. Not measured over a real network.
+First load: the guided room's chunk is 275 kB gzipped, and Rapier now loads only when Walk starts. Measured once on the Vercel preview, cold, on this laptop and connection: **25 s to a live 3D room, 23.7 MB in 18 requests** (`environment.glb` 17.9 MB in 8.8 s, the HDR 4.8 MB in 2.3 s), with the still render showing until then. That misses the pack's 5 s and 15 MB targets. Walk then fetched 783 KB in 2.2 s. The avatars are not downloaded. Codex's 1K HDR experiment would save about 3 MB, but has had no visual review.
+
+The preview deployment has no Meta key, so it shows the authored answers; production has one (`/api/health`), so the live advisor needs a merge, or the key set for previews, to run on Vercel. Live answers above were on the local dev server.
 
 ### Live model use during this work
 
@@ -127,7 +129,7 @@ Seven calls on the team's key: four to `/api/advisor` (demo path B), and one ful
 
 - Hearing read-aloud, or **Speak** with a real microphone in the room. The transcribe route has its own tests; the two have never been run together.
 - A real phone. 390x844 was checked in Edge's device emulation: no sideways scroll, controls reachable, crowded. Touch input was not exercised, only the layout.
-- A discrete GPU, real network load times, Firefox and Safari. `MediaRecorder` MP4 is Chromium-tested; other browsers fall back to WebM or say they cannot record.
+- A discrete GPU, Firefox and Safari. `MediaRecorder` MP4 is Chromium-tested; other browsers fall back to WebM or say they cannot record.
 - VR: still disabled, no headset.
 - Sign language: not implemented. Nothing here is sign support.
 
