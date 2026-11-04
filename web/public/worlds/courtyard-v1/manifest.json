@@ -1,0 +1,678 @@
+{
+  "version": 1,
+  "assetVersion": "courtyard-v1.0",
+  "worldId": "courtyard-v1",
+  "units": "metres",
+  "up": "y",
+  "bounds": {
+    "min": [
+      -11.2,
+      -2.9,
+      -12.4
+    ],
+    "max": [
+      10.2,
+      10.8,
+      12.8
+    ]
+  },
+  "eyeHeight": 1.65,
+  "spawn": "spawn",
+  "places": {
+    "spawn": {
+      "label": "Courtyard",
+      "stand": [
+        0.0,
+        0.0,
+        9.0
+      ],
+      "camera": [
+        0.4,
+        1.8,
+        8.6
+      ],
+      "target": [
+        -0.9,
+        0.0,
+        -4.5
+      ]
+    },
+    "offer": {
+      "label": "Offer",
+      "stand": [
+        -2.9,
+        0.0,
+        5.2
+      ],
+      "camera": [
+        -2.75,
+        1.65,
+        4.55
+      ],
+      "target": [
+        -3.8,
+        0.9,
+        6.3
+      ]
+    },
+    "intake": {
+      "label": "Intake",
+      "stand": [
+        -2.9,
+        0.0,
+        -0.9
+      ],
+      "camera": [
+        -2.7,
+        1.65,
+        -2.2
+      ],
+      "target": [
+        -4.2,
+        0.8,
+        -0.6
+      ]
+    },
+    "bridge": {
+      "label": "Bridge",
+      "stand": [
+        0.0,
+        0.0,
+        -3.0
+      ],
+      "camera": [
+        -0.2,
+        1.65,
+        -2.6
+      ],
+      "target": [
+        0.9,
+        0.6,
+        -11.5
+      ]
+    },
+    "memo": {
+      "label": "Memo",
+      "stand": [
+        4.0,
+        0.0,
+        -7.6
+      ],
+      "camera": [
+        3.6,
+        1.65,
+        -6.6
+      ],
+      "target": [
+        5.9,
+        1.5,
+        -8.9
+      ]
+    }
+  },
+  "objects": {
+    "contract": {
+      "label": "Contract",
+      "node": "contract",
+      "place": "offer",
+      "radius": 2.2,
+      "actions": [
+        "inspect",
+        "ask",
+        "propose_terms"
+      ],
+      "claimBinding": "contract",
+      "position": [
+        -3.79,
+        0.93,
+        6.3
+      ]
+    },
+    "pan": {
+      "label": "Ingredients and packaging",
+      "node": "pan",
+      "place": "offer",
+      "radius": 2.2,
+      "actions": [
+        "inspect",
+        "propose_direct_cost"
+      ],
+      "claimBinding": "direct",
+      "position": [
+        -3.62,
+        0.945,
+        5.85
+      ]
+    },
+    "fridge": {
+      "label": "Second fridge",
+      "node": "fridge",
+      "place": "intake",
+      "radius": 2.5,
+      "actions": [
+        "inspect",
+        "propose_equipment_cost"
+      ],
+      "claimBinding": "equipment",
+      "position": [
+        -5.4,
+        0.975,
+        3.025
+      ]
+    },
+    "intake_desk": {
+      "label": "Intake desk",
+      "node": "intake_desk_top",
+      "place": "intake",
+      "radius": 2.2,
+      "actions": [
+        "inspect"
+      ],
+      "claimBinding": null,
+      "position": [
+        -4.225,
+        0.76,
+        -0.7
+      ]
+    },
+    "memo": {
+      "label": "Decision memo",
+      "node": "memo_board",
+      "place": "memo",
+      "radius": 2.5,
+      "actions": [
+        "review"
+      ],
+      "claimBinding": "memo",
+      "position": [
+        5.88,
+        1.5,
+        -8.9
+      ]
+    }
+  },
+  "colliders": [
+    {
+      "id": "terrace_left",
+      "shape": "box",
+      "center": [
+        -4.25,
+        -0.15,
+        0.2
+      ],
+      "size": [
+        3.5,
+        0.3,
+        24.4
+      ]
+    },
+    {
+      "id": "terrace_right",
+      "shape": "box",
+      "center": [
+        4.25,
+        -0.15,
+        0.2
+      ],
+      "size": [
+        3.5,
+        0.3,
+        24.4
+      ]
+    },
+    {
+      "id": "terrace_front",
+      "shape": "box",
+      "center": [
+        0.0,
+        -0.15,
+        9.2
+      ],
+      "size": [
+        5.0,
+        0.3,
+        6.4
+      ]
+    },
+    {
+      "id": "terrace_far",
+      "shape": "box",
+      "center": [
+        0.0,
+        -0.15,
+        -11.15
+      ],
+      "size": [
+        5.0,
+        0.3,
+        1.7
+      ]
+    },
+    {
+      "id": "edge_steps_top",
+      "shape": "box",
+      "center": [
+        0.0,
+        0.55,
+        6.0
+      ],
+      "size": [
+        5.0,
+        1.1,
+        0.2
+      ]
+    },
+    {
+      "id": "bridge_deck",
+      "shape": "box",
+      "center": [
+        0.0,
+        -0.15,
+        -3.0
+      ],
+      "size": [
+        5.0,
+        0.3,
+        2.0
+      ]
+    },
+    {
+      "id": "bridge_rail_south",
+      "shape": "box",
+      "center": [
+        0.0,
+        0.55,
+        -2.0
+      ],
+      "size": [
+        5.0,
+        1.1,
+        0.1
+      ]
+    },
+    {
+      "id": "bridge_rail_north",
+      "shape": "box",
+      "center": [
+        0.0,
+        0.55,
+        -4.0
+      ],
+      "size": [
+        5.0,
+        1.1,
+        0.1
+      ]
+    },
+    {
+      "id": "far_planter",
+      "shape": "box",
+      "center": [
+        0.0,
+        0.66,
+        -11.85
+      ],
+      "size": [
+        12.0,
+        1.32,
+        1.1
+      ]
+    },
+    {
+      "id": "rail_channel_left_front",
+      "shape": "box",
+      "center": [
+        -2.5,
+        0.55,
+        2.0
+      ],
+      "size": [
+        0.2,
+        1.1,
+        8.0
+      ]
+    },
+    {
+      "id": "rail_channel_left_far",
+      "shape": "box",
+      "center": [
+        -2.5,
+        0.55,
+        -7.15
+      ],
+      "size": [
+        0.2,
+        1.1,
+        6.3
+      ]
+    },
+    {
+      "id": "rail_channel_right_front",
+      "shape": "box",
+      "center": [
+        2.5,
+        0.55,
+        2.0
+      ],
+      "size": [
+        0.2,
+        1.1,
+        8.0
+      ]
+    },
+    {
+      "id": "rail_channel_right_far",
+      "shape": "box",
+      "center": [
+        2.5,
+        0.55,
+        -7.15
+      ],
+      "size": [
+        0.2,
+        1.1,
+        6.3
+      ]
+    },
+    {
+      "id": "left_facade",
+      "shape": "box",
+      "center": [
+        -6.125,
+        2.0,
+        -0.0
+      ],
+      "size": [
+        0.55,
+        4.0,
+        24.8
+      ]
+    },
+    {
+      "id": "right_facade",
+      "shape": "box",
+      "center": [
+        6.125,
+        2.0,
+        -0.0
+      ],
+      "size": [
+        0.55,
+        4.0,
+        24.8
+      ]
+    },
+    {
+      "id": "store_doors",
+      "shape": "box",
+      "center": [
+        5.475,
+        1.4,
+        -0.6
+      ],
+      "size": [
+        0.95,
+        2.8,
+        3.4
+      ]
+    },
+    {
+      "id": "back_wall",
+      "shape": "box",
+      "center": [
+        0.0,
+        2.0,
+        12.6
+      ],
+      "size": [
+        12.8,
+        4.0,
+        0.4
+      ]
+    },
+    {
+      "id": "offer_counter",
+      "shape": "box",
+      "center": [
+        -3.8,
+        0.46,
+        6.0
+      ],
+      "size": [
+        0.7,
+        0.92,
+        2.0
+      ]
+    },
+    {
+      "id": "fridge",
+      "shape": "box",
+      "center": [
+        -5.4,
+        0.975,
+        3.025
+      ],
+      "size": [
+        0.7,
+        1.95,
+        0.75
+      ]
+    },
+    {
+      "id": "intake_desk",
+      "shape": "box",
+      "center": [
+        -4.225,
+        0.39,
+        -0.7
+      ],
+      "size": [
+        0.75,
+        0.78,
+        1.4
+      ]
+    },
+    {
+      "id": "intake_crates",
+      "shape": "box",
+      "center": [
+        -5.05,
+        0.2,
+        -2.115
+      ],
+      "size": [
+        0.5,
+        0.4,
+        0.83
+      ]
+    }
+  ],
+  "lighting": {
+    "hdri": {
+      "lighting": "joburg_2k.hdr",
+      "background": "joburg_bg.jpg",
+      "assetId": "sunset_jhbcentral",
+      "glowUV": [
+        0.6116,
+        0.4575
+      ],
+      "glowRadiance": 15.758
+    },
+    "sun": {
+      "direction": [
+        0.332,
+        0.194,
+        -0.923
+      ],
+      "elevationDeg": 11.2,
+      "color": "#ffa866",
+      "intensity": 4.5
+    },
+    "skyIntensity": 0.55,
+    "blenderWorldRotationZ": 1.21532,
+    "lights": [
+      {
+        "id": "lamp_left0",
+        "type": "point",
+        "position": [
+          -5.43,
+          3.81,
+          10
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_left1",
+        "type": "point",
+        "position": [
+          -5.43,
+          3.81,
+          6
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_left2",
+        "type": "point",
+        "position": [
+          -5.43,
+          3.81,
+          2
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_left3",
+        "type": "point",
+        "position": [
+          -5.43,
+          3.81,
+          -2
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_left4",
+        "type": "point",
+        "position": [
+          -5.43,
+          3.81,
+          -6
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_left5",
+        "type": "point",
+        "position": [
+          -5.43,
+          3.81,
+          -10
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "kitchen_light0",
+        "type": "point",
+        "position": [
+          -8.7,
+          3.2,
+          6.5
+        ],
+        "color": "#ffe2b8",
+        "intensity": 6.0,
+        "distance": 7.0
+      },
+      {
+        "id": "kitchen_light1",
+        "type": "point",
+        "position": [
+          -8.7,
+          3.2,
+          3.5
+        ],
+        "color": "#ffe2b8",
+        "intensity": 6.0,
+        "distance": 7.0
+      },
+      {
+        "id": "kitchen_light2",
+        "type": "point",
+        "position": [
+          -8.7,
+          3.2,
+          0.5
+        ],
+        "color": "#ffe2b8",
+        "intensity": 6.0,
+        "distance": 7.0
+      },
+      {
+        "id": "kitchen_light3",
+        "type": "point",
+        "position": [
+          -8.7,
+          3.2,
+          -2.5
+        ],
+        "color": "#ffe2b8",
+        "intensity": 6.0,
+        "distance": 7.0
+      },
+      {
+        "id": "store_light",
+        "type": "point",
+        "position": [
+          8.2,
+          2.6,
+          -0.6
+        ],
+        "color": "#fff0d8",
+        "intensity": 4.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_right_store",
+        "type": "point",
+        "position": [
+          5.43,
+          3.06,
+          -0.6
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      },
+      {
+        "id": "lamp_memo",
+        "type": "point",
+        "position": [
+          5.43,
+          2.61,
+          -8.9
+        ],
+        "color": "#ffc98a",
+        "intensity": 3.0,
+        "distance": 6.0
+      }
+    ],
+    "exposure": 1.0
+  },
+  "assets": {
+    "environment": "environment.glb",
+    "plantsPlaced": 60
+  },
+  "provenance": "assets/provenance.json; built by assets/blender/build_courtyard.py"
+}

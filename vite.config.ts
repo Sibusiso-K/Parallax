@@ -1,5 +1,7 @@
 import { defineConfig, type Plugin } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { loadEnv } from 'vite';
 import { resolve } from 'node:path';
 
 // Local dev only: serve /api/* from the same handlers Vercel runs, so `npm run dev` works without the Vercel CLI.
@@ -7,6 +9,15 @@ function devApi(): Plugin {
   return {
     name: 'parallax-dev-api',
     apply: 'serve',
+    configResolved(config) {
+      // Tests never load .env files, so no test can pick up a real key.
+      if (config.mode === 'test') return;
+      // Vite keeps .env values out of process.env, but the /api handlers read their keys from there.
+      // Load the project-root env files here, and never overwrite a value that is already set.
+      for (const [key, value] of Object.entries(loadEnv(config.mode, process.cwd(), ''))) {
+        process.env[key] ??= value;
+      }
+    },
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const route = req.url?.match(/^\/api\/([a-z-]+)/)?.[1];
@@ -38,7 +49,8 @@ function devApi(): Plugin {
 // The React app lives in /web; /api holds Vercel Functions; /shared runs on both sides.
 export default defineConfig({
   root: 'web',
-  plugins: [react(), devApi()],
+  plugins: [react(), tailwindcss(), devApi()],
+  resolve: { alias: { '@': resolve(process.cwd(), 'web/src') } },
   server: { fs: { allow: ['..'] } },
   build: {
     outDir: '../dist',
@@ -47,5 +59,9 @@ export default defineConfig({
   test: {
     root: '.',
     include: ['shared/**/*.test.ts', 'web/**/*.test.ts', 'api/**/*.test.ts'],
+    setupFiles: ['shared/testing/offline.ts'],
+    // A normal test that hangs fails within a minute. A deliberate stress run (STRESS_RUNS set) scales with its run count:
+    // 50,000 engine runs take about a minute on their own, and longer under load.
+    testTimeout: process.env.STRESS_RUNS ? 900_000 : 60_000,
   },
 });

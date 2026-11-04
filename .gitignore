@@ -11,3 +11,7 @@ __pycache__/
 .vscode/
 .idea/
 *.log
+# Original downloaded asset files stay out of git; assets/provenance.json records each one (URL, licence, SHA-256).
+assets/source/
+# Blender working files and derived build output; the runtime exports are copied into web/public on purpose.
+assets/derived/

@@ -14,7 +14,8 @@ function toNumber(raw: string): number | null {
   if (!m) return null;
   const n = Number(m[1]);
   const scale = m[2] === 'k' ? 1_000 : m[2] === 'm' ? 1_000_000 : 1;
-  return n * scale;
+  const value = n * scale;
+  return Number.isFinite(value) ? value : null;
 }
 
 export function parseAmount(input: string): Parsed {
@@ -25,15 +26,18 @@ export function parseAmount(input: string): Parsed {
   const rough = ROUGH.test(text);
   const body = text.replace(ROUGH, ' ').replace(/\b(a month|per month|pm|monthly)\b/gi, ' ').trim();
 
-  // "8 to 12k", "8-12k", "R8,000 – R12,000": a trailing k applies to both ends.
+  // "8 to 12k", "8-12k", "R8,000 – R12,000": a trailing k applies to both ends, but only when that leaves the left end
+  // the smaller one. "8000 to 12k" is already in rand, and "999 to 1k" must stay 999, not 999,000.
   const range = /^(.+?)\s*(?:to|-|–|—)\s*(.+)$/i.exec(body);
   if (range) {
+    const left = range[1]!.trim();
     const right = range[2]!.trim();
     const suffix = /[km]$/i.exec(right)?.[0] ?? '';
-    const left = range[1]!.trim();
-    const lo = toNumber(/[km]$/i.test(left) ? left : left + suffix);
+    const scale = suffix.toLowerCase() === 'k' ? 1_000 : suffix ? 1_000_000 : 1;
+    const bare = toNumber(left);
     const hi = toNumber(right);
-    if (lo === null || hi === null) return { ok: false, error: 'Use numbers, like 8000 or 8k to 12k' };
+    if (bare === null || hi === null) return { ok: false, error: 'Use numbers, like 8000 or 8k to 12k' };
+    const lo = /[km]$/i.test(left) || suffix === '' || bare * scale > hi ? bare : bare * scale;
     if (lo > hi) return { ok: false, error: 'The first amount should be the lower one' };
     return { ok: true, low: lo, high: hi, rough: true };
   }

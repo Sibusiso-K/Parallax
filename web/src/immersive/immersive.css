@@ -1,0 +1,190 @@
+/* Explore: the photoreal courtyard with its context panel (design/photoreal-execution-v1/03-integrated-explore.png).
+   Ivory surfaces, lavender selection, Instrument Serif headings, Geist interface, Geist Mono figures.
+   Every selector is scoped to .world so this stylesheet cannot restyle the rest of the app. */
+.world {
+  --ivory: #fbf9f4; --paper: #ffffff; --ink: #1d1b22; --mute: #5f5b66; --line: #e7e2d8;
+  --lav: #ebe6ff; --lav-edge: #b7aaf0; --lav-ink: #33296f; --amber: #e39b2f; --warn-bg: #fff3df; --neg: #a3302a;
+  --A: #3f6fd8; --B: #d9825f; --C: #7a5cc7;
+  --glass: rgba(255, 253, 248, 0.86); --edge: rgba(255, 255, 255, 0.9);
+  position: relative; color: var(--ink); background: var(--ivory);
+  font-family: 'Geist Variable', 'Geist', sans-serif; font-size: 14.5px; line-height: 1.45;
+  display: grid; grid-template-columns: minmax(0, 1fr) 384px; gap: 16px; padding: 16px; min-height: 100dvh;
+}
+.world * { box-sizing: border-box; }
+.world.world--embedded { padding: 0; min-height: calc(100dvh - 120px); background: transparent; }
+.world :focus-visible { outline: 2px solid var(--lav-ink); outline-offset: 2px; border-radius: 10px; }
+.world button { font: inherit; color: inherit; }
+.world .glass { background: var(--glass); border: 1px solid var(--edge); backdrop-filter: blur(14px); border-radius: 18px; box-shadow: 0 14px 40px rgba(40, 30, 20, 0.14); }
+.world .mono, .world .figure span { font-family: 'Geist Mono Variable', 'Geist Mono', monospace; font-variant-numeric: tabular-nums; }
+.world .muted { color: var(--mute); } .world .small { font-size: 12.5px; }
+.world .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---- the stage ---- */
+.world .stage { position: relative; min-height: 640px; border-radius: 24px; overflow: hidden; background: #cfc8bd; isolation: isolate; }
+.world .stage__view { position: absolute; inset: 0; }
+.world .stage__view canvas { display: block; touch-action: none; }
+.world .stage__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 0.7s ease; z-index: 0; }
+.world .stage__poster.is-hidden { opacity: 0; pointer-events: none; }
+.world .stage__view > div { z-index: 1; }
+.world .stage__status { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; margin: 0; max-width: 440px; text-align: center; padding: 10px 16px; border-radius: 14px; background: rgba(255, 253, 248, 0.88); font-size: 13px; }
+.world .stage__status--warn { top: auto; bottom: 150px; transform: translateX(-50%); }
+
+.world .stage__top { position: absolute; top: 14px; left: 14px; right: 14px; z-index: 4; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; pointer-events: none; }
+.world .stage__top > * { pointer-events: auto; }
+.world .placecard { display: grid; gap: 4px; padding: 12px 14px; background: rgba(26, 24, 22, 0.58); border-color: rgba(255, 255, 255, 0.14); color: #fff; max-width: 560px; }
+.world .placecard b { font-size: 17px; font-weight: 600; letter-spacing: 0.005em; }
+.world .placecard > span { font-size: 13px; color: rgba(255, 255, 255, 0.78); }
+.world .paths { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.world .pathchip { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 4px 12px 4px 5px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 13px; cursor: pointer; }
+.world .pathchip b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, 0.92); color: var(--ink); font-size: 12px; }
+.world .pathchip[aria-selected='true'] { background: var(--lav); color: var(--lav-ink); border-color: var(--lav-edge); }
+.world .pathchip[aria-selected='true'] b { background: var(--lav-ink); color: #fff; }
+.world .pathchip:disabled { opacity: 0.5; cursor: default; }
+.world .modes { display: flex; padding: 4px; gap: 2px; border-radius: 999px; }
+.world .modes button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: none; cursor: pointer; font-size: 13px; }
+.world .modes button[aria-pressed='true'] { background: var(--lav); color: var(--lav-ink); font-weight: 600; }
+.world .modes button:disabled { color: #9c97a3; cursor: not-allowed; }
+
+.world .stage__bottom { position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 4; display: grid; gap: 8px; padding: 10px 16px 12px; }
+.world .places, .world .months { display: flex; align-items: center; gap: 8px; }
+.world .places { flex-wrap: wrap; row-gap: 6px; }
+.world .rowlabel { min-width: 104px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.world .places button { min-height: 36px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line); background: #f3f0ea; cursor: pointer; font-size: 13px; }
+.world .places button[aria-pressed='true'] { background: var(--lav); border-color: var(--lav-edge); color: var(--lav-ink); font-weight: 600; }
+.world .places button:disabled { opacity: 0.55; cursor: default; }
+.world .places .hint { margin-left: auto; font-size: 12.5px; color: var(--mute); white-space: nowrap; }
+.world .months__track { position: relative; flex: 1; padding-bottom: 14px; }
+.world .months__track input[type='range'] { width: 100%; min-height: 28px; accent-color: var(--lav-ink); margin: 0; }
+.world .months__ticks { position: absolute; left: 8px; right: 8px; bottom: 0; height: 14px; }
+.world .months__ticks span { position: absolute; transform: translateX(-50%); font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.world .object-tag { white-space: nowrap; padding: 5px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.95); border: 1px solid var(--lav-edge); color: var(--lav-ink); font: 600 12.5px 'Geist Variable', sans-serif; box-shadow: 0 6px 18px rgba(40, 30, 80, 0.18); }
+.world .object-tag::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #8e7cf0; vertical-align: 1px; }
+
+/* ---- the context panel ---- */
+/* The panel scrolls inside itself, so the room keeps the height of the screen. Letting it grow to its full content
+   stretched the room to about 1,240px on a 900px screen and pushed the place and month controls out of view. */
+.world .panel { display: flex; flex-direction: column; gap: 14px; padding: 22px 20px 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 24px; max-height: calc(100dvh - 32px); overflow: auto; }
+.world.world--embedded .panel { max-height: calc(100dvh - 140px); position: sticky; top: 120px; }
+.world .panel__h { margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 34px; line-height: 1.02; letter-spacing: -0.01em; }
+.world .panel__h3 { margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 26px; line-height: 1.1; }
+.world .panel__sub { margin: -6px 0 0; color: var(--mute); }
+.world .note { margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--lav); color: var(--lav-ink); font-size: 12.5px; }
+.world .switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 8px 4px; border: 0; background: none; cursor: pointer; text-align: left; font-weight: 600; }
+.world .switch small { display: block; font-weight: 400; color: var(--mute); font-size: 12.5px; }
+.world .switch i { flex: none; position: relative; width: 46px; height: 26px; border-radius: 999px; background: #d9d4cc; transition: background 0.2s; }
+.world .switch i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.2s; }
+.world .switch.is-on i { background: var(--amber); }
+.world .switch.is-on i::after { transform: translateX(20px); }
+.world .switch:disabled { opacity: 0.5; cursor: default; }
+
+.world .evidence { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: #fffdf9; }
+.world .evidence h3 { margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 22px; }
+.world .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
+.world .figure { display: grid; gap: 2px; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; min-height: 44px; }
+.world .figure small { font-size: 12.5px; color: var(--mute); }
+.world .figure span { font-size: 24px; font-weight: 700; line-height: 1.15; }
+.world .figure--stress { border-color: #f0c9c5; background: #fff8f7; }
+.world .figure--stress span { color: var(--neg); }
+.world .figure--inline { display: inline-grid; min-height: 32px; padding: 2px 9px; margin: 2px 0; vertical-align: middle; border-radius: 10px; }
+.world .figure--inline span { font-size: 14px; }
+.world .caution { display: flex; gap: 10px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-bg); font-size: 13px; }
+.world .caution::before { content: '⚠'; flex: none; font-size: 18px; line-height: 1; color: #b46a00; }
+.world .caution b { color: #7a3d00; }
+.world .minor { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.world .minor dt { color: var(--mute); } .world .minor dd { margin: 0; }
+.world .calc { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--lav-edge); border-radius: 12px; background: var(--lav); color: var(--lav-ink); font-weight: 600; cursor: pointer; }
+.world .rule { margin: 0; font-size: 12.5px; color: var(--mute); }
+.world .linkish { background: none; border: 0; padding: 0 2px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 32px; }
+.world .neg { color: var(--neg); font-weight: 600; }
+.world .table summary, .world .trace summary, .world .drawer summary { cursor: pointer; font-size: 13px; color: var(--mute); min-height: 40px; display: flex; align-items: center; }
+.world .table table { width: 100%; font-size: 12.5px; border-collapse: collapse; max-height: 260px; display: block; overflow: auto; }
+.world .table td, .world .table th { padding: 3px 8px; text-align: right; } .world .table td:first-child, .world .table th:first-child { text-align: left; }
+.world .table .is-sel { background: var(--lav); }
+
+.world .object { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--lav-edge); border-radius: 18px; background: #fbfaff; }
+.world .object p { margin: 0; }
+.world .object__head { display: flex; align-items: center; gap: 8px; }
+.world .object__head b { font-size: 16px; }
+.world .object__head .x { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 18px; }
+.world .assumptions { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+.world .assumptions li { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.world .assumptions li .small { grid-column: 1 / -1; }
+
+.world .chip { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 999px; background: #f3f0ea; border: 1px solid var(--line); }
+.world .chip--btn { cursor: pointer; font-size: 13px; padding: 7px 12px; min-height: 36px; }
+.world .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.world .advisor { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.world .fixture { margin: 0; font-size: 12.5px; padding: 8px 10px; border-radius: 10px; background: #f3f0ea; }
+.world .answers { display: grid; gap: 10px; } .world .working { color: var(--mute); margin: 0; }
+.world .answer { background: #fbfaf7; border-radius: 16px; padding: 12px; border: 1px solid var(--line); }
+.world .answer p { margin: 0 0 6px; }
+.world .answer .q { font-size: 12.5px; color: var(--mute); }
+.world .answer--declined, .world .answer--withheld { background: #f6f3fb; }
+.world .code-text { font-style: italic; }
+.world .trace ul { margin: 6px 0; padding-left: 18px; font-size: 12.5px; }
+.world .carry { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.world .ask { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.world .ask input, .world .field input, .world .field textarea, .world .field select { min-height: 44px; border-radius: 12px; border: 1px solid #d6d0c4; padding: 8px 12px; font: inherit; background: #fff; width: 100%; }
+.world .voice { display: grid; gap: 4px; }
+.world .btn { min-height: 44px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 600; cursor: pointer; }
+.world .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.world .btn--ghost { background: #fff; color: var(--ink); border-color: #d6d0c4; }
+.world .btn--round { width: 44px; padding: 0; font-size: 20px; border-radius: 50%; }
+.world .btn--sm { min-height: 36px; font-size: 13px; padding: 4px 12px; }
+.world .btn--talk { width: 100%; min-height: 52px; border: 0; background: #c9bdf7; color: var(--lav-ink); font-size: 16px; }
+.world .panel__foot { display: grid; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); }
+.world .foot__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.world .qual { font-size: 12.5px; background: var(--warn-bg); border-radius: 10px; padding: 8px 10px; margin: 8px 0 0; }
+.world .field { display: grid; gap: 4px; margin: 6px 0; font-size: 13px; color: var(--mute); }
+
+/* ---- overlays: replay, evidence, memo ---- */
+.world .replay { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; width: min(760px, 94vw); padding: 12px 16px; z-index: 30; }
+.world .replay__row { display: grid; grid-template-columns: 44px 44px 44px 1fr auto; gap: 8px; align-items: center; }
+.world .replay__cap { margin: 8px 0 4px; }
+.world .drawer { position: fixed; right: 24px; bottom: 24px; width: min(460px, 94vw); max-height: 72dvh; overflow: auto; padding: 16px; z-index: 40; }
+.world .drawer__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.world .drawer dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px; font-size: 13px; } .world .drawer dt { color: var(--mute); } .world .drawer dd { margin: 0; }
+.world .big { font-size: 20px; margin: 4px 0; }
+.world .assump { font-size: 12px; border-collapse: collapse; width: 100%; } .world .assump td, .world .assump th { padding: 3px 6px; text-align: left; vertical-align: top; } .world .assump .is-stress { background: var(--warn-bg); }
+.world .memo-wrap { position: fixed; inset: 0; z-index: 50; background: rgba(30, 24, 60, 0.32); overflow: auto; display: grid; place-items: start center; padding: 24px 12px; }
+.world .memo { width: min(720px, 100%); padding: 24px; background: #fffdf7; }
+.world .memo__h { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 40px; margin: 0 0 10px; }
+.world .memo__sub { margin: 18px 0 6px; font-size: 14px; }
+.world .memo__actions { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+
+/* ---- phones and narrow windows: the courtyard on top, the panel below ---- */
+@media (max-width: 960px) {
+  .world { grid-template-columns: minmax(0, 1fr); padding: 10px; gap: 12px; }
+  .world.world--embedded { padding: 0; }
+  .world .stage { min-height: 0; height: 62dvh; border-radius: 20px; }
+  .world .panel, .world.world--embedded .panel { max-height: none; position: static; }
+  .world .placecard { max-width: 70vw; padding: 9px 11px; }
+  .world .placecard > span { display: none; }
+  .world .paths { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .world .pathchip { flex: none; min-height: 36px; font-size: 12px; padding-right: 9px; }
+  .world .modes button:not([aria-pressed='true']) { display: none; }
+  .world .stage__bottom { left: 8px; right: 8px; bottom: 8px; padding: 8px 10px; }
+  .world .places { overflow-x: auto; scrollbar-width: none; }
+  .world .places .hint, .world .rowlabel { display: none; }
+  .world .places button { flex: none; min-height: 44px; }
+  .world .months__track input[type='range'] { min-height: 44px; }
+  .world .drawer { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 60dvh; }
+  .world .replay { bottom: 8px; }
+}
+/* On a phone the room's top card cannot hold three path chips and the mode switch on one line. Stack the card full
+   width, let the chips wrap, and let the five places sit in one wrapped row instead of being cut off by the stage. */
+@media (max-width: 480px) {
+  .world .stage__top { flex-wrap: wrap; }
+  .world .placecard { max-width: 100%; flex: 1 1 100%; }
+  .world .modes { margin-left: auto; }
+  .world .paths { flex-wrap: wrap; overflow-x: visible; }
+  .world .places { flex-wrap: wrap; overflow-x: visible; gap: 2px; }
+  .world .places button { padding: 0 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .world * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+@media print {
+  .world { display: block; background: #fff; padding: 0; }
+  .world > *:not(.memo-wrap), .world .no-print { display: none !important; }
+  .world .memo-wrap { position: static; background: none; padding: 0; overflow: visible; display: block; }
+  .world .memo { box-shadow: none; border: 0; width: 100%; background: #fff; backdrop-filter: none; }
+}

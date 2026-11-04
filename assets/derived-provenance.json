@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "note": "Derived runtime files served from web/public. Sources and licences: assets/provenance.json.",
+  "licence": "CC0-1.0 sources; derived files carry no extra restriction",
+  "files": [
+    {
+      "path": "web/public/worlds/courtyard-v1/environment.glb",
+      "bytes": 19652000,
+      "sha256": "e75f450e1d1bcfa663fe49ecf82946189a457505bebb546dd970ddd57fbb5624",
+      "how": "Built by assets/blender/build_courtyard.py (Blender 5.2.3) from the CC0 Poly Haven sources in assets/provenance.json; textures re-encoded at 1K JPEG; concrete and deck colour maps toned (derived_diffuse)."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/manifest.json",
+      "bytes": 11500,
+      "sha256": "c0400cc1cc2135992e88773ccce3eedd9227d0de6f7d2adb4c41681414ab25bd",
+      "how": "Written by assets/blender/build_courtyard.py alongside environment.glb."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/joburg_2k.hdr",
+      "bytes": 6099369,
+      "sha256": "d906ad6158a3bb9571ec82d238cdad7390211040aea506b3670b52475ad69737",
+      "how": "Unchanged copy of polyhaven sunset_jhbcentral 2K HDR (CC0)."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/joburg_bg.jpg",
+      "bytes": 903203,
+      "sha256": "5d1ebec1a514804834c7a4de019761a7324490cc0a2d52f356e18195e6dd2e03",
+      "how": "polyhaven sunset_jhbcentral tonemapped JPG (CC0), scaled 8192x4096 -> 4096x2048 with ffmpeg 9.0.2 lanczos, -q:v 3."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/stills/spawn.jpg",
+      "bytes": 142878,
+      "sha256": "0c0092c477477846f38d89e4d98f16d876001805f94b51ca0391bd8150d5cb2b",
+      "how": "Cycles CPU render (32 samples, denoised, AgX) of place spawn from courtyard.blend, converted with ffmpeg -q:v 4."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/stills/offer.jpg",
+      "bytes": 102591,
+      "sha256": "b7c3666cfa808889bf82fe11acf83e2df5e04a9fda188570cb2ec7ec14bc560c",
+      "how": "Cycles CPU render (32 samples, denoised, AgX) of place offer from courtyard.blend, converted with ffmpeg -q:v 4."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/stills/intake.jpg",
+      "bytes": 92962,
+      "sha256": "c9ae6148994eb0523451ed34c2cff4ff8f4fb3186b14f1e433d29e956a78189b",
+      "how": "Cycles CPU render (32 samples, denoised, AgX) of place intake from courtyard.blend, converted with ffmpeg -q:v 4."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/stills/bridge.jpg",
+      "bytes": 118985,
+      "sha256": "cb204d248a5b25fd5d62a2142d2bd7adc1894219d5f84b9e062046b79db740e3",
+      "how": "Cycles CPU render (32 samples, denoised, AgX) of place bridge from courtyard.blend, converted with ffmpeg -q:v 4."
+    },
+    {
+      "path": "web/public/worlds/courtyard-v1/stills/memo.jpg",
+      "bytes": 85916,
+      "sha256": "ec8305610e676e01238c8a039447e2f7f294a3186dc311ff01710df15526fff9",
+      "how": "Cycles CPU render (32 samples, denoised, AgX) of place memo from courtyard.blend, converted with ffmpeg -q:v 4."
+    }
+  ]
+}
