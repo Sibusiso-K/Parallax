@@ -21,6 +21,7 @@ import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailabl
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
 import { exploreSession } from './session-adapter';
 import { OBJECT_IDS, WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
+import { buildReadout } from './courtyard/readout';
 import type { WalkHandle } from './courtyard/WalkCamera';
 import { applyDressing, type SceneDressing } from '../../../shared/scene/dressing';
 
@@ -485,6 +486,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
   const focusInfo = focus && manifest ? manifest.objects[focus] : null;
   const tickAt = (m: number) => `${((m - 1) / 35) * 100}%`;
+  const readout = useMemo(() => buildReadout(snapshot, shownMonth), [shownMonth, snapshot]);
   const lastAnswer = answers.at(-1);
   const heardAnswer = lastAnswer && lastAnswer.snapshotKey === snapshot.key && lastAnswer.month === shownMonth ? answerTranscript(lastAnswer) : null;
   const objectLabel = (id: string) => manifest?.objects[id as ObjectId]?.label ?? id;
@@ -506,6 +508,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 onPlaceNear={setPlace}
                 people={people}
                 paused={recording}
+                readout={readout}
                 selected={focus}
                 hovered={hoverObject}
                 onHover={setHoverObject}

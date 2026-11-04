@@ -3,7 +3,10 @@ import { BakeShadows, Html, useGLTF } from '@react-three/drei';
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import { Ambience } from './Ambience';
+import { dressEnvironment } from './dressing';
 import PeoplePreview from './PeoplePreview';
+import type { RoomReadout } from './readout';
 import { WalkCamera, WalkControls, type WalkHandle } from './WalkCamera';
 import { OBJECT_IDS, WORLD_BASE, objectForNode, skyRotationY, type CourtyardManifest, type ObjectId, type PlaceId } from './manifest';
 
@@ -24,6 +27,8 @@ export interface CourtyardProps {
   people: boolean;
   /** Stops drawing while something else needs the machine, such as a reel recording. */
   paused: boolean;
+  /** What the objects in the room show, from the snapshot on screen. */
+  readout: RoomReadout;
   selected: ObjectId | null;
   hovered: ObjectId | null;
   onHover: (id: ObjectId | null) => void;
@@ -67,8 +72,9 @@ export default function Courtyard(p: CourtyardProps) {
     >
       <Suspense fallback={null}>
         <Sky manifest={p.manifest} />
-        <Environment manifest={p.manifest} selected={p.selected} hovered={p.hovered ?? (p.walk ? near : null)} onHover={p.onHover} onSelect={(id) => (p.walk ? p.walkHandle.current?.inspect(id) : p.onSelect(id))} />
+        <Environment manifest={p.manifest} reduced={p.reduced} selected={p.selected} hovered={p.hovered ?? (p.walk ? near : null)} onHover={p.onHover} onSelect={(id) => (p.walk ? p.walkHandle.current?.inspect(id) : p.onSelect(id))} />
         {p.people && <PeoplePreview reduced={p.reduced} selected={p.selected} />}
+        <Ambience manifest={p.manifest} readout={p.readout} selected={p.selected} reduced={p.reduced} lowTier={p.lowTier} />
         {/* Sun and architecture never move, so the shadow map is drawn once instead of every frame. */}
         <BakeShadows />
         <Ready onReady={p.onReady} />
@@ -186,12 +192,14 @@ function instanceRepeats(root: THREE.Object3D) {
 
 function Environment({
   manifest,
+  reduced,
   selected,
   hovered,
   onHover,
   onSelect,
 }: {
   manifest: CourtyardManifest;
+  reduced: boolean;
   selected: ObjectId | null;
   hovered: ObjectId | null;
   onHover: (id: ObjectId | null) => void;
@@ -208,6 +216,7 @@ function Environment({
   }, [manifest, scene]);
 
   useLayoutEffect(() => {
+    dressEnvironment(scene, reduced);
     scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -226,7 +235,7 @@ function Environment({
       });
     }
     instanceRepeats(scene);
-  }, [interactive, scene]);
+  }, [interactive, reduced, scene]);
 
   useEffect(() => {
     for (const [id, node] of interactive) {

@@ -25,7 +25,7 @@ export function buildReelPlan(snapshot: RoomSnapshot, month: number, object: Sto
   const money = formatRand;
   const stressed = snapshot.ref.setback !== null;
   const cash = stressed
-    ? `At the end of month ${month}, baseline cash is ${money(baseline.cash)} and cash with the selected stress is ${money(row.cash)}.`
+    ? `At the end of month ${month}, baseline cash is ${money(baseline.cash)} and with the late payment it is ${money(row.cash)}.`
     : `At the end of month ${month}, baseline cash is ${money(row.cash)}.`;
   const scenes: ReelPlan['scenes'][number][] = [
     { kind: 'context', durationSeconds: 3, text: `${label ?? labels[object]} · ${snapshot.pathName} · ${snapshot.ref.case} case` },
