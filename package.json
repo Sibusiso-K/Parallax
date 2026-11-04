@@ -13,7 +13,8 @@
     "test": "vitest run",
     "stress": "vitest run stress",
     "preview": "vite preview",
-    "eval:live": "vitest run --config vitest.live.config.ts"
+    "eval:live": "vitest run --config vitest.live.config.ts",
+    "eval:summary": "node evals/summarise.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.19.2",
