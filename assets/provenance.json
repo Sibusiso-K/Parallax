@@ -1,5 +1,15 @@
 {
   "schemaVersion": 1,
+  "demoPortraits": {
+    "attribution": "Muse Image, as recorded in the importing commit. No generation receipt or exact model version is recorded here.",
+    "evidence": "git commit 3a9f37b87aff9106b62c6a5e09d6c7264d70c976, 2026-11-02: The Muse Image portraits are served from web/public/avatars.",
+    "checkedOn": "2026-11-04",
+    "files": [
+      { "path": "web/public/avatars/A.png", "sha256": "5850d59478fd46b5bbbcdd0252940d426c82157dbe58bc8e7649aed8dc3cc506" },
+      { "path": "web/public/avatars/B.png", "sha256": "e3500f1f0eb4b0804a2f30f8a1646b0c524268fb371ac82007a2490e04b93790" },
+      { "path": "web/public/avatars/C.png", "sha256": "4cf73deaa5a7b5d2366707755ec6512d1b2a81c8f1dd8196d793413a8d24502d" }
+    ]
+  },
   "approval": "User approved groups A (courtyard), B (people tools) and C (walking physics) in chat, 2026-11-02.",
   "files": [
     {

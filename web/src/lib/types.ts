@@ -20,6 +20,7 @@ export interface PathCard {
   startingCash: number;
   assumptions: Assumption[];
   avatarUrl?: string;
+  setbacks?: import("../../../shared/engine/analysis").SetbackId[];
 }
 
 export interface MonthRow {

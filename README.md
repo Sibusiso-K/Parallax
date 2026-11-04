@@ -1,7 +1,7 @@
 # Parallax
 
 Rehearse a business decision before you bet the business on it. A founder describes a choice in their own words: take
-a big contract, hire, or raise prices. Parallax reads the figures, builds three possible paths, and runs 36 months of
+a big contract, hire, or raise prices. Parallax reads the figures, adapts three template paths to them, and runs 36 months of
 cash on each one. Every figure is computed in code, never by a model. The founder can stress-test each path, question
 the founder they could become on it, and print a decision memo.
 
@@ -14,7 +14,7 @@ Parallax is a reflection aid, not financial advice. It is for people aged 18 and
 Everything here was built during the hackathon, between 29 Oct and 4 Nov 2026. The repository's first commit (20 Oct)
 holds only a `.gitignore`.
 
-- **Meta models, live in production:**
+- **Meta model integrations, when configured:**
   - Muse Spark (`muse-spark-1.3`, falling back to `muse-spark-1.2`) reads the founder's story into figures, each with
     the words it came from.
   - Muse Spark answers as each future self, from the founder's own story and that path's figures
@@ -25,7 +25,7 @@ holds only a `.gitignore`.
     may suggest what to look at next (a month, the late payment, an object, another path), and each suggestion only
     moves the view.
   - Muse Voice Transcribe turns **Speak instead** into text, and lets the founder ask the room out loud.
-  - Muse Image made the demo founder's three portraits.
+  - The importing commit attributes the three demo portraits to Muse Image. File hashes and the evidence limit are in `assets/provenance.json`.
 - **No model produces a figure.** Every number comes from the cash engine in `shared/engine/`, and `shared/guard/`
   keeps figures out of model replies. The room's advisor is checked sentence by sentence, and the browser checks each
   figure again against its own engine run, withholding the answer if any figure differs.
@@ -41,7 +41,7 @@ holds only a `.gitignore`.
 
 ## Using it for the first time
 
-1. Open the app, tick **I am 18 or older**, and press **Begin**.
+1. Open the app, tick **I am 18 or older**, and press **Tell my own story** or **Try the demo**.
 2. **Tell it your decision.** Type it the way you would tell a cofounder: what the business sells and spends each
    month, the cash in the bank, and the decision on the table. **Speak instead** records up to 60 seconds and turns it
    into text you can correct. To see a full run straight away, press **Use the demo story** (a fictional founder).
@@ -62,7 +62,7 @@ stored in Parallax's Supabase database under a private code that only your brows
 lets each request reach only its own row (`supabase/migrations/`). With no database configured, the copy stays in
 your browser instead.
 
-**Export JSON** in the sidebar downloads the session. **Delete everything** erases it, the saved copy included, and
+**Export (JSON)** under **Tools** downloads the session. **Delete everything** erases it, the saved copy included, and
 gives the browser a new code.
 
 ## Running it locally
@@ -78,7 +78,7 @@ Open http://localhost:5173. The dev server also serves `/api/*` from the same ha
 the Vercel CLI.
 
 With no settings, the app runs in **demo mode**: it reads only the demo story, and the mic returns the demo text. This
-mode makes no network calls.
+mode makes no model calls. The browser still calls the app's API routes.
 
 ### Connecting the Meta models (optional)
 
@@ -152,7 +152,7 @@ Open `/?world` for the 3D demo room on its own. Add `?people` to see the draft c
 
 ## Known limits
 
-- The default assumptions in `shared/defaults/za.json` are placeholders, not sourced figures. The app marks each one.
+- The simulation defaults in `shared/defaults/za.json` are dated estimates, not business benchmarks. Official wage and VAT references are recorded separately and are not used as business costs or tax calculations.
 - There are no accounts. A saved decision belongs to one browser's private code.
 - Without a Meta key, the chat and the room's advisor use scripted answers, and the app says so.
 - The characters behind `?people` are drafts, not photoreal.

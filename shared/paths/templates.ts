@@ -4,8 +4,8 @@ import type { Assumption, PathInput } from '../engine/simulate.js';
 import type { Figure, Profile } from '../profile/profile.js';
 
 // Template paths for the three founder decisions (FEATURES.md F6, SCOPE.md §2): take on a big contract, make a hire,
-// raise prices. Each gives three genuinely different paths. They load when the path-planner agent is not available,
-// and are the fallback when it fails. Assumption IDs are stable per path (A1, B3 ...) so future selves can cite them.
+// raise prices. Each gives three template paths adapted to the founder's figures and priced by the cash engine.
+// Assumption IDs are stable per path (A1, B3 ...) so future selves can cite them.
 
 export interface PathCard extends PathInput {
   letter: 'A' | 'B' | 'C';

@@ -12,7 +12,7 @@ const HOW_TO: [string, string][] = [
   ["Tell", "Type or say your decision, like you'd tell a cofounder."],
   ["Check", "Fix any figure it got wrong."],
   ["See three futures", "36 months of cash on each path, computed in code."],
-  ["Step inside and ask", "Walk into each future and question the founder you'd become."],
+  ["Explore and ask", "Question each future. Contract decisions also open in a 3D room."],
 ];
 
 /**
@@ -29,7 +29,8 @@ function ModelNotes() {
     };
   }, []);
   const meta = !!(health?.modelReady || health?.voiceReady);
-  const toMeta = meta ? " Meta's Model API reads it too, and keeps nothing for Parallax." : "";
+  const toMeta = meta ? " Enabled model features send the relevant story, question or recording to Meta's Model API." : "";
+  if (health === null) return <div className="note" role="status">Checking model and saving settings.</div>;
   const privacy = health?.savingReady ? (
     <div className="note">
       <b>Saved privately</b>
@@ -38,7 +39,7 @@ function ModelNotes() {
   ) : (
     <div className="note">
       <b>Kept on this device</b>
-      <span>The server keeps nothing; this browser keeps a copy. Delete everything erases it.{toMeta}</span>
+      <span>Server-side decision saving is off. This browser keeps a copy; Delete everything erases that copy.{toMeta}</span>
     </div>
   );
   if (!meta) {
@@ -152,7 +153,7 @@ export function StartScreen() {
               Tell my own story
             </Button>
           </div>
-          <p className="start-sub">The demo is a fictional caterer weighing a big contract. About two minutes.</p>
+          <p className="start-sub">The demo is a fictional caterer weighing a big contract.</p>
         </div>
         <div className="hero-art" aria-hidden="true" ref={art}>
           <span className="hero-orbit o1" />
@@ -353,8 +354,8 @@ export function HeardScreen() {
           <DecisionStrip />
           <FieldCards />
           <p className="notice small">
-            <Src kind="placeholder" /> Some numbers behind the futures are placeholders, such as cost shares and setback sizes. Change
-            them any time under Tools.
+            <Src kind="placeholder" /> Defaults are estimates, not South African business averages. Review cost assumptions under Tools.
+            Setback sizes are fixed rehearsal assumptions.
           </p>
         </>
       )}

@@ -3,7 +3,7 @@ import { FIELD_LABELS } from "@/lib/parallax-api";
 import { useParallax, type Letter } from "@/lib/parallax-store";
 import { formatField, formatMoney, memoQuestion } from "@/lib/format";
 import type { FieldKey, PathCard } from "@/lib/types";
-import { pathFigures, type Figures } from "@/lib/stress";
+import { decisionSetback, pathFigures, type Figures } from "@/lib/stress";
 import { Avatar, Badge, Button, NoPaths, Src, type Kind } from "./shared";
 import { RangeBar, domainOf } from "./charts";
 import { StepNav } from "./StepNav";
@@ -12,7 +12,7 @@ const end = (a: number[]) => a[a.length - 1] ?? 0;
 
 /** The three paths side by side, with the comfort check beside them. */
 export function CompareScreen() {
-  const { paths, comfort, bothering, set, go } = useParallax();
+  const { paths, fields, comfort, bothering, set, go } = useParallax();
   const figures = useMemo(() => paths.map((p) => pathFigures(p)), [paths]);
   if (paths.length === 0) return <NoPaths />;
   const domain = domainOf(figures);
@@ -40,16 +40,20 @@ export function CompareScreen() {
       ),
     },
     {
-      label: "Lowest, with a late payment",
-      cell: (_, f) => (
+      label: "Lowest, with the setback shown",
+      cell: (p, f) => {
+        const setback = decisionSetback(p, f, fields.decisionType);
+        return (
         <>
-          <div className="v">{formatMoney(f.late.lowest.cash)}</div>
+          <div className="v">{formatMoney(setback.lowest.cash)}</div>
+          <div className="s">{setback.name}</div>
           <div className="s">
-            Month {f.late.lowest.month} ·{" "}
-            {f.late.runsOut ? <span className="chipwarn">runs out in month {f.late.runsOut}</span> : <span className="chipok">stays above zero</span>}
+            Month {setback.lowest.month} ·{" "}
+            {setback.runsOut ? <span className="chipwarn">runs out in month {setback.runsOut}</span> : <span className="chipok">never below zero</span>}
           </div>
         </>
-      ),
+        );
+      },
     },
     {
       label: "Runs out, bad case",
@@ -65,17 +69,6 @@ export function CompareScreen() {
             <div className="s">No case runs out</div>
           </>
         ),
-    },
-    {
-      label: "Worst setback",
-      cell: (_, f) => (
-        <>
-          <div className="t">{f.worst.name}</div>
-          <div className="s">
-            Lowest cash {formatMoney(f.worst.lowest.cash)}, month {f.worst.lowest.month}
-          </div>
-        </>
-      ),
     },
   ];
 
@@ -165,7 +158,7 @@ export function CompareScreen() {
             rows={4}
             value={bothering}
             onChange={(e) => set({ bothering: e.target.value })}
-            placeholder="Whether the client will really pay on 30-day terms."
+            placeholder={fields.decisionType === "hire" ? "Whether extra sales will cover the new wage." : fields.decisionType === "pricing" ? "How many customers might leave after the price rise." : "Whether the client will pay on the agreed terms."}
           />
           <StepNav
             onNext={() => {
@@ -216,12 +209,7 @@ export function SummaryScreen() {
     return { k, text: `${FIELD_LABELS[k]}: ${shown}`, kind };
   });
   const placeholders = Array.from(new Set(paths.flatMap((p) => p.assumptions.filter((a) => a.source === "template").map((a) => a.label))));
-  const late = paths.map((p, i) => {
-    const f = figures[i]!;
-    return `Path ${p.letter} bottoms at ${formatMoney(f.late.lowest.cash)} in month ${f.late.lowest.month}${
-      f.late.runsOut ? ", and runs out of cash." : ", and stays above zero."
-    }`;
-  });
+  const setbacks = paths.map((p, i) => decisionSetback(p, figures[i]!, fields.decisionType));
 
   return (
     <div className="memowrap">
@@ -260,7 +248,7 @@ export function SummaryScreen() {
                 <th className="n">Month 36, likely</th>
                 <th className="n">Month 36, good</th>
                 <th className="n">Lowest, likely</th>
-                <th className="n">Lowest, 2-month late payment</th>
+                <th className="n">Lowest, with the setback shown</th>
               </tr>
             </thead>
             <tbody>
@@ -286,11 +274,11 @@ export function SummaryScreen() {
                       {formatMoney(f.lowestLikely.cash)}
                       <div className="psub">month {f.lowestLikely.month}</div>
                     </td>
-                    <td className="n" data-label="Lowest, 2-month late payment">
-                      {formatMoney(f.late.lowest.cash)}
+                    <td className="n" data-label={`Lowest, ${setbacks[i]!.name}`}>
+                      {formatMoney(setbacks[i]!.lowest.cash)}
                       <div className="psub">
-                        month {f.late.lowest.month}
-                        {f.late.runsOut ? " · runs out" : ""}
+                        {setbacks[i]!.name}, month {setbacks[i]!.lowest.month}
+                        {setbacks[i]!.runsOut ? " · runs out" : ""}
                       </div>
                     </td>
                   </tr>
@@ -300,8 +288,13 @@ export function SummaryScreen() {
           </table>
         </div>
 
-        <h3>The setback to watch</h3>
-        <p>Late payment: a big client pays two months late, then catches up. {late.join(" ")}</p>
+        <h3>Setbacks to check</h3>
+        <p>For each path, this is the nominated setback with the lowest cash in the likely case. Each test runs on its own.</p>
+        {paths.map((p, i) => {
+          const s = setbacks[i]!;
+          return <p key={p.id}>Path {p.letter}: {s.name}. {s.detail} Lowest cash is {formatMoney(s.lowest.cash)} in month {s.lowest.month}.
+            {s.runsOut ? ` Cash runs out in month ${s.runsOut}.` : " Cash never falls below zero."}</p>;
+        })}
 
         <div className="twocol">
           <div>
@@ -331,7 +324,7 @@ export function SummaryScreen() {
           </>
         )}
         <div className="memo-foot">
-          Avatars are AI-generated illustrations (Muse Image). A reflection aid, not financial advice. One possible future, not a
+          Portraits are illustrations of possible futures, not photographs of the founder. A reflection aid, not financial advice. One possible future, not a
           prediction.
         </div>
       </article>

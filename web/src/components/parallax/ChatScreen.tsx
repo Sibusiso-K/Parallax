@@ -11,14 +11,13 @@ import { StepNav } from "./StepNav";
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
 const end = (a: number[]) => a[a.length - 1] ?? 0;
 
-/** The checks on one reply. A check the code does not run shows as "not run", never as passed. */
-function TraceList({ checks }: { checks: { name: string; ok: boolean | null }[] }) {
+/** Show only checks that ran, including when reading older saved replies. */
+export function TraceList({ checks }: { checks: { name: string; ok: boolean | null }[] }) {
   return (
     <ul>
-      {checks.map((c) => (
+      {checks.filter((c) => typeof c.ok === "boolean").map((c) => (
         <li key={c.name}>
-          {c.ok === null ? "–" : c.ok ? "✓" : "✗"} {c.name}
-          {c.ok === null ? " (not run)" : ""}
+          {c.ok ? "✓" : "✗"} {c.name}
         </li>
       ))}
     </ul>
@@ -172,6 +171,7 @@ export function ChatScreen() {
                     {m.trace && (
                       <div className="trace">
                         <div className="caps">Trace · this reply</div>
+                        <p className="sub">{m.trace.model}</p>
                         <TraceList checks={m.trace.checks} />
                       </div>
                     )}
@@ -232,7 +232,7 @@ export function ChatScreen() {
             <div>
               <h2>Stress test on this path</h2>
               <div className="sub">
-                One setback at a time. Sizes are <Src kind="placeholder" /> except the client's payment terms.
+                One setback at a time. Sizes and timing are fixed <Src kind="placeholder" /> assumptions.
               </div>
             </div>
           </div>
