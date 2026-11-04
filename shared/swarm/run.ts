@@ -72,7 +72,7 @@ export function checkedSources(raw: unknown): Source[] {
         const quote = s.evidence ?? s.quote;
         // A model may shorten a result's URL to its site. One result on that site, or the title it copied, still finds the real page.
         const onSite = [...results.keys()].filter(known => { try { return new URL(known).hostname.replace(/^www\./, '') === new URL(s.url).hostname.replace(/^www\./, ''); } catch { return false; } });
-        const url = results.has(s.url) ? s.url : (s.title ? titles.get(plainWords(s.title)) : undefined) ?? (onSite.length === 1 ? onSite[0] : undefined);
+        const url = results.has(s.url) ? s.url : (s.title ? titles.get(plainWords(s.title)) : undefined) ?? onSite[0];
         const snippets = url ? results.get(url) : undefined;
         if (!quote || !url || !/^https?:\/\//.test(url) || !snippets || (snippets.length > 0 && !snippets.some(text => text.includes(quote)))) continue;
         if (/\.(?:vercel|netlify|pages|github)\.(?:app|dev|io)$/i.test(new URL(url).hostname)) continue;
@@ -167,7 +167,11 @@ export async function runSwarm(req: SwarmRequest, emit: (event: SwarmEvent) => v
             const searchInput = [{ role: 'user', content: 'Search the web once for what a South African small business owner needs to know today: the current SARB repo rate or prime lending rate, the latest food inflation figure, and how late payment hurts small businesses in South Africa. Prefer official sources and major news. Use the search results you get, do not open pages. Then return only JSON {"sources":[{"url":"the full result url","title":"the result title, copied exactly","fact":"one short plain sentence stating the fact","evidence":"the exact number or short phrase as it appears on that page, for example 10.75%"}]} with two or three entries. Never invent anything. These are external context, not business-engine figures.' }];
             trace.context = searchInput; trace.step = 'Searching external sources'; publish(trace);
             const raw = await post('responses', { model: SPARK, stream: false, input: searchInput, tools: [{ type: 'web_search' }], include: ['web_search_call.results'], reasoning: { effort: 'minimal' }, max_output_tokens: 3000 });
-            const cited = checkedSources(raw).slice(0, 4);
+            let cited = checkedSources(raw).slice(0, 4);
+            if (!cited.length && now() - start < 30_000) {
+              trace.step = 'Searching again'; publish(trace);
+              cited = checkedSources(await post('responses', { model: SPARK, stream: false, input: searchInput, tools: [{ type: 'web_search' }], include: ['web_search_call.results'], reasoning: { effort: 'minimal' }, max_output_tokens: 3000 })).slice(0, 4);
+            }
             trace.step = 'Opening the pages to check the quotes'; publish(trace);
             trace.sources = await Promise.all(cited.map(source => source.checked === 'url-in-search-results' ? confirmOnPage(source, fetcher, controller.signal) : source));
             const usage = z.object({ usage: z.object({ input_tokens: z.number().nonnegative(), output_tokens: z.number().nonnegative() }) }).safeParse(raw);

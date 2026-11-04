@@ -16,9 +16,9 @@ export async function reviewRepaint(cfg: MetaConfig, image: string, change: stri
   imageInput.parse(image);
   const prompt = [
     'You are the art director checking one generated photograph before a founder sees it.',
-    'It must not contain words, numbers or logos anywhere, because every figure in this product comes from code and must never appear painted into an image.',
+    'It must not contain words, numbers or logos a person could actually read, because every figure in this product comes from code and must never appear painted into an image. Blurred or illegible marks that no one could read are fine, and do not count as text.',
     `The change that was asked for: ${change}`,
-    'Look closely at paper, screens, boxes and walls. Return JSON only: {"readableText":boolean,"numerals":boolean,"logos":boolean,"changeVisible":boolean,"note":"under 15 words on what you saw"}.',
+    'Look closely at paper, screens, boxes and walls. Return JSON only: {"readableText":boolean,"numerals":boolean,"logos":boolean,"changeVisible":boolean,"note":"under 15 words on what you saw"}. readableText and numerals are true only if you can make out actual words or digits.',
   ].join(' ');
   const result = await providerPost(cfg, '/responses', {
     model: 'muse-spark-1.3', stream: false, reasoning: { effort: 'minimal' }, max_output_tokens: 1400,
