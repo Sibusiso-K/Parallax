@@ -1,0 +1,3 @@
+# Every file under api/ becomes a Vercel Function, tests included, and the Hobby plan allows 12 per deployment.
+# Tests run in CI and locally (npm test); they never need to be deployed.
+api/**/*.test.ts
