@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planRequest, planWithModel, rank, runPlan, searchInCode, type PlanRequest } from './planner.js';
+import { planRequest, planWithModel, rank, runPlan, searchInCode, tradeoffOf, type PlanRequest } from './planner.js';
 import { DEMO_EXTRACTION } from '../intake/fixture.js';
 import { templatePaths } from '../paths/templates.js';
 import { buildProfile } from '../profile/profile.js';
@@ -42,6 +42,16 @@ describe('the planner tools (the engine)', () => {
   it('ranks plans that meet the goal first, then by lowest cash', () => {
     const list = rank([runPlan(req, { path: 'B', contractPercent: 100, pricePercent: 0 }), runPlan(req, { path: 'A', contractPercent: 100, pricePercent: 0 })]);
     expect(list[0]!.path).toBe('A');
+  });
+
+  it('says what each plan gives up, in words and without figures', () => {
+    expect(tradeoffOf(runPlan(req, { path: 'A', contractPercent: 100, pricePercent: 0 }))).toMatch(/nothing changes/);
+    const up = tradeoffOf(runPlan(req, { path: 'A', contractPercent: 100, pricePercent: 10 }));
+    expect(up).toMatch(/customers pay more/);
+    const both = tradeoffOf(runPlan(req, { path: 'B', contractPercent: 50, pricePercent: -5 }));
+    expect(both).toContain('less income from the contract');
+    expect(both).toContain('each sale brings in less');
+    expect(up).not.toMatch(/\d/);
   });
 
   it('searches in code with no model, and every plan it lists really meets the goal', () => {

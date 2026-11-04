@@ -103,6 +103,19 @@ export function rank(list: PlanResult[]): PlanResult[] {
   return unique.sort((a, b) => Number(b.meetsGoal) - Number(a.meetsGoal) || change(a) - change(b) || b.lowestCash - a.lowestCash);
 }
 
+/**
+ * What a plan gives up, in words the code writes from its settings. No figures: the founder sees the cost of each option
+ * next to it, so the plans read as options to weigh, not as a recommendation.
+ */
+export function tradeoffOf(r: PlanResult): string {
+  const parts: string[] = [];
+  if (r.pricePercent > 0) parts.push('customers pay more, so some may buy less');
+  if (r.pricePercent < 0) parts.push('each sale brings in less, to win more of them');
+  if (r.contractPercent < 100) parts.push('less income from the contract');
+  if (r.contractPercent > 100) parts.push('more work, and more to pay out before the client pays');
+  return parts.length ? parts.join('; ') : 'nothing changes: the risk you already carry stays';
+}
+
 /** The first plan per path, in rank order: three different futures rather than three versions of one. */
 export function onePerPath(ranked: PlanResult[]): PlanResult[] {
   const seen = new Set<string>();

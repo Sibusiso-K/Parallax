@@ -741,3 +741,5 @@ button.chip:hover { background: #e6ecf8; }
   .planner-steps > li:nth-child(2) { animation-delay: .08s; } .planner-steps > li:nth-child(3) { animation-delay: .16s; }
   .planner-steps > li:nth-child(4) { animation-delay: .24s; } .planner-steps > li:nth-child(n + 5) { animation-delay: .32s; }
 }
+
+.found-cost { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; }

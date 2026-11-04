@@ -6,7 +6,7 @@ import { useState } from "react";
 import { formatMoney, isMoneyField, parseAmount } from "@/lib/format";
 import { useParallax, type Letter } from "@/lib/parallax-store";
 import type { Lens } from "../../../../shared/engine/compare";
-import { planRequest, searchInCode, type PlanAnswer, type PlanResult } from "../../../../shared/agent/planner";
+import { planRequest, searchInCode, tradeoffOf, type PlanAnswer, type PlanResult } from "../../../../shared/agent/planner";
 import { Badge, Button, cx } from "./shared";
 
 const usual = (v: unknown) => (isMoneyField(v) ? (v.base ?? Math.round((v.low + v.high) / 2)) : 0);
@@ -100,12 +100,14 @@ export function Planner({ lens, onApply }: { lens: Lens; onApply: (l: Lens, path
           </ol>
           {answer.found.length > 0 ? (
             <div className="planner-found">
-              <h3>Plans that meet your goal</h3>
+              <h3>Options that meet your goal</h3>
+              <p className="sub small">Each one has a cost. Weigh them; the choice is yours.</p>
               {answer.found.map((r) => (
                 <div key={`${r.path}${r.contractPercent}${r.pricePercent}`} className="found-row">
                   <span>
                     <Badge letter={r.path} /> <b>{paths.find((p) => p.letter === r.path)?.name}</b>, {settings(r)}. Lowest {formatMoney(r.lowestCash)} in month {r.lowestMonth}; month 36{" "}
                     {formatMoney(r.endCash)}.
+                    <span className="found-cost">Gives up: {tradeoffOf(r)}.</span>
                   </span>
                   <Button
                     size="sm"

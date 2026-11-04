@@ -1,19 +1,21 @@
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { afterAll, describe, expect, it } from 'vitest';
 import { modelConfigOrNull, type MetaConfig } from '../shared/providers/meta.js';
 import { readWithModel } from '../shared/whatif/read.js';
 import { checkIntake, checkRequest } from '../shared/intake/check.js';
 import { answerAsFutureSelf, chatRequest } from '../shared/chat/future-self.js';
 import { boardRequest, moderateBoard } from '../shared/chat/board.js';
-import { planRequest, planWithModel, runPlan } from '../shared/agent/planner.js';
+import { planRequest, planWithModel, runPlan, tradeoffOf } from '../shared/agent/planner.js';
+import { amountsIn } from '../shared/guard/amounts.js';
 import { DEMO_EXTRACTION } from '../shared/intake/fixture.js';
 import { templatePaths } from '../shared/paths/templates.js';
 import { buildProfile } from '../shared/profile/profile.js';
 import { figureTable } from '../shared/engine/analysis.js';
 
 // The live evaluation: fixed cases against the real Muse Spark, each with a pass rule that does not depend on wording.
-// It checks the guarantees the product makes (the right levers, contradictions caught, no figure a model made up, the
-// agent's plans really meeting the goal) and writes the results to evals/RESULTS.md. Run: npm run eval:live.
+// It checks the guarantees the product makes (the right levers, contradictions caught, no rand amount a model made up,
+// the agent's plans really meeting the goal and saying what they cost). Each run is saved to evals/runs/ as its own file;
+// evals/summarise.mjs combines them into evals/RESULTS.md. Run: npm run eval:live, then npm run eval:summary.
 
 const cfg = modelConfigOrNull(process.env);
 const run = cfg ? describe : describe.skip;
@@ -51,11 +53,10 @@ run('live evaluation of the Meta features', () => {
   });
 
   describe('intake self-check', () => {
-    const story = (body: string) => body;
     const cases: [string, string, { key: string; label: string; value: string; quote: string }[], string | null][] = [
       [
         'consistent story',
-        story('I run a bakery in Durban. We sell about R80k a month and rent is R12k a month. We have R60 000 in the bank.'),
+        'I run a bakery in Durban. We sell about R80k a month and rent is R12k a month. We have R60 000 in the bank.',
         [
           { key: 'revenue', label: 'Sales a month', value: 'R80 000', quote: 'We sell about R80k a month' },
           { key: 'overheads', label: 'Rent and running costs a month', value: 'R12 000', quote: 'rent is R12k a month' },
@@ -64,13 +65,13 @@ run('live evaluation of the Meta features', () => {
       ],
       [
         'sales contradict',
-        story('We sell about R80k a month. Rent is R12k a month. Honestly, most months sales are only around R45 000.'),
+        'We sell about R80k a month. Rent is R12k a month. Honestly, most months sales are only around R45 000.',
         [{ key: 'revenue', label: 'Sales a month', value: 'R80 000', quote: 'We sell about R80k a month' }],
         'revenue',
       ],
       [
         'yearly read as monthly',
-        story('Our rent is R144 000 a year. We sell about R70k a month.'),
+        'Our rent is R144 000 a year. We sell about R70k a month.',
         [
           { key: 'overheads', label: 'Rent and running costs a month', value: 'R144 000', quote: 'Our rent is R144 000 a year' },
           { key: 'revenue', label: 'Sales a month', value: 'R70 000', quote: 'We sell about R70k a month' },
@@ -89,19 +90,24 @@ run('live evaluation of the Meta features', () => {
   });
 
   describe('future self and the figure guard', () => {
-    const qs = ['When was cash tightest for you?', 'What would you warn me about?', 'Was it worth it?'];
+    // Each question asks for several figures, so a reply has room to show whether it invents any. A pass needs at least
+    // two rand amounts in the reply, and every one of them must be a figure the engine computed for this path.
+    const qs = [
+      'Walk me through how cash moved: where was the lowest point, and where did it end at month 36?',
+      'When was cash tightest for you, how much was left at that point, and what was cash at month 36?',
+      'What were the cash figures at month 12 and at month 36 in the likely case?',
+    ];
     for (const q of qs) {
       it(`path B: ${q}`, async () => {
         const p = paths[1]!;
         const req = chatRequest.parse({ path: { id: p.id, letter: p.letter, name: p.name, summary: p.summary, startingCash: p.startingCash, assumptions: p.assumptions }, message: q });
         const { value, ms } = await timed(() => answerAsFutureSelf(c, req));
-        // Every rand amount in the final text must be one of the engine's figures for this path.
-        const table = figureTable(p);
-        const engine = new Set(Object.values(table).map((v) => Math.round(Math.abs(v))));
-        const amounts = [...value.text.matchAll(/R\s?([\d][\d ,]*)/g)].map((m) => Number(m[1]!.replace(/[ ,]/g, '')));
+        const engine = new Set(Object.values(figureTable(p)).map((v) => Math.round(Math.abs(v))));
+        const amounts = amountsIn(value.text);
         const stray = amounts.filter((n) => !engine.has(n));
-        const pass = stray.length === 0 && value.text.trim().length > 0;
-        expect(record('Future self + guard', q, pass, `${amounts.length} amounts, ${stray.length} not from the engine; guard: ${value.checks.map((k) => k.type).join(', ') || 'clean'}`, ms)).toBe(true);
+        const pass = amounts.length >= 2 && stray.length === 0;
+        const guard = value.checks.map((k) => k.type).join(', ') || 'clean';
+        expect(record('Future self + guard', q, pass, `${amounts.length} amounts (${amounts.join(', ')}), ${stray.length} not from the engine; guard: ${guard}`, ms)).toBe(true);
       });
     }
   });
@@ -118,29 +124,23 @@ run('live evaluation of the Meta features', () => {
     expect(record('Board moderator', 'warn me', pass, `${value.agree.length} agree, ${value.differ.length} differ, ${value.dropped} dropped for digits`, ms)).toBe(true);
   });
 
-  it('planning agent uses tools and every plan meets the goal', async () => {
+  it('planning agent uses tools, every plan meets the goal, and each plan says what it costs', async () => {
     const req = planRequest.parse({ kind: 'plan', floor: 20000, withLatePayment: true, monthlySales: 90000, paths });
     const { value, ms } = await timed(() => planWithModel(c, req));
-    const pass = value.steps.length > 0 && value.found.every((f) => runPlan(req, f).meetsGoal);
+    const reran = value.found.every((f) => runPlan(req, f).meetsGoal);
+    const costed = value.found.every((f) => tradeoffOf(f).length > 0);
+    const pass = value.steps.length > 0 && value.found.length > 0 && reran && costed;
+    const listed = value.found.map((f) => `${f.path} c${f.contractPercent} p${f.pricePercent}`).join('; ');
     expect(
-      record('Planning agent', 'floor R20 000, late payment', pass, `${value.steps.length} tool calls, ${value.calls} model calls, ${value.found.length} plans found (${value.found.map((f) => `${f.path} c${f.contractPercent} p${f.pricePercent}`).join('; ')})`, ms),
+      record('Planning agent', 'floor R20 000, late payment', pass, `${value.steps.length} tool calls, ${value.calls} model calls, ${value.found.length} plans (${listed})`, ms),
     ).toBe(true);
   });
 });
 
 afterAll(() => {
   if (!cfg || rows.length === 0) return;
-  const passed = rows.filter((r) => r.pass).length;
-  const lines = [
-    '# Live evaluation of the Meta features',
-    '',
-    `Run on ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC against ${cfg.models[0]}: **${passed} of ${rows.length} cases passed.**`,
-    'Each case has a pass rule that does not depend on wording (see `evals/live.eval.ts`). Run it with `npm run eval:live`; it makes real, billed calls.',
-    '',
-    '| Feature | Case | Pass | Detail | Time |',
-    '|---|---|---|---|---|',
-    ...rows.map((r) => `| ${r.feature} | ${r.case.replace(/\|/g, '/')} | ${r.pass ? 'yes' : '**no**'} | ${r.detail.replace(/\|/g, '/')} | ${(r.ms / 1000).toFixed(1)} s |`),
-    '',
-  ];
-  writeFileSync('evals/RESULTS.md', lines.join('\n'));
+  mkdirSync('evals/runs', { recursive: true });
+  const at = new Date().toISOString();
+  const file = `evals/runs/${at.replace(/[:.]/g, '-')}.json`;
+  writeFileSync(file, JSON.stringify({ at, model: cfg.models[0], rows }, null, 2) + '\n');
 });
