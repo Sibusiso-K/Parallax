@@ -230,3 +230,13 @@
   .world .walk-pad button { min-height: 48px; }
   .world .walk-prompt { left: auto; right: 8px; bottom: 135px; transform: none; white-space: normal; max-width: 44%; }
 }
+
+/* The panel leads with the controls: which future, which month, then the question box. */
+.world .panel .paths--panel { margin: 4px 0 12px; }
+.world .panel .pathchip { border-color: var(--line, #d8dce8); background: #fff; color: var(--ink); }
+.world .panel .pathchip b { background: var(--ink); color: #fff; }
+.world .panel .pathchip[aria-selected='true'] { background: var(--lav); color: var(--lav-ink); border-color: var(--lav-edge); }
+.world .panel .months--panel { display: grid; gap: 6px; margin: 0 0 10px; }
+.world .panel .months--panel .rowlabel { display: block; font-size: 14px; }
+.world .panel .room-working { margin-top: 10px; }
+.world .panel .foot__actions--quiet .btn { min-height: 34px; font-size: 12px; }

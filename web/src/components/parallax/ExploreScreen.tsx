@@ -60,8 +60,10 @@ export function ExploreScreen() {
       result?.ok
         ? { session: result.session, initial: { pathId: active, stressed: explore.stressed, month: explore.month }, onSelection, onRevise, founderLabel, dressing: scene, context }
         : null,
-    // The initial view only matters when the room mounts; later selection changes flow out, not back in.
-    [result, onSelection, onRevise, founderLabel, scene, context],
+    // The month and the late-payment lever only matter when the room mounts. The path also flows back in, so the
+    // journey strip can switch the future while the room is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [result, onSelection, onRevise, founderLabel, scene, context, active],
   );
 
   if (paths.length === 0) return <NoPaths />;
