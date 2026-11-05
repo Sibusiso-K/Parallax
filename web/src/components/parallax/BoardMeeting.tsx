@@ -39,7 +39,8 @@ export function BoardMeeting() {
     return () => void (live.current = false);
   }, []);
 
-  const answerOf = (l: Letter, r: Round) => latest.current[l].slice(r.start[l]).find((m) => m.role === "self");
+  // Render passes the current chats; the async send reads the latest value through the ref.
+  const answerOf = (l: Letter, r: Round, src: typeof chats = latest.current) => src[l].slice(r.start[l]).find((m) => m.role === "self");
 
   async function hold(question: string) {
     const q = question.trim();
@@ -124,7 +125,7 @@ export function BoardMeeting() {
               <p className="board-q">“{round.question}”</p>
               <div className="board-seats">
                 {paths.map((p) => {
-                  const a = answerOf(p.letter, round);
+                  const a = answerOf(p.letter, round, chats);
                   return (
                     <article key={p.id} className={cx("seat", `p-${p.letter}`)}>
                       <header>

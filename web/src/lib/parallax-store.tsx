@@ -209,7 +209,10 @@ export interface Resume {
 export function ParallaxProvider({ children }: { children: ReactNode }) {
   const [s, setS] = useState<State>(fresh);
   const ref = useRef(s);
-  ref.current = s;
+  // The ref follows the state after each render commits, not during render. Event handlers and the page-close flush read it.
+  useEffect(() => {
+    ref.current = s;
+  }, [s]);
   // The saved decision, once loaded: offered on the start screen, never applied without the founder's say-so.
   const savedRef = useRef<State | null>(null);
   const [resume, setResume] = useState<Resume | null>(null);
@@ -218,9 +221,9 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
   const [offering, setOffering] = useState(false);
 
   useEffect(() => {
-    let live = true;
+    const token = { live: true };
     void loadSaved().then((raw) => {
-      if (!live) return;
+      if (!token.live) return;
       const restored = restoreFrom(raw);
       savedRef.current = restored;
       if (restored) {
@@ -235,7 +238,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
       setLoaded(true);
     });
     return () => {
-      live = false;
+      token.live = false;
     };
   }, []);
 
