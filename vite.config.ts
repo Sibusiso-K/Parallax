@@ -1,6 +1,5 @@
 import { defineConfig, type Plugin } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
 import { loadEnv } from 'vite';
 import { resolve } from 'node:path';
 
@@ -49,7 +48,7 @@ function devApi(): Plugin {
 // The React app lives in /web; /api holds Vercel Functions; /shared runs on both sides.
 export default defineConfig({
   root: 'web',
-  plugins: [react(), tailwindcss(), devApi()],
+  plugins: [react(), devApi()],
   resolve: { alias: { '@': resolve(process.cwd(), 'web/src') } },
   server: { fs: { allow: ['..'] } },
   build: {
