@@ -21,7 +21,7 @@
     "lint": "oxlint -c .oxlintrc.json api shared web/src evals scripts vite.config.ts vitest.live.config.ts"
   },
   "dependencies": {
-    "@dimforge/rapier3d-compat": "0.19.2",
+    "@dimforge/rapier3d-compat": "0.21.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
@@ -37,7 +37,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.187.0",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.0",
     "oxlint": "^1.91.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
