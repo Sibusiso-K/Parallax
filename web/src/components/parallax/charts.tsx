@@ -131,14 +131,14 @@ export function CashChart({
   return (
     <div ref={box} className="chartbox">
       <svg className="chart" viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Cash in the business over 36 months, path ${letter}`}>
-        {ticks.map((v) => (
-          <g key={v}>
+        {ticks.map((v, i) => (
+          <g key={`${i}-${v}`}>
             <line x1={pad.l} x2={w - pad.r} y1={y(v)} y2={y(v)} stroke={v === 0 ? ZERO : GRID} strokeWidth={v === 0 ? 1.5 : 1} />
             <text className="ax" x={pad.l - 14} y={y(v) + 4} textAnchor="end">{axisLabel(v)}</text>
           </g>
         ))}
-        {months.map((m) => (
-          <text key={m} className="ax" x={x(m)} y={h - 14} textAnchor={m === 0 ? "start" : m === n ? "end" : "middle"}>
+        {months.map((m, i) => (
+          <text key={`${i}-${m}`} className="ax" x={x(m)} y={h - 14} textAnchor={m === 0 ? "start" : m === n ? "end" : "middle"}>
             {m === 0 ? "Today" : m}
           </text>
         ))}
@@ -158,8 +158,8 @@ export function CashChart({
           </g>
         )}
         <circle cx={xs[0]} cy={y(start)} r="6" fill="#fff" stroke={color} strokeWidth="2.5" />
-        {ends.map((e) => (
-          <g key={e.name}>
+        {ends.map((e, i) => (
+          <g key={`${i}-${e.name}`}>
             <text className="flag" x={endX} y={e.at - 6}>{e.name}</text>
             <text className="end" x={endX} y={e.at + 16}>{endText(e.v)}</text>
           </g>

@@ -15,8 +15,9 @@
     "preview": "vite preview",
     "eval:live": "vitest run --config vitest.live.config.ts",
     "eval:summary": "node evals/summarise.mjs",
-    "verify": "npm run typecheck && npm test && npm run build",
-    "smoke": "node scripts/smoke.mjs"
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build",
+    "smoke": "node scripts/smoke.mjs",
+    "lint": "oxlint -c .oxlintrc.json api shared web/src evals scripts vite.config.ts vitest.live.config.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.19.2",
@@ -36,6 +37,7 @@
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.91.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"

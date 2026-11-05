@@ -69,8 +69,8 @@ export function SelfCheck() {
               <b>Worth a look before you go on:</b>
             </p>
             <ul>
-              {state.notes.map((n) => (
-                <li key={n.field + n.message}>
+              {state.notes.map((n, i) => (
+                <li key={`${i}-${n.field}`}>
                   <span className="selfcheck-field">{n.label}</span> {n.message}
                 </li>
               ))}

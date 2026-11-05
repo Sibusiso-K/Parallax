@@ -5,3 +5,9 @@ const AMOUNT = /R\s?(\d{1,3}(?:[ ,]\d{3})+|\d+)(?!\d)/g;
 export function amountsIn(text: string): number[] {
   return [...text.matchAll(AMOUNT)].map((m) => Number(m[1]!.replace(/[ ,]/g, '')));
 }
+
+/** The expected amounts the reply does not state, within a rand of rounding. Empty when the reply answers in full. */
+export function missingAmounts(text: string, expected: number[]): number[] {
+  const said = amountsIn(text);
+  return expected.filter((e) => !said.some((s) => Math.abs(s - e) <= 1));
+}

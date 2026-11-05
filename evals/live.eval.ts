@@ -6,7 +6,7 @@ import { checkIntake, checkRequest } from '../shared/intake/check.js';
 import { answerAsFutureSelf, chatRequest } from '../shared/chat/future-self.js';
 import { boardRequest, moderateBoard } from '../shared/chat/board.js';
 import { planRequest, planWithModel, runPlan, tradeoffOf } from '../shared/agent/planner.js';
-import { amountsIn } from '../shared/guard/amounts.js';
+import { amountsIn, missingAmounts } from '../shared/guard/amounts.js';
 import { DEMO_EXTRACTION } from '../shared/intake/fixture.js';
 import { templatePaths } from '../shared/paths/templates.js';
 import { buildProfile } from '../shared/profile/profile.js';
@@ -90,24 +90,40 @@ run('live evaluation of the Meta features', () => {
   });
 
   describe('future self and the figure guard', () => {
-    // Each question asks for several figures, so a reply has room to show whether it invents any. A pass needs at least
-    // two rand amounts in the reply, and every one of them must be a figure the engine computed for this path.
-    const qs = [
-      'Walk me through how cash moved: where was the lowest point, and where did it end at month 36?',
-      'When was cash tightest for you, how much was left at that point, and what was cash at month 36?',
-      'What were the cash figures at month 12 and at month 36 in the likely case?',
+    // Each question names the engine figures a good answer must state. A pass needs all of them, within a rand of
+    // rounding, and no rand amount in the reply that the engine did not compute for this path. The engine keys are
+    // checked by shared/chat/coverage.test.ts, so this check cannot pass by checking nothing.
+    const p = paths[1]!;
+    const table = figureTable(p);
+    const rand = (key: string) => Math.round(Math.abs(table[`${p.id}.${key}`] ?? NaN));
+    const qs: { q: string; need: string[] }[] = [
+      {
+        q: 'Walk me through how cash moved: where was the lowest point, and where did it end at month 36?',
+        need: ['lowest.likely', 'cash.m36.likely'],
+      },
+      {
+        q: 'When was cash tightest for you, how much was left at that point, and what was cash at month 36?',
+        need: ['lowest.likely', 'cash.m36.likely'],
+      },
+      {
+        q: 'What were the cash figures at month 12 and at month 36 in the likely case?',
+        need: ['cash.m12.likely', 'cash.m36.likely'],
+      },
     ];
-    for (const q of qs) {
+    for (const { q, need } of qs) {
       it(`path B: ${q}`, async () => {
-        const p = paths[1]!;
         const req = chatRequest.parse({ path: { id: p.id, letter: p.letter, name: p.name, summary: p.summary, startingCash: p.startingCash, assumptions: p.assumptions }, message: q });
         const { value, ms } = await timed(() => answerAsFutureSelf(c, req));
-        const engine = new Set(Object.values(figureTable(p)).map((v) => Math.round(Math.abs(v))));
+        const engine = new Set(Object.values(table).map((v) => Math.round(Math.abs(v))));
         const amounts = amountsIn(value.text);
         const stray = amounts.filter((n) => !engine.has(n));
-        const pass = amounts.length >= 2 && stray.length === 0;
+        const expected = need.map(rand);
+        const missing = missingAmounts(value.text, expected);
+        const pass = missing.length === 0 && stray.length === 0 && amounts.length >= 2;
         const guard = value.checks.map((k) => k.type).join(', ') || 'clean';
-        expect(record('Future self + guard', q, pass, `${amounts.length} amounts (${amounts.join(', ')}), ${stray.length} not from the engine; guard: ${guard}`, ms)).toBe(true);
+        expect(
+          record('Future self + guard', q, pass, `states ${expected.length - missing.length} of ${expected.length} asked figures; ${stray.length} not from the engine; ${amounts.length} amounts; guard: ${guard}`, ms),
+        ).toBe(true);
       });
     }
   });

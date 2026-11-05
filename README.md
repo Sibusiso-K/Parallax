@@ -104,10 +104,11 @@ Supabase variables. Row-level security limits each request to its own row.
 
 | Command | What it does | Calls a model? |
 | --- | --- | --- |
+| `npm run lint` | oxlint: React hook rules and correctness rules. Errors fail the build. | No |
 | `npm run typecheck` | TypeScript, strict, across the app, the functions and the evaluation. | No |
 | `npm test` | The offline suite. A guard blocks every network request, so a test cannot spend credits. | No |
 | `npm run stress` | The randomised engine and pipeline suites. Set `STRESS_RUNS=2000` to go harder. | No |
-| `npm run verify` | Typecheck, tests and build, in order. This is what CI runs. | No |
+| `npm run verify` | Lint, typecheck, tests and build, in order. CI runs the same steps. | No |
 | `npm run smoke -- <url>` | Post-deploy checks against a live URL: the page, the bundle, the security headers, the health endpoint, and that paid routes refuse cross-site calls and empty requests before any model call. | No |
 | `npm run eval:live` | The live evaluation of the Meta features: 13 fixed cases against the real models, each with a pass rule that does not depend on wording. | **Yes** (billed; run with the owner's agreement) |
 
