@@ -15,3 +15,6 @@ __pycache__/
 assets/source/
 # Blender working files and derived build output; the runtime exports are copied into web/public on purpose.
 assets/derived/
+
+# The vendored SAM parser ships its build output. The app imports it directly, so it must be tracked.
+!shared/world/vendor/package/dist/
