@@ -1,7 +1,7 @@
 /**
  * Parallax data layer: the ONLY place components get data from.
  * intake → POST /api/intake; paths → shared templates; simulate → shared engine (all figures in code).
- * chat is still a mock until the future-self agents (F10) land; its replies contain no figures.
+ * chat calls /api/chat, with clearly labelled scripted replies when the model is unavailable.
  */
 import { simulate as runEngine } from "../../../shared/engine/simulate";
 import za from "../../../shared/defaults/za.json";
@@ -80,7 +80,7 @@ export const NUMBER_FIELDS: FieldKey[] = ["paymentDays", "priceRisePercent"];
 /** What Parallax asks for when it could not read the story at all. Template fields keep their defaults. */
 const ASK_WHEN_UNREAD: FieldKey[] = ["decisionType", "revenue", "directCosts", "overheads", "payroll", "founderPay", "debtRepayments", "cash"];
 
-// "I don't know" answers use the same defaults the engine uses (shared/defaults/za.json, still placeholders).
+// "I don't know" answers use the same estimated defaults the engine uses (shared/defaults/za.json).
 const fromZa = (f: { low: number; base: number; high: number }) => ({ ...f, quote: "assumed default" });
 export const FIELD_DEFAULTS: Partial<Record<FieldKey, unknown>> = {
   revenue: fromZa(za.monthly.revenue),
@@ -362,7 +362,9 @@ async function* chat(
   }
   if (data?.ok && data.mode === "model" && typeof data.text === "string" && data.text.trim()) {
     yield* typeOut(data.text);
-    const cites = Array.isArray(data.citations) ? data.citations : [];
+    const cites = Array.isArray(data.citations) ? data.citations.filter((c) =>
+      c && typeof c.id === "string" && typeof c.label === "string" && path.assumptions.some((a) => a.id === c.id),
+    ) : [];
     for (const c of cites as { id?: unknown; label?: unknown }[]) {
       if (typeof c?.id === "string" && typeof c.label === "string") yield { type: "citation", citation: { id: c.id, label: c.label } };
     }
@@ -372,11 +374,11 @@ async function* chat(
       trace: {
         model: typeof data.model === "string" ? data.model : "muse-spark",
         checks: [
-          { name: "Figures come from code, not the model", ok: !checks.some((t) => ["scrubbed", "unknown_key", "wrong_path", "bad_value"].includes(t)) },
+          ...(Array.isArray(data.checks) ? [
+            { name: "No unsupported figures flagged by the guard", ok: !checks.some((t) => ["scrubbed", "unknown_key", "wrong_path", "bad_value"].includes(t)) },
+            { name: "No certainty phrases flagged by the guard", ok: !checks.includes("certainty") },
+          ] : []),
           { name: "Cites at least one assumption on this path", ok: cites.length > 0 },
-          { name: "Makes no promises", ok: !checks.includes("certainty") },
-          { name: "Speaks in first person, 36 months on", ok: null },
-          { name: "Does not tell you what to choose", ok: null },
         ],
       },
     };

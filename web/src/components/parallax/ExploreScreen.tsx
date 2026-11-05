@@ -75,15 +75,18 @@ export function ExploreScreen() {
       <section className="screen">
         <div className="pagehead">
           <div className="eyebrow">Explore</div>
-          <h1>The room is for contract decisions, for now</h1>
+          <h1>Explore your three paths</h1>
           <div className="sub">
-            Your decision is “{label}”. Its futures, figures and stress tests are all under Futures and Ask.
+            For “{label}”, compare the cash forecasts under Futures and try the stress tests under Ask.
+            The 3D room uses contract-specific controls.
           </div>
         </div>
         <div className="actions-row">
           <Button variant="primary" onClick={() => go("paths")}>
-            Back to your paths
+            See your paths
           </Button>
+          <Button onClick={() => go("chat")}>Try a stress test</Button>
+          <Button onClick={() => go("compare")}>Compare and write a memo</Button>
         </div>
       </section>
     );

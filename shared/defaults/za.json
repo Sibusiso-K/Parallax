@@ -1,17 +1,29 @@
 {
-  "_note": "PLACEHOLDERS, NOT YET SOURCED. Every value here must be replaced with a sourced South African figure (FEATURES.md F4) before the demo. Used only when the founder says 'I don't know' or a template needs a starting point; shown in the UI as 'assumed' or 'template' with a range.",
+  "_note": "All simulation defaults are estimates for rehearsal, not measured South African business averages. No existing amount is sourced for a specific business. Monthly amounts, cash, caps, setbacks and all template assumptions remain estimates. Official wage, VAT and industry references are recorded under _research for context only. They do not establish this founder's revenue or costs. Estimate metadata applies to every numeric field in the named group, including ranges.",
+  "_research": [
+    { "source": "https://www.gov.za/sites/default/files/gcis_document/202602/54075rg11941gon7083.pdf", "asOf": "2026-03-01", "checkedOn": "2026-11-04", "finding": "National minimum wage is R30.23 per ordinary hour, subject to the notice exceptions. Unknown working hours and employment costs prevent converting it to this business's payroll or hire cost." },
+    { "source": "https://www.sars.gov.za/tax-rates/other-taxes/", "asOf": "2026-02-25", "checkedOn": "2026-11-04", "finding": "Standard VAT is 15%. Registration and the tax basis of founder figures are unknown. The engine does not calculate VAT." },
+    { "source": "https://www.statssa.gov.za/?p=17947", "asOf": "2026-11-04", "finding": "Industry turnover shares do not establish monthly revenue, costs or cash for an unspecified founder. No default is derived from these aggregates." }
+  ],
   "currency": "ZAR",
-  "monthly": {
-    "revenue": { "low": 30000, "base": 60000, "high": 90000, "source": "placeholder" },
-    "directCosts": { "low": 12000, "base": 24000, "high": 36000, "source": "placeholder" },
-    "overheads": { "low": 8000, "base": 12000, "high": 18000, "source": "placeholder" },
-    "payroll": { "low": 0, "base": 15000, "high": 30000, "source": "placeholder" },
-    "founderPay": { "low": 0, "base": 8000, "high": 15000, "source": "placeholder" },
-    "debtRepayments": { "low": 0, "base": 1500, "high": 4000, "source": "placeholder" }
+  "_estimateProvenance": {
+    "caps": { "source": null, "asOf": "2026-11-04", "status": "estimate", "basis": "Confirmation thresholds chosen for rehearsal, not legal limits or business-size classifications." },
+    "setbacks": { "source": null, "asOf": "2026-11-04", "status": "estimate", "basis": "Fixed stress-test sizes and timing, not forecasts." },
+    "templates.contract": { "source": null, "asOf": "2026-11-04", "status": "estimate", "basis": "Assumed contract duration, payment terms, cost and revenue shares, equipment purchase cost and rental share." },
+    "templates.hire": { "source": null, "asOf": "2026-11-04", "status": "estimate", "basis": "Assumed hire cost, ramp time, profit contribution and part-time schedule. Not a wage benchmark." },
+    "templates.pricing": { "source": null, "asOf": "2026-11-04", "status": "estimate", "basis": "Assumed price rise and customer loss, not measured customer behaviour." }
   },
-  "cash": { "low": 10000, "base": 50000, "high": 120000, "source": "placeholder" },
+  "monthly": {
+    "revenue": { "low": 30000, "base": 60000, "high": 90000, "source": null, "asOf": "2026-11-04", "status": "estimate" },
+    "directCosts": { "low": 12000, "base": 24000, "high": 36000, "source": null, "asOf": "2026-11-04", "status": "estimate" },
+    "overheads": { "low": 8000, "base": 12000, "high": 18000, "source": null, "asOf": "2026-11-04", "status": "estimate" },
+    "payroll": { "low": 0, "base": 15000, "high": 30000, "source": null, "asOf": "2026-11-04", "status": "estimate" },
+    "founderPay": { "low": 0, "base": 8000, "high": 15000, "source": null, "asOf": "2026-11-04", "status": "estimate" },
+    "debtRepayments": { "low": 0, "base": 1500, "high": 4000, "source": null, "asOf": "2026-11-04", "status": "estimate" }
+  },
+  "cash": { "low": 10000, "base": 50000, "high": 120000, "source": null, "asOf": "2026-11-04", "status": "estimate" },
   "caps": {
-    "_note": "PLACEHOLDER caps for a small, owner-led business. A figure above its cap is questioned and the founder confirms it (F4); a value is never changed silently. All are per month except cash and upfrontCost.",
+    "_note": "Estimated confirmation thresholds. A figure above its cap is questioned and the founder confirms it; a value is never changed silently. All are per month except cash and upfrontCost.",
     "revenue": 2000000,
     "directCosts": 1500000,
     "overheads": 500000,
@@ -24,7 +36,7 @@
     "upfrontCost": 2000000
   },
   "setbacks": {
-    "_note": "PLACEHOLDER sizes for the fixed setback library (SCOPE.md §3), applied as stress tests from defaultMonth. Late payment starts at the first contract payment when a path has one.",
+    "_note": "Estimated sizes for the fixed setback library, applied as stress tests from defaultMonth. Late payment starts at the first contract payment when a path has one.",
     "defaultMonth": 6,
     "latePaymentMonths": 2,
     "bigClientShare": 0.3,

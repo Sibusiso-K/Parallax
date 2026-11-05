@@ -30,3 +30,9 @@ Mounted the separate PeoplePreview component with uniquely named v3 GLBs in the 
 ## Rapier lifecycle regression — 3 November 2026
 
 The controller's bare import currently resolves to Rapier 0.12.0 through @types/three; @react-three/rapier has a separate nested 0.19.2. An isolated test starting two controller creations concurrently, disposing one, then advancing the other reproduced the historical unsafe Rust aliasing error at computeColliderMovement. Sharing one initialization promise (and permitting retry after initialization rejection) makes that test pass through 20 lifecycle rounds with movement, inspection and recovery. Typecheck and the full 37-file / 242-test suite pass. React StrictMode may cause overlapping setups; the historical incident's exact trigger is not established. No dependency was installed or changed; browser testing after the fix remains open.
+
+## Browser acceptance, 4 November 2026
+
+Superseded notes above: the "no visible change" observation and the Edge WebGL failures were test-setup problems (a `--disable-gpu` launch, then a machine out of memory). Walk was checked in Edge with the real GPU; results are in `implementation-status.md`.
+
+Changes from the design above: looking is by dragging, not pointer lock, so the cursor stays free to click objects and there is no lock state to lose. On-screen buttons hold like keys. Pressing a place or a far object walks there along `route.ts`; any movement key takes control back. Keys are read on the window except in editable targets and dialogs, so focus on a panel button does not stop walking. Rapier is a direct dependency at 0.19.2 (`hit.timeOfImpact`, no `updateSceneQueries`) and loads only when Walk starts.

@@ -1,6 +1,8 @@
 # Provider readiness for immersive advisor and voice
 
-**Status: not ready for a provider key or live test.** The immersive advisor and voice HTTP route wrappers currently pass a null host and return 503. They do not read a provider credential or implement a real speech transport. The local browser demo uses speech synthesis supplied by the browser/device and remains fictional, not a hosted model. Do not place a provider secret in a frontend variable, URL, source file, chat or committed file.
+**This file describes the stricter design in this folder, which is not deployed.** The room's live advisor is `api/advisor.ts`, which uses the existing Meta settings and has been tested live; speech to text is the existing `api/transcribe.ts`.
+
+**Status of this design: not ready for a provider key or live test.** Its route wrappers pass a null host and return 503. They do not read a provider credential or implement a real speech transport. The local browser demo uses speech synthesis supplied by the browser/device and remains fictional, not a hosted model. Do not place a provider secret in a frontend variable, URL, source file, chat or committed file.
 
 ## Settings that exist in code
 

@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-11-04T19:32:07.165Z",
+  "evidence": "Synthetic provider smoke only; no browser, recording, human-document or deployment acceptance.",
+  "results": [
+    {
+      "name": "hiring-world-plan",
+      "passed": true,
+      "milliseconds": 7322
+    },
+    {
+      "name": "pricing-film-direction",
+      "passed": true,
+      "milliseconds": 7392
+    },
+    {
+      "name": "synthetic-pdf-reading",
+      "passed": true,
+      "milliseconds": 8982
+    },
+    {
+      "name": "sam-person-adapter",
+      "passed": true,
+      "milliseconds": 4697
+    }
+  ]
+}

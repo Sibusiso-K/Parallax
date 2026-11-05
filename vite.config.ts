@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { loadEnv } from 'vite';
 import { resolve } from 'node:path';
+import { pipeWebResponse } from './shared/swarm/dev-stream';
 
 // Local dev only: serve /api/* from the same handlers Vercel runs, so `npm run dev` works without the Vercel CLI.
 function devApi(): Plugin {
@@ -34,9 +35,7 @@ function devApi(): Plugin {
           const response = await handler(
             new Request(`http://localhost${req.url}`, { method: req.method, headers: req.headers as HeadersInit, body }),
           );
-          res.statusCode = response.status;
-          response.headers.forEach((v, k) => res.setHeader(k, v));
-          res.end(Buffer.from(await response.arrayBuffer()));
+          await pipeWebResponse(response, res);
         } catch (err) {
           next(err);
         }

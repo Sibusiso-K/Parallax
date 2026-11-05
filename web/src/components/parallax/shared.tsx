@@ -43,7 +43,7 @@ const KIND_LABEL: Record<Kind, string> = {
   you: "you",
   followup: "from a follow-up",
   range: "range",
-  placeholder: "placeholder",
+  placeholder: "estimate",
   example: "example",
   assumed: "assumed",
   default: "default",

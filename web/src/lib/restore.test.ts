@@ -7,6 +7,11 @@ import { restoreFrom } from "./parallax-store";
 const path = { id: "p-a", letter: "A", name: "Stay lean", summary: "", startingCash: 120000, assumptions: [] };
 
 describe("restoreFrom", () => {
+  it("returns old profile and interrupted generation routes to the editable review", () => {
+    for (const step of ["profile", "generating"]) {
+      expect(restoreFrom({ step, story: "My shop", fields: { decisionType: "hire" } })?.step).toBe("heard");
+    }
+  });
   it("brings a saved decision back, screen and all", () => {
     const s = restoreFrom({ step: "compare", agreed: true, story: "We cater.", fields: { decision: "Take the contract" }, paths: [path] });
     expect(s).toMatchObject({ step: "compare", agreed: true, story: "We cater.", fields: { decision: "Take the contract" } });

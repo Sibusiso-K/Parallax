@@ -157,6 +157,7 @@ export function WalkCamera({
           s.pitch = s.face.pitch;
           s.face = null;
         }
+        latest.current.onNotice('Walk up to an object, or press a place to walk there.');
       })
       .catch(() => {
         if (live) latest.current.onError('Walking could not start.');

@@ -21,14 +21,29 @@ import { buildReplay, isOutdated, resolveShot, shotAt, shotStart, shotUnavailabl
 import { SYNTHETIC_WAGES_NOTE, type Session } from './session';
 import { exploreSession } from './session-adapter';
 import { OBJECT_IDS, WORLD_BASE, loadManifest, type CourtyardManifest, type ObjectId, type PlaceId } from './courtyard/manifest';
+import { buildReadout } from './courtyard/readout';
 import type { WalkHandle } from './courtyard/WalkCamera';
 import { applyDressing, type SceneDressing } from '../../../shared/scene/dressing';
+import PhotoWorld from './photo/PhotoWorld';
+import { askFutureSelf } from './photo/advisor';
+import { MissionControl } from './swarm/MissionControl';
+import type { SwarmRequest } from '../../../shared/swarm/contracts';
+import { inputKey as swarmInputKey } from '../../../shared/swarm/engine-tools';
+import type { PhotoManifest as FounderWorld } from '../../../shared/world/manifest';
+import type { DocumentProposal } from '../../../shared/world/document';
+import type { AdvisorSegment } from '../../../shared/scene/advisor-model';
+import { repaintRoom } from './swarm/repaint';
+import { WorldStudio } from './studio/WorldStudio';
+import { ContractDrop } from './studio/ContractDrop';
+import { DocumentConsequence } from './studio/DocumentConsequence';
 
 const Courtyard = lazy(() => import('./courtyard/Courtyard'));
+const FilmStudio = lazy(() => import('./studio/FilmStudio').then((m) => ({ default: m.FilmStudio })));
 
 /** Where the replay's camera stations stand in the courtyard. */
 const PLACE_FOR_STATION: Record<CameraStation, PlaceId> = { overview: 'spawn', contract: 'offer', bridge: 'bridge', marker: 'bridge', memo: 'memo' };
 const PLACE_ORDER: PlaceId[] = ['spawn', 'offer', 'intake', 'bridge', 'memo'];
+const PHOTO_PLACES: Record<PlaceId, string> = { spawn: 'The whole room', offer: 'The contract', intake: 'The desk', bridge: 'Her', memo: 'The board' };
 const MONTH_TICKS = [1, 6, 12, 18, 24, 30, 36];
 
 const SUGGESTIONS = ['What happens to cash this month?', 'What is the lowest point?', 'What does the late payment do?'];
@@ -158,6 +173,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [objectTab, setObjectTab] = useState<ObjectTab>('explore');
   // What the founder has made. Kept while they stay in the room, and freed when they leave.
   const [outputs, setOutputs] = useState<MediaOutput[]>([]);
+  const [recording, setRecording] = useState(false);
   const outputUrls = useRef<string[]>([]);
   const addOutput = useCallback((output: MediaOutput) => {
     outputUrls.current.push(output.url);
@@ -179,7 +195,21 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const [sceneReady, setSceneReady] = useState(false);
   const [place, setPlace] = useState<PlaceId>('spawn');
   const [walk, setWalk] = useState(false);
+  const [photo, setPhoto] = useState(true);
   const [walkError, setWalkError] = useState('');
+  // What the founder has built or read in the studio. Their own photograph replaces the demo one; the figures never change here.
+  const [founderWorld, setFounderWorld] = useState<FounderWorld | undefined>();
+  const [documentProposal, setDocumentProposal] = useState<DocumentProposal | null>(null);
+  const [studio, setStudio] = useState<null | 'world' | 'contract' | 'film'>(null);
+  // The board's words for the person in the photograph, and the light its World Builder chose. Both are cleared when the decision changes.
+  const [boardWords, setBoardWords] = useState<{ key: string; text: string } | null>(null);
+  const [boardMood, setBoardMood] = useState<{ key: string; value: 'golden' | 'night' | 'calm' } | null>(null);
+  const [boardSpoken, setBoardSpoken] = useState(0);
+  const [boardOpen, setBoardOpen] = useState(false);
+  const [repainted, setRepainted] = useState<{ key: string; src: string } | null>(null);
+  // Once the founder has convened the board once, each deliberate change sends it back to work. Nothing runs before that.
+  const [boardTrigger, setBoardTrigger] = useState<number | undefined>(undefined);
+  const boardEngaged = useRef(false);
   const walkHandle = useRef<WalkHandle | null>(null);
   // The draft characters stay out of the room unless asked for: they are not accepted as realistic yet.
   const people = useMemo(() => new URLSearchParams(location.search).has('people'), []);
@@ -268,6 +298,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
           : `Late payment applied to path ${pathId}. Cash does not run out within 36 months. Lowest cash is in month ${snap.active.lowest.month}. Showing that month.`,
       );
     } else say(`Late payment removed. Showing the baseline for path ${pathId}.`);
+    // The founder changed the decision on purpose, so a board they already convened goes back to work.
+    if (boardEngaged.current) setBoardTrigger((n) => (n ?? 0) + 1);
   }, [gate, pathId, say, session, stressed]);
 
   // What the advisor is told about this moment. Read when the question is sent, so it is never a stale copy.
@@ -296,12 +328,13 @@ function World({ binding }: { binding?: ExploreBinding }) {
       const scope = { pathId: target, snapshotKey: snap.key, month: m };
       let a: AdvisorAnswer;
       try {
-        const live = latest.current.abilities.model ? await askLive(session, scope, stress, q, latest.current.extras(target), abort.signal) : ({ kind: 'fixture' } as const);
+        const live = latest.current.abilities.model ? await (photo ? askFutureSelf : askLive)(session, scope, stress, q, latest.current.extras(target), abort.signal) : ({ kind: 'fixture' } as const);
         if (live.kind === 'answer') a = live.answer;
         else if (live.kind === 'failed') a = { status: 'declined', intent: 'live', question: q, pathId: target, snapshotKey: snap.key, month: m, segments: [{ kind: 'text', text: live.message }], claims: [], trace: [] };
         else {
           await Promise.resolve();
           a = answerQuestion(session, scope, q);
+          if (photo && a.status === 'answered') a = { ...a, segments: [{ kind: 'text', text: 'In this possible future, this is what I would be watching. ' }, ...a.segments] };
         }
       } catch {
         return; // A newer question replaced this one.
@@ -313,7 +346,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
         say(a.status === 'answered' ? `Advisor answered on path ${target}.` : a.status === 'declined' ? 'The advisor could not answer that.' : 'The answer was withheld because it did not match the simulation.');
       }
     },
-    [gate, say, session],
+    [gate, say, session, photo],
   );
 
   const ask = useCallback(
@@ -491,16 +524,35 @@ function World({ binding }: { binding?: ExploreBinding }) {
   const shotBroken = replay && shot ? shotUnavailable(session, shot) : false;
   const focusInfo = focus && manifest ? manifest.objects[focus] : null;
   const tickAt = (m: number) => `${((m - 1) / 35) * 100}%`;
+  const readout = useMemo(() => buildReadout(snapshot, shownMonth), [shownMonth, snapshot]);
   const lastAnswer = answers.at(-1);
   const heardAnswer = lastAnswer && lastAnswer.snapshotKey === snapshot.key && lastAnswer.month === shownMonth ? answerTranscript(lastAnswer) : null;
+  const swarmPathId = snapshot.ref.pathId;
+  const swarmEntry = session.paths[swarmPathId];
+  const swarmRequest: SwarmRequest = {
+    event: snapshot.ref.setback ? 'Late payment switched on. Challenge this plan.' : 'Review this path before I decide.',
+    month: shownMonth,
+    stressed: snapshot.ref.setback !== null,
+    path: { ...swarmEntry.path, letter: swarmPathId, name: swarmEntry.name, summary: swarmEntry.summary },
+    context: binding?.context ?? DEMO_CONTEXT,
+  };
+  const swarmKey = swarmInputKey(swarmRequest);
+  const spokenWords = boardWords?.key === swarmKey ? boardWords.text : heardAnswer;
+  const shownMood = boardMood?.key === swarmKey ? boardMood.value : null;
+  const shownRepaint = repainted?.key === swarmKey ? repainted.src : null;
+  const studioStory = binding?.context?.story ?? DEMO_TEXT;
   const objectLabel = (id: string) => manifest?.objects[id as ObjectId]?.label ?? id;
+  // A suggestion to go where the founder already is would be a button that does nothing.
+  const wouldChange = (action: AdvisorAction) =>
+    !((action.type === 'show_month' && action.month === shownMonth) || (action.type === 'late_payment' && action.on === isStress) || (action.type === 'switch_path' && action.path === snapshot.ref.pathId));
 
   return (
     <div className={binding ? 'world world--embedded' : 'world'} data-lite={lowTier ? '' : undefined}>
-      <section className="stage" aria-label="The courtyard">
+      <section className="stage" aria-label={photo ? 'Photographic possible future' : 'The courtyard'}>
         <div className="stage__view">
-          <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />
-          {webgl && manifest && (
+          {photo && <PhotoWorld manifest={founderWorld} mood={shownMood} repainted={shownRepaint} aside={boardOpen} readout={readout} place={shownPlace} selected={inReplay ? null : focus} onSelect={inspect} reduced={reduced} transcript={spokenWords} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}|${focus ?? ''}|${shownPlace}|${boardSpoken}`} disabled={inReplay || working} autoPlay={spokenAsk + boardSpoken} demo={isDemo || binding?.context?.story?.trim() === DEMO_TEXT.trim()} />}
+          {!photo && <img className={`stage__poster ${sceneReady && webgl ? 'is-hidden' : ''}`} src={`${WORLD_BASE}stills/${shownPlace}.jpg`} alt="" />}
+          {!photo && webgl && manifest && (
             <SceneBoundary onFailure={(error) => { console.error('Courtyard renderer failed:', error); setWalk(false); setWebgl(false); }}>
             <Suspense fallback={null}>
               <Courtyard
@@ -511,6 +563,8 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 onWalkError={(message) => { setWalk(false); setWalkError(message); }}
                 onPlaceNear={setPlace}
                 people={people}
+                paused={recording}
+                readout={readout}
                 selected={focus}
                 hovered={hoverObject}
                 onHover={setHoverObject}
@@ -523,11 +577,11 @@ function World({ binding }: { binding?: ExploreBinding }) {
             </Suspense>
             </SceneBoundary>
           )}
-          {walkError && <p className="stage__status stage__status--warn" role="alert">{walkError} Guided mode is available.</p>}
-          {webgl && !sceneReady && !worldError && (
+          {!photo && walkError && <p className="stage__status stage__status--warn" role="alert">{walkError} Guided mode is available.</p>}
+          {!photo && webgl && !sceneReady && !worldError && (
             <p className="stage__status" role="status">Loading the 3D courtyard. Until it is ready you see a still render of the same model.</p>
           )}
-          {(!webgl || worldError) && (
+          {!photo && (!webgl || worldError) && (
             <p className="stage__status stage__status--warn" role="note">
               {worldError || 'The 3D courtyard could not be loaded or was interrupted, so this is a still render of the courtyard model.'} The figures, objects and advisor work without it.
               {!worldError && <><br /><button className="btn btn--ghost btn--sm" onClick={() => { setSceneReady(false); setWebgl(true); }}>Try 3D again</button></>}
@@ -537,18 +591,18 @@ function World({ binding }: { binding?: ExploreBinding }) {
 
         <div className="stage__top">
           <div className="placecard glass">
-            <b>{dressing?.title ?? (isDemo ? 'Ayanda’s courtyard' : 'The courtyard')}</b>
-            <span>{binding ? binding.founderLabel : 'Fictional founder'} · 3D model, illustrative setting</span>
+            <b>{dressing?.title ?? (photo ? 'A possible future' : isDemo ? 'Ayanda’s courtyard' : 'The courtyard')}</b>
+            <span>{binding ? binding.founderLabel : 'Fictional founder'} · {photo ? 'Illustrative photo world' : '3D model, illustrative setting'}</span>
           </div>
           <div className="modes glass" role="group" aria-label="View mode">
-            <button aria-pressed={!walk} onClick={() => setWalk(false)}>Guided</button>
-            <button aria-pressed={walk} disabled={!webgl || !sceneReady || inReplay} onClick={() => { setWalkError(''); setWalk(true); }}>Walk</button>
+            <button aria-pressed={photo} onClick={() => { setPhoto(true); setWalk(false); }}>Photo</button>
+            <button aria-pressed={!photo} disabled={!webgl || inReplay} onClick={() => { setPhoto(false); setWalkError(''); setWalk(true); }}>Walk</button>
             <button disabled title="Not offered until it is tested on a real headset">VR</button>
           </div>
         </div>
 
         <div className="stage__bottom glass">
-          <div className="places" role="group" aria-label="Places in the courtyard">
+          <div className="places" role="group" aria-label={photo ? 'Places in the photograph' : 'Places in the courtyard'}>
             <span className="rowlabel">Places</span>
             {PLACE_ORDER.map((id) => (
               <button
@@ -557,15 +611,79 @@ function World({ binding }: { binding?: ExploreBinding }) {
                 disabled={inReplay}
                 onClick={() => {
                   setPlace(id);
-                  say(`${walk ? 'Walking to' : 'Moved to'} ${manifest?.places[id].label ?? id}.`);
+                  if (photo) setFocus(null);
+                  say(`${walk ? 'Walking to' : 'Moved to'} ${photo ? PHOTO_PLACES[id] : manifest?.places[id].label ?? id}.`);
                 }}
               >
-                {manifest?.places[id].label ?? id}
+                {photo ? PHOTO_PLACES[id] : manifest?.places[id].label ?? id}
               </button>
             ))}
-            <span className="hint">{!webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
+            <span className="hint">{photo ? 'Explore the photograph · choose an object' : !webgl ? 'Still image · select a place or object' : walk ? 'Press a place to walk there' : 'Drag to look · click an object'}</span>
           </div>
         </div>
+
+        {!inReplay && (
+          <div className="studio-dock glass" role="group" aria-label="Make this yours">
+            <button aria-pressed={studio === 'world'} onClick={() => setStudio((v) => (v === 'world' ? null : 'world'))}>Build my world</button>
+            <button aria-pressed={studio === 'contract'} onClick={() => setStudio((v) => (v === 'contract' ? null : 'contract'))}>Read my contract</button>
+            <button aria-pressed={studio === 'film'} onClick={() => setStudio((v) => (v === 'film' ? null : 'film'))}>Your future, the film</button>
+          </div>
+        )}
+        {studio && !inReplay && (
+          <div className="studio-sheet" role="dialog" aria-label="Studio">
+            <button className="studio-sheet__close btn btn--round" onClick={() => setStudio(null)} aria-label="Close the studio">×</button>
+            {studio === 'world' && <WorldStudio story={studioStory} onWorld={(world) => { setFounderWorld(world); setPhoto(true); }} />}
+            {studio === 'contract' && (
+              <>
+                <ContractDrop onApply={setDocumentProposal} />
+                {documentProposal && (
+                  <DocumentConsequence proposal={documentProposal} path={swarmEntry.path} lagMonths={snapshot.terms.paymentLagMonths}
+                    onLever={() => { if (!stressed[snapshot.ref.pathId]) toggleLever(); setStudio(null); }}
+                    onDismiss={() => setDocumentProposal(null)} />
+                )}
+              </>
+            )}
+            {studio === 'film' && (
+              <Suspense fallback={<p role="status">Opening the film studio…</p>}>
+                <FilmStudio snapshot={snapshot} story={studioStory} world={founderWorld} />
+              </Suspense>
+            )}
+          </div>
+        )}
+        {!inReplay && (
+          <MissionControl
+            request={swarmRequest}
+            trigger={boardTrigger}
+            onStarted={() => { boardEngaged.current = true; setRepainted(null); }}
+            onOpenChange={setBoardOpen}
+            onRepaint={async (op, mood, onStep, signal) => {
+              const plate = mood === 'night' ? (founderWorld?.night ?? '/worlds/photo-demo/night.webp') : (founderWorld?.plate ?? '/worlds/photo-demo/golden.webp');
+              const painted = await repaintRoom(plate, op.prompt, onStep, signal);
+              if (painted && !signal.aborted) setRepainted({ key: swarmKey, src: painted.src });
+              return painted;
+            }}
+            onSpeech={(segments: AdvisorSegment[]) => {
+              setBoardWords({ key: swarmKey, text: segments.map((s) => s.text).join('') });
+              setPhoto(true);
+              setBoardSpoken((n) => n + 1);
+            }}
+            onWorldOp={(op) => { if (op.type === 'mood') setBoardMood({ key: swarmKey, value: op.value }); setPhoto(true); }}
+            onApply={(proposal) => {
+              if (proposal.inputKey !== swarmKey) return { ok: false, error: 'The decision changed. Run a new review first.' };
+              if (binding) {
+                const applied = binding.onRevise(swarmPathId, proposal.assumptionId, proposal.values);
+                if (applied.ok) setBoardTrigger((n) => (n ?? 0) + 1);
+                return applied;
+              }
+              const revised = session.revise(swarmPathId, proposal.assumptionId, proposal.values);
+              if (!revised.ok) return revised;
+              setOwnSession(revised.session);
+              // The numbers moved, so the board looks again and the room follows.
+              setBoardTrigger((n) => (n ?? 0) + 1);
+              return { ok: true };
+            }}
+          />
+        )}
       </section>
 
       <aside className="panel" ref={panelRef} aria-label="The payment gap, from the engine">
@@ -630,6 +748,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                   historical={session.registry.get(a.snapshotKey)?.ref.profileRevision !== session.profileRevision}
                   fromPath={a.pathId}
                   onAction={i === answers.slice(-3).length - 1 && !inReplay ? runAction : undefined}
+                  wouldChange={wouldChange}
                   onAsk={i === answers.slice(-3).length - 1 && !inReplay ? ask : undefined}
                   objectLabel={objectLabel}
                 />
@@ -668,7 +787,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             </form>
             {voice.state === 'recording' && <p className="muted small" role="status">Listening. Press Stop when you have asked your question. Nothing is kept.</p>}
             {voice.message && !voice.message.startsWith('Check the words') && <p className="muted small" role="status">{voice.message}</p>}
-            <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />
+            {!photo && <DemoVoice transcript={heardAnswer} resetKey={`${snapshot.key}|${shownMonth}|${answers.length}`} disabled={inReplay} working={working} autoPlay={spokenAsk} />}
           </section>
         <div className="evidence">
           <dl className="minor">
@@ -736,7 +855,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
           </details>
         </div>
 
-        {manifest && <details className="object">
+        {manifest && !photo && <details className="object">
           <summary>Objects in the courtyard</summary>
           <div className="object-links" role="group" aria-label="Courtyard objects">
             {OBJECT_IDS.map((id) => <button key={id} className="btn btn--ghost btn--sm" onClick={() => { if (walk && walkHandle.current) walkHandle.current.inspect(id); else inspect(id); }}>{manifest.objects[id].label}</button>)}
@@ -780,6 +899,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
                   stillUrl={`${WORLD_BASE}stills/${focusInfo.place}.jpg`}
                   outputs={outputs}
                   onOutput={addOutput}
+                  onRecording={setRecording}
                   revision={session.profileRevision}
                   disabled={inReplay}
                 />
@@ -857,7 +977,7 @@ function World({ binding }: { binding?: ExploreBinding }) {
             <button className="btn btn--ghost" onClick={() => setSheet('memo')}>Room memo</button>
           </div>
           <p className="muted small">
-            The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky{people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
+            {photo ? 'The photo world uses generated, illustrative imagery and fictional people' : 'The courtyard is a 3D model built in Blender with real photo textures and a real Johannesburg sky'}{!photo && people ? <>; the fictional characters are work-in-progress previews. The advisor's navy overshirt, "F_Cardigan_Long_Open_Front" by Mindfront (Sweden), is <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> from the <a href="https://www.makehumancommunity.org/assets/assetpacks/shirts02.html" target="_blank" rel="noopener noreferrer">MakeHuman shirts02 pack</a>, recoloured, shortened and fitted for Parallax</> : ''}. {isDemo ? 'Demo founder: fictional · ' : ''}Not financial advice · One possible future, not a prediction.
           </p>
         </footer>
       </aside>
@@ -935,7 +1055,8 @@ function cellText(n: number) {
   return `${n < 0 ? '-' : ''}R${Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 }
 
-function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, onAction, onAsk, objectLabel }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter; onAction?: (action: AdvisorAction) => void; onAsk?: (q: string) => void; objectLabel: (id: string) => string }) {
+function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, onAction, wouldChange, onAsk, objectLabel }: { a: AdvisorAnswer; onEvidence: (c: ResolvedClaim) => void; onCarry: (p: PathLetter) => void; canCarry: boolean; historical: boolean; fromPath: PathLetter; onAction?: (action: AdvisorAction) => void; wouldChange: (action: AdvisorAction) => boolean; onAsk?: (q: string) => void; objectLabel: (id: string) => string }) {
+  const actions = (a.actions ?? []).filter(wouldChange);
   const targets = (['B', 'C', 'A'] as PathLetter[]).filter((p) => p !== fromPath);
   return (
     <article className={`answer answer--${a.status}`}>
@@ -957,9 +1078,9 @@ function AnswerCard({ a, onEvidence, onCarry, canCarry, historical, fromPath, on
           <p className="muted small">{a.source === 'model' ? 'Muse Spark wrote the sentences. Code checked each one and filled in every figure from the engine.' : 'Local execution only: the engine and the claim checks. No model was called.'}</p>
         </details>
       )}
-      {onAction && a.actions && a.actions.length > 0 && (
+      {onAction && actions.length > 0 && (
         <div className="carry" role="group" aria-label="Suggested next">
-          {a.actions.map((action) => (
+          {actions.map((action) => (
             <button key={JSON.stringify(action)} className="btn btn--sm" onClick={() => onAction(action)}>{actionLabel(action, objectLabel)}</button>
           ))}
         </div>

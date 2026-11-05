@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { formatRand } from '../../../../shared/guard/figures';
 import { createSession } from '../session';
-import { cashMonthAt, reelDuration, reelFormat, reelTimeline } from './reel';
+import { cashMonthAt, recordedInFull, reelDuration, reelFormat, reelTimeline } from './reel';
 import { buildReelPlan } from './reel-plan';
 
 describe('the reel timeline', () => {
@@ -46,5 +46,14 @@ describe('reelFormat', () => {
     expect(reelFormat(() => true)).toEqual({ mime: 'video/mp4;codecs=avc1.42E01E', extension: 'mp4' });
     expect(reelFormat((m) => m.startsWith('video/webm'))).toEqual({ mime: 'video/webm;codecs=vp9', extension: 'webm' });
     expect(reelFormat(() => false)).toBeNull();
+  });
+});
+
+describe('recordedInFull', () => {
+  it('refuses a recording that lost scenes, or whose length is unknown', () => {
+    expect(recordedInFull(16.4, 16.5)).toBe(true);
+    expect(recordedInFull(8.27, 16.5)).toBe(false);
+    expect(recordedInFull(Number.POSITIVE_INFINITY, 16.5)).toBe(false);
+    expect(recordedInFull(Number.NaN, 16.5)).toBe(false);
   });
 });

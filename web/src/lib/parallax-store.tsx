@@ -32,7 +32,7 @@ export interface ExploreView {
 export interface Trace {
   model: string;
   latencyMs: number;
-  // ok is null for a check the code does not run yet; the trace shows it as not run rather than as passed.
+  // Old saved replies may have null checks. The trace omits them.
   checks: { name: string; ok: boolean | null }[];
 }
 export interface Msg {
@@ -172,7 +172,7 @@ const NEEDS_PATHS: readonly Step[] = ["roadmap","paths", "chat", "explore", "com
 export function snapshotOf(s: State): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const k of SAVED_KEYS) out[k] = s[k];
-  out.step = s.step === "generating" ? "profile" : s.step;
+  out.step = s.step === "generating" || s.step === "profile" ? "heard" : s.step;
   out.chats = Object.fromEntries(LETTERS.map((l) => [l, s.chats[l].map((m) => ({ ...m, streaming: false }))]));
   return out;
 }
@@ -194,6 +194,7 @@ export function restoreFrom(saved: Record<string, unknown> | null): State | null
   s.paths = Array.isArray(s.paths) && s.paths.every(isPath) ? s.paths : [];
   for (const l of LETTERS) if (!Array.isArray(s.chats?.[l])) s.chats = { ...base.chats, ...(s.chats ?? {}), [l]: [] };
   if (!STEPS.includes(s.step)) s.step = "start";
+  if (s.step === "profile" || s.step === "generating") s.step = "heard";
   if (NEEDS_PATHS.includes(s.step) && s.paths.length === 0) s.step = Object.keys(s.fields ?? {}).length ? "heard" : "intake";
   if (s.step === "start" && !s.story.trim() && s.paths.length === 0) return null; // nothing worth resuming
   return s;
@@ -360,14 +361,10 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
             ...m,
             streaming: false,
             trace: chunk.trace ? { ...chunk.trace, latencyMs } : {
-              model: "fixture (stand-in for muse-spark-1.3)",
+              model: "Scripted example (fixture), not a model answer",
               latencyMs,
               checks: [
-                { name: "Speaks in first person, 36 months on", ok: null },
-                { name: "Figures come from code, not the model", ok: null },
                 { name: "Cites at least one assumption", ok: m.citations.length > 0 },
-                { name: "Names a downside", ok: null },
-                { name: "Does not tell you what to choose", ok: null },
               ],
             },
           }));

@@ -1,5 +1,7 @@
 # Parallax
 
+**For judges:** [JUDGES.md](JUDGES.md) maps each criterion to files and commands, and lists the limits. `npm run eval` needs no key.
+
 [![CI](https://github.com/Sibusiso-K/Parallax/actions/workflows/ci.yml/badge.svg)](https://github.com/Sibusiso-K/Parallax/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Sibusiso-K/Parallax/actions/workflows/codeql.yml/badge.svg)](https://github.com/Sibusiso-K/Parallax/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -175,12 +177,12 @@ git log --reverse --format='%h %ad %s' --date=short
 
 Team Sonar: Sibusiso (`Sibusiso-K`) wrote the cash engine, the intake and chat routes, the UI flow, and the
 self-check, what-ifs, board meeting, languages, planning agent and the Meta panel. Lethabo (`LethaboMH14`) wrote
-most of the 3D room: walk mode, the room's advisor, the reel and the PNG, and the draft characters. The commit history
+the 3D room and the photo world: walk mode, the room's advisor, the talking person, the board of agents, the world builder, the contract reader, the film, the reel and the PNG. The commit history
 shows each change.
 
 ## Known limits
 
-- The default assumptions in `shared/defaults/za.json` are placeholders, not sourced figures. The app marks each one.
+- The simulation defaults in `shared/defaults/za.json` are dated estimates, not business benchmarks. Official wage and VAT references are recorded separately and are not used as business costs or tax calculations.
 - There are no accounts. A saved decision belongs to one browser's private code.
 - Without a Meta key the chat, the board, the planner and the room's advisor use scripted or in-code answers, and the app says so.
 - Replies in isiZulu, isiXhosa, Afrikaans, Sesotho and Setswana have not yet been reviewed by speakers of each language.

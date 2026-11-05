@@ -83,3 +83,10 @@ export function pathFigures(path: PathCard): Figures {
     worst,
   };
 }
+
+/** Use the path's nominated stress tests. Older saved cards fall back to the decision's relevant test. */
+export function decisionSetback(path: PathCard, figures: Figures, decisionType: unknown): Setback {
+  const fallback: SetbackId = decisionType === "hire" ? "slow-season" : decisionType === "pricing" ? "lost-client" : "late-payment";
+  const relevant = figures.setbacks.filter((s) => (path.setbacks?.length ? path.setbacks : [fallback]).includes(s.id));
+  return relevant.reduce((a, b) => b.lowest.cash < a.lowest.cash ? b : a, relevant[0] ?? figures.worst);
+}

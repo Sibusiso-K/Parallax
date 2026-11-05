@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import { DECISION_LABELS, DECISION_TYPES, DEMO_STORY, FIELD_DEFAULTS, FIELD_LABELS, FIELD_QUESTIONS, MONEY_FIELDS, NUMBER_FIELDS, mockApi, type Health } from "@/lib/parallax-api";
 import { useParallax } from "@/lib/parallax-store";
-import { Avatar, Button, Src } from "./shared";
+import "@fontsource/instrument-serif/400.css";
+import { Button, Src } from "./shared";
 import { Listen } from "./Listen";
 import { DecisionStrip, FieldCards, readValue } from "./FieldGrid";
 import { MicButton } from "./MicButton";
@@ -14,7 +15,7 @@ const HOW_TO: [string, string][] = [
   ["Tell", "Type or say your decision, like you'd tell a cofounder."],
   ["Check", "Fix any figure it got wrong."],
   ["See three futures", "36 months of cash on each path, computed in code."],
-  ["Step inside and ask", "Walk into each future and question the founder you'd become."],
+  ["Explore and ask", "Question each future. Contract decisions also open in a 3D room."],
 ];
 
 /**
@@ -31,7 +32,8 @@ function ModelNotes() {
     };
   }, []);
   const meta = !!(health?.modelReady || health?.voiceReady);
-  const toMeta = meta ? " Meta's Model API reads it too, and keeps nothing for Parallax." : "";
+  const toMeta = meta ? " Enabled model features send the relevant story, question or recording to Meta's Model API." : "";
+  if (health === null) return <div className="note" role="status">Checking model and saving settings.</div>;
   const privacy = health?.savingReady ? (
     <div className="note">
       <b>Saved privately</b>
@@ -40,7 +42,7 @@ function ModelNotes() {
   ) : (
     <div className="note">
       <b>Kept on this device</b>
-      <span>The server keeps nothing; this browser keeps a copy. Delete everything erases it.{toMeta}</span>
+      <span>Server-side decision saving is off. This browser keeps a copy; Delete everything erases that copy.{toMeta}</span>
     </div>
   );
   if (!meta) {
@@ -136,11 +138,16 @@ export function StartScreen() {
   };
   return (
     <>
-      <section className="hero" onPointerMove={lean} onPointerLeave={settle}>
+      <section className="hero hero--photo" onPointerMove={lean} onPointerLeave={settle}>
+        <div className="hero-photo" aria-hidden="true" ref={art}>
+          <img className="hero-photo__plate" src="/worlds/photo-demo/golden.webp" alt="" />
+          <img className="hero-photo__person" src="/worlds/photo-demo/person-B.webp" alt="" />
+          <img className="hero-photo__front" src="/worlds/photo-demo/foreground-main.webp" alt="" />
+        </div>
         <div className="hero-copy">
           <div className="eyebrow">Parallax · for founders</div>
-          <h1>Rehearse a big decision before you make it</h1>
-          <p className="lead">Take the contract? Hire? Raise prices? See three futures, 36 months of cash each, then ask the founder you'd become.</p>
+          <h1>Step inside a big decision before you make it</h1>
+          <p className="lead">Take the contract? Hire? Raise prices? Meet the founder you could become, in a room built for your business. She speaks. Pull a lever and the room changes. Every figure comes from code, never from a model.</p>
           <ResumeCard />
           <label className="agree">
             <input type="checkbox" checked={agreed} onChange={(e) => set({ agreed: e.target.checked })} />
@@ -154,18 +161,11 @@ export function StartScreen() {
               Tell my own story
             </Button>
           </div>
-          <p className="start-sub">The demo is a fictional caterer weighing a big contract. About two minutes.</p>
+          <p className="start-sub">
+            The demo is a fictional caterer weighing a big contract. <a href="/?world">Or walk straight into her room</a>.
+          </p>
         </div>
-        <div className="hero-art" aria-hidden="true" ref={art}>
-          <span className="hero-orbit o1" />
-          <span className="hero-orbit o2" />
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <span key={n} className={`hero-speck s${n}`} />
-          ))}
-          <Avatar letter="B" src="/avatars/B.png" size={210} className="hero-face hero-b" />
-          <Avatar letter="A" src="/avatars/A.png" size={168} className="hero-face hero-a" />
-          <Avatar letter="C" src="/avatars/C.png" size={168} className="hero-face hero-c" />
-        </div>
+        <span className="hero-photo__note">Fictional person. Generated with Muse Image.</span>
       </section>
       <section className="how-to" aria-labelledby="how-to-title">
         <div className="how-head">
@@ -372,8 +372,8 @@ export function HeardScreen() {
           <FieldCards />
           <SelfCheck />
           <p className="notice small">
-            <Src kind="placeholder" /> Some numbers behind the futures are placeholders, such as cost shares and setback sizes. Change
-            them any time under Tools.
+            <Src kind="placeholder" /> Defaults are estimates, not South African business averages. Review cost assumptions under Tools.
+            Setback sizes are fixed rehearsal assumptions.
           </p>
         </>
       )}

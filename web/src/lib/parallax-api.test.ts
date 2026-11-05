@@ -10,6 +10,32 @@ const stub = (fn: () => Response | Promise<Response>) => vi.stubGlobal("fetch", 
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe("chat trace", () => {
+  const path = { id: "A", letter: "A" as const, name: "Stay", summary: "", startingCash: 100,
+    assumptions: [{ id: "A1", label: "Sales", kind: "income" as const, low: 1, base: 2, high: 3 }] };
+  it("only reports returned guard checks and real path citations", async () => {
+    stub(() => reply({ ok: true, mode: "model", model: "test model", text: "Hello", checks: [], citations: [{ id: "A1", label: "Sales" }] }));
+    const chunks = [];
+    for await (const chunk of mockApi.chat(path, "Hello")) chunks.push(chunk);
+    const trace = chunks.at(-1)!.trace!;
+    expect(trace.checks).toHaveLength(3);
+    expect(trace.checks.every((c) => c.ok === true)).toBe(true);
+  });
+  it("does not infer guard success when a response omits checks", async () => {
+    stub(() => reply({ ok: true, mode: "model", text: "Hello", citations: [{ id: "B1", label: "Other path" }] }));
+    const chunks = [];
+    for await (const chunk of mockApi.chat(path, "Hello")) chunks.push(chunk);
+    expect(chunks.filter((c) => c.type === "citation")).toHaveLength(0);
+    expect(chunks.at(-1)!.trace!.checks).toEqual([{ name: "Cites at least one assumption on this path", ok: false }]);
+  });
+  it("shows failed guard checks as failed", async () => {
+    stub(() => reply({ ok: true, mode: "model", text: "Hello", checks: [{ type: "scrubbed" }, { type: "certainty" }] }));
+    const chunks = [];
+    for await (const chunk of mockApi.chat(path, "Hello")) chunks.push(chunk);
+    expect(chunks.at(-1)!.trace!.checks.every((c) => c.ok === false)).toBe(true);
+  });
+});
+
 describe("mockApi.intake, the request", () => {
   it("sends exactly POST /api/intake as JSON, and reads { fields, missing, mode, notice }", async () => {
     const seen: { url: string; init: RequestInit }[] = [];

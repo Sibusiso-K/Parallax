@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { PathInput } from '../engine/simulate.js';
-import { guardText } from '../guard/figures.js';
+import { guardText, namesWrongMonth, plainDigits } from '../guard/figures.js';
 import { chatJson, type Deps, type MetaConfig } from '../providers/meta.js';
 import type { Metric } from './claims.js';
 import { buildSnapshot, type RoomSnapshot } from './room-model.js';
@@ -28,6 +28,7 @@ const assumption = z.object({
 const OBJECT_IDS = ['contract', 'pan', 'fridge', 'intake_desk', 'memo'] as const;
 
 export const advisorRequest = z.object({
+  persona: z.enum(['advisor', 'future-self']).optional(),
   question: z.string().trim().min(1, 'Ask the advisor something.').max(600, 'Keep the question under 600 characters.'),
   month: z.number().int().min(1).max(36),
   stressed: z.boolean(),
@@ -144,6 +145,7 @@ export function buildAdvisorPrompt(req: AdvisorRequest, snap: RoomSnapshot, mont
   const stress = snap.ref.setback ? `The late-payment switch is ON. ${snap.terms.stressRule}` : 'The late-payment switch is OFF, so every figure below is as planned.';
   const system = [
     `You are the advisor standing beside the founder of ${business}${c.location ? ` in ${c.location}` : ''}, inside a 3D room that lays out one decision: "${c.decision?.trim() || 'a big business decision'}".`,
+    req.persona === 'future-self' ? 'Speak instead as a fictional possible future self of this founder, in first person: I, my business, my cash. Describe only the selected path. Say "In this possible future, I took this path" rather than claiming it really happened. Do not invent memories, feelings, achievements or events. All figure, uncertainty and advice rules below still apply.' : '',
     `They are looking at path ${path.letter}, "${path.name}". ${path.summary}`,
     objectLine,
     `They have month ${req.month} selected. ${stress}`,
@@ -202,10 +204,10 @@ export function checkAdvisorText(
   const segments: AdvisorSegment[] = [];
   let dropped = 0;
   // Split only on whitespace after . ! ? so the dots inside a placeholder never break a sentence.
-  for (const sentence of raw.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)) {
+  for (const sentence of plainDigits(raw).split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)) {
     const parts = sentence.split(new RegExp(PLACEHOLDER.source, 'g'));
     const out: AdvisorSegment[] = [];
-    let ok = true;
+    let ok = !namesWrongMonth(sentence);
     parts.forEach((part, i) => {
       if (!ok) return;
       if (i % 2 === 1) {
