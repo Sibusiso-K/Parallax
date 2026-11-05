@@ -25,7 +25,9 @@ interface Round {
 export function BoardMeeting() {
   const { paths, chats, send, language } = useParallax();
   const latest = useRef(chats);
-  latest.current = chats;
+  useEffect(() => {
+    latest.current = chats;
+  }, [chats]);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -143,8 +145,8 @@ export function BoardMeeting() {
                     <>
                       <h3>Where they agree</h3>
                       <ul>
-                        {round.summary.agree.map((x) => (
-                          <li key={x}>{x}</li>
+                        {round.summary.agree.map((x, i) => (
+                          <li key={`${i}-${x}`}>{x}</li>
                         ))}
                       </ul>
                     </>
@@ -153,8 +155,8 @@ export function BoardMeeting() {
                     <>
                       <h3>Where they differ</h3>
                       <ul>
-                        {round.summary.differ.map((x) => (
-                          <li key={x}>{x}</li>
+                        {round.summary.differ.map((x, i) => (
+                          <li key={`${i}-${x}`}>{x}</li>
                         ))}
                       </ul>
                     </>

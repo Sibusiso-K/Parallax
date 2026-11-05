@@ -16,8 +16,8 @@ const end = (a: number[]) => a[a.length - 1] ?? 0;
 function TraceList({ checks }: { checks: { name: string; ok: boolean | null }[] }) {
   return (
     <ul>
-      {checks.map((c) => (
-        <li key={c.name}>
+      {checks.map((c, i) => (
+        <li key={`${i}-${c.name}`}>
           {c.ok === null ? "–" : c.ok ? "✓" : "✗"} {c.name}
           {c.ok === null ? " (not run)" : ""}
         </li>
@@ -64,9 +64,11 @@ export function ChatScreen() {
     if (speech.readAloud && latest) speak(latest.id, latest.text);
   }, [chats, speech.readAloud]);
 
+  // The last message's text is read into a variable first, so the dependency list is a plain value the rule can check.
+  const lastText = msgs[msgs.length - 1]?.text;
   useEffect(() => {
     list.current?.lastElementChild?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [msgs.length, msgs[msgs.length - 1]?.text]);
+  }, [msgs.length, lastText]);
 
   if (!path || !figures) return <NoPaths />;
 
@@ -136,8 +138,8 @@ export function ChatScreen() {
                 {m.citations.length > 0 && (
                   <div className="based">
                     <span className="caps">Based on</span>
-                    {m.citations.map((c) => (
-                      <button key={c.id} type="button" className="chip" onClick={() => set({ panel: { letter: active, rowId: c.id } })}>
+                    {m.citations.map((c, ci) => (
+                      <button key={`${ci}-${c.id}`} type="button" className="chip" onClick={() => set({ panel: { letter: active, rowId: c.id } })}>
                         {c.label}
                       </button>
                     ))}
