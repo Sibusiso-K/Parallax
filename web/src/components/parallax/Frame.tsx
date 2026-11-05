@@ -23,10 +23,10 @@ function MetaInside() {
       {calls.length > 0 && (
         <ol className="meta-calls">
           {[...calls].reverse().map((c) => (
-            <li key={c.id} className={`mc mc--${c.mode}`}>
+            <li key={c.id} className={`meta-call meta-call--${c.mode}`}>
               <b>{c.feature}</b>
               <span>{c.mode === "model" ? (c.model ?? "Meta model") : MODE_LABEL[c.mode]}</span>
-              <span className="mc-ms">{(c.ms / 1000).toFixed(1)} s</span>
+              <span className="meta-call-ms">{(c.ms / 1000).toFixed(1)} s</span>
             </li>
           ))}
         </ol>
