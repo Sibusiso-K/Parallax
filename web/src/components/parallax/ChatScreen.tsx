@@ -68,6 +68,8 @@ export function ChatScreen() {
   const lastText = msgs[msgs.length - 1]?.text;
   useEffect(() => {
     list.current?.lastElementChild?.scrollIntoView({ block: "end", behavior: "smooth" });
+    // The scroll runs when a message arrives or the last one changes; those are the dependencies on purpose.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
   }, [msgs.length, lastText]);
 
   if (!path || !figures) return <NoPaths />;
