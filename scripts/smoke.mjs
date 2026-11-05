@@ -13,10 +13,12 @@ if (!base) {
 }
 const origin = new URL(base).origin;
 // A deployment that cannot be reached at all is a failure with a plain reason, not a stack trace.
-process.on('unhandledRejection', (err) => {
-  console.error(`FAIL  could not reach ${base}: ${err.cause?.code ?? err.message}`);
+const unreachable = (err) => {
+  console.error(`FAIL  could not reach ${base}: ${err.cause?.code ?? err.cause?.message ?? err.message}`);
   process.exit(1);
-});
+};
+process.on('unhandledRejection', unreachable);
+process.on('uncaughtException', unreachable);
 const results = [];
 const check = (name, ok, detail = '') => results.push({ name, ok: Boolean(ok), detail });
 
