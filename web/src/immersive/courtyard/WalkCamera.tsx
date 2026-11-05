@@ -135,7 +135,8 @@ export function WalkCamera({
   };
 
   useEffect(() => {
-    let live = true;
+    // An object rather than a reassigned variable, so the effect's cleanup can stop the async steps below.
+    const token = { live: true };
     const s = state.current;
     const el = gl.domElement;
     el.tabIndex = 0;
@@ -145,7 +146,7 @@ export function WalkCamera({
     import('./controller')
       .then(({ CourtyardController }) => CourtyardController.create(latest.current.manifest))
       .then((controller) => {
-        if (!live) return controller.dispose();
+        if (!token.live) return controller.dispose();
         s.controller = controller;
         // Walk begins where the guided camera was standing, looking at what it was looking at.
         const at = latest.current.manifest.places[latest.current.place];
@@ -159,7 +160,7 @@ export function WalkCamera({
         }
       })
       .catch(() => {
-        if (live) latest.current.onError('Walking could not start.');
+        if (token.live) latest.current.onError('Walking could not start.');
       });
 
     const cancelRoute = () => {
@@ -189,7 +190,7 @@ export function WalkCamera({
       nudge: (action) => {
         hold(action, true);
         window.setTimeout(() => {
-          if (live) hold(action, false);
+          if (token.live) hold(action, false);
         }, 500);
       },
       inspect,
@@ -255,7 +256,7 @@ export function WalkCamera({
     window.addEventListener('focusin', focusIn);
     document.addEventListener('visibilitychange', hidden);
     return () => {
-      live = false;
+      token.live = false;
       clear();
       handle.current = null;
       latest.current.onNear(null);
