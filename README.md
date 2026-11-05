@@ -29,6 +29,20 @@ credits, run the post-deploy smoke test:
 npm run smoke -- https://parallax-one-ivory.vercel.app
 ```
 
+## Why it matters
+
+Parallax is aimed at owners of small businesses in South Africa, where cash strain is common. Three figures, each with
+its source and its limits, are set out in [docs/IMPACT.md](docs/IMPACT.md):
+
+- **62%** of South African small businesses reported cash flow problems in the past year (Xero, January–February 2026,
+  427 businesses; vendor-commissioned).
+- **R12.4 billion** in government invoices, 95,399 of them older than 30 days, were unpaid at the end of Q2 2025
+  (National Treasury, relayed by Business Report).
+- **1,534** business liquidations in 2025, of which 1,341 were voluntary (Stats SA, relayed by EWN).
+
+We have no user evidence yet. [docs/IMPACT.md](docs/IMPACT.md) sets out the plan for founder sessions, and it says which
+figures we do not use.
+
 ## Where the Meta models are used
 
 Every figure is computed by the cash engine in code. The models only read, plan and write words, and every reply that
@@ -146,7 +160,7 @@ evals/          the live evaluation of the Meta features, and its results
 scripts/        post-deploy smoke test
 supabase/       database migration for saved decisions
 assets/         the 3D courtyard source and its credits (see assets/CREDITS.md)
-docs/           notes on the scene and immersive room
+docs/           the impact note with sources, and notes on the scene and immersive room
 .github/        CI, CodeQL, Dependabot, issue and pull request templates, code owners
 ```
 
