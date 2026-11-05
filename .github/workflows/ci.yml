@@ -1,6 +1,8 @@
-# Every pull request and every push to main: typecheck, the full test suite, then the production build.
-# Vercel builds and deploys on its own, but it does not run the tests; this does. No secrets are used, and the tests
-# block all network access (shared/testing/offline.ts), so CI can never spend Meta credits.
+# Continuous integration. Runs on every pull request and every push to main.
+#
+# Vercel builds and deploys on its own, but it does not run the tests, so this workflow does. It uses no secrets, and
+# the test suite blocks all network access (shared/testing/offline.ts), so CI cannot spend model credits.
+# Post-deploy checks are separate: run `npm run smoke -- <url>` after a deployment (see README).
 name: CI
 
 on:
@@ -17,6 +19,7 @@ concurrency:
 
 jobs:
   check:
+    name: Typecheck, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -25,10 +28,13 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      - name: Install (exact versions from the lockfile)
+        run: npm ci --no-audit --no-fund
       - name: Typecheck
         run: npm run typecheck
-      - name: Tests
+      - name: Test (offline)
         run: npm test
       - name: Build
-        run: npx vite build
+        run: npm run build
+      - name: Audit production dependencies (fails on high or critical)
+        run: npm audit --omit=dev --audit-level=high
