@@ -1,158 +1,185 @@
 # Parallax
 
-Rehearse a business decision before you bet the business on it. A founder describes a choice in their own words: take
-a big contract, hire, or raise prices. Parallax reads the figures, builds three possible paths, and runs 36 months of
-cash on each one. Every figure is computed in code, never by a model. The founder can stress-test each path, question
-the founder they could become on it, and print a decision memo.
+[![CI](https://github.com/Sibusiso-K/Parallax/actions/workflows/ci.yml/badge.svg)](https://github.com/Sibusiso-K/Parallax/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Sibusiso-K/Parallax/actions/workflows/codeql.yml/badge.svg)](https://github.com/Sibusiso-K/Parallax/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Live: https://parallax-one-ivory.vercel.app
+**Rehearse a business decision before you bet the business on it.** A founder describes a choice in their own words
+(take a big contract, hire, raise prices). Parallax reads the figures, builds three possible futures, and runs 36 months
+of cash on each one. The founder can stress-test each future, ask the founder they would become on it, hold a board
+meeting with all three, and print a decision memo.
+
+**Live:** https://parallax-one-ivory.vercel.app
 
 Parallax is a reflection aid, not financial advice. It is for people aged 18 and over.
 
-## Built during the Meta Global AI Developer Hackathon
+## Two-minute review
 
-Everything here was built during the hackathon, between 29 Oct and 4 Nov 2026. The repository's first commit (20 Oct)
-holds only a `.gitignore`.
+```bash
+git clone https://github.com/Sibusiso-K/Parallax.git && cd Parallax
+npm ci
+npm run verify        # typecheck, the offline test suite and the production build
+npm run dev           # open http://localhost:5173 and press "Try the demo"
+```
 
-- **Meta models, live in production:**
-  - Muse Spark (`muse-spark-1.3`, falling back to `muse-spark-1.2`) reads the founder's story into figures, each with
-    the words it came from.
-  - Muse Spark answers as each future self, from the founder's own story and that path's figures
-    (`shared/chat/future-self.ts`).
-  - Muse Spark dresses the 3D room for the founder's own business, and Muse Image draws the founder there
-    (`shared/scene/dressing.ts`, `shared/providers/image.ts`, and [docs/scene-from-prompt.md](docs/scene-from-prompt.md)).
-  - Muse Spark answers as the advisor inside the 3D room (`shared/scene/advisor-model.ts`, `POST /api/advisor`). It
-    may suggest what to look at next (a month, the late payment, an object, another path), and each suggestion only
-    moves the view.
-  - Muse Voice Transcribe turns **Speak instead** into text, and lets the founder ask the room out loud.
-  - Muse Image made the demo founder's three portraits.
-- **No model produces a figure.** Every number comes from the cash engine in `shared/engine/`, and `shared/guard/`
-  keeps figures out of model replies. The room's advisor is checked sentence by sentence, and the browser checks each
-  figure again against its own engine run, withholding the answer if any figure differs.
-- **The UI** was first generated with Lovable on 30 Oct, then reworked by hand into the Control Room design.
-- **The 3D courtyard** is built from CC0 sources (Poly Haven and MakeHuman) by `assets/blender/build_courtyard.py`.
-  Each source and its licence is listed in `assets/provenance.json`, and the CC BY overshirt's credit is in `assets/CREDITS.md`.
-  In the room the founder can walk the courtyard (Rapier physics, loaded only when **Walk** is pressed), press a place
-  to walk there, and make a vertical reel or a PNG of one month in the browser. Nothing is uploaded.
-- **Who built what (team Sonar):** Sibusiso (`Sibusiso-K`) wrote the cash engine, intake, and the chat and session
-  routes. Lethabo (`LethaboMH14`) wrote most of the 3D room: walk mode, the room's advisor, the reel and PNG, and the
-  draft characters. The commit history shows each change.
+No keys are needed. In demo mode nothing leaves the machine. To check the **deployed** site without spending model
+credits, run the post-deploy smoke test:
 
-## Using it for the first time
+```bash
+npm run smoke -- https://parallax-one-ivory.vercel.app
+```
 
-1. Open the app, tick **I am 18 or older**, and press **Begin**.
-2. **Tell it your decision.** Type it the way you would tell a cofounder: what the business sells and spends each
-   month, the cash in the bank, and the decision on the table. **Speak instead** records up to 60 seconds and turns it
-   into text you can correct. To see a full run straight away, press **Use the demo story** (a fictional founder).
-3. **Check what it heard.** Each figure is shown with the words it came from. Answer the follow-up questions, or press
-   **I don't know** to use a marked default. Any figure can be edited. If the story is out of scope (for example, the
-   founder is under 18), Parallax says why and asks you to change what you wrote.
-4. **Meet three futures.** Paths A, B and C each show 36 months of cash with a likely, bad and good case. Open the
-   assumptions to see where every number comes from, and chat to each future self.
-5. **Compare and decide.** Put the paths side by side, check how much risk you are comfortable with, and print the
-   decision memo.
+## Where the Meta models are used
 
-Your decision is **saved as you go**, so a reload or a return visit offers to pick up where you left off. It is
-stored in Parallax's Supabase database under a private code that only your browser holds. Row-level security
-lets each request reach only its own row (`supabase/migrations/`). With no database configured, the copy stays in
-your browser instead.
+Every figure is computed by the cash engine in code. The models only read, plan and write words, and every reply that
+could carry a figure is checked against the engine before it is shown.
 
-**Export JSON** in the sidebar downloads the session. **Delete everything** erases it, the saved copy included, and
-gives the browser a new code.
+| Feature | Meta model | Where to look |
+| --- | --- | --- |
+| Reads the founder's story into figures, each with the words it came from | Muse Spark | `shared/intake/agent.ts` |
+| Checks the figures it read against the story and flags contradictions | Muse Spark | `shared/intake/check.ts` |
+| The future self on each path answers in the first person | Muse Spark | `shared/chat/future-self.ts` |
+| A board meeting: three futures answer, then a moderator says where they agree and differ | Muse Spark | `shared/chat/board.ts` |
+| A what-if in words ("what if they pay late and I raise prices 10%?") becomes lever settings | Muse Spark | `shared/whatif/read.ts`, `api/whatif.ts` |
+| A planning agent searches for plans that meet a cash goal, calling the engine as tools | Muse Spark (tool calls) | `shared/agent/planner.ts` |
+| The advisor in the 3D room, checked sentence by sentence | Muse Spark | `shared/scene/advisor-model.ts`, `api/advisor.ts` |
+| Dresses the 3D room for the founder's own business | Muse Spark | `shared/scene/dressing.ts`, `api/scene.ts` |
+| Draws the founder's portrait for each future | Muse Image | `shared/providers/image.ts` |
+| Turns speech into text ("Speak instead", and asking the room out loud) | Muse Voice Transcribe | `shared/providers/asr.ts`, `api/transcribe.ts` |
 
-## Running it locally
+The shared client that calls Meta (timeouts, bounded retries, one repair retry for a reply that does not match its
+schema, failover between models, and refusal of contributor models) is `shared/providers/meta.ts`. The guard that keeps
+figures out of model replies is `shared/guard/`. The live evaluation of these features is in `evals/`, with its results
+in `evals/RESULTS.md`.
 
-You need Node 20 or later.
+## How it fits together
+
+```mermaid
+flowchart LR
+  B[Browser: React app] -->|story, answers, questions| F[Vercel functions under api/]
+  F -->|structured calls| M[(Meta Model API)]
+  F --> G{{Guards: cross-site refusal,<br/>burst limit, schema, figure check}}
+  B --> E[Cash engine in shared/engine<br/>same code in the browser and the server]
+  F --> E
+  F -->|saved decision, by device hash| S[(Supabase, row-level security)]
+```
+
+- `web/` is the React app: the journey (Tell, Check, Futures, Room, Ask, Decide) and the 3D courtyard.
+- `api/` holds the Vercel functions. Each one answers in fixture mode when no model is connected.
+- `shared/` is the logic both sides run: the engine, the paths, the guards, the Meta clients and the agents.
+- The engine is deterministic: the same path always gives the same numbers, so tests can pin them.
+
+## Quick start
+
+You need Node.js 20 or later (CI uses 24).
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open http://localhost:5173. The dev server also serves `/api/*` from the same handlers Vercel runs, so you don't need
-the Vercel CLI.
-
-With no settings, the app runs in **demo mode**: it reads only the demo story, and the mic returns the demo text. This
-mode makes no network calls.
+Open http://localhost:5173. The dev server serves `/api/*` from the same handlers that run on Vercel, so you do not
+need the Vercel CLI. With no settings, the app runs in **demo mode**: it reads only the demo story, uses canned replies,
+and makes no network calls.
 
 ### Connecting the Meta models (optional)
 
-Copy `.env.example` to `.env.local` and fill it in. Never commit `.env.local`: the repo is public.
+Copy `.env.example` to `.env.local` and fill it in. `.env.local` is ignored by git; never commit it.
 
 | Variable | What it does |
 | --- | --- |
 | `META_API_KEY` | Your Meta Model API key. |
-| `META_MODEL_ENABLED` | `true` lets intake read any story with the model. Off by default. |
-| `META_VOICE_ENABLED` | `true` turns on Meta speech-to-text for **Speak instead**. Off by default. |
-| `META_MODELS`, `META_ASR_MODEL`, `META_IMAGE_MODEL`, `META_API_BASE_URL` | Optional overrides. The defaults live in `shared/providers/`. |
+| `META_MODEL_ENABLED` | `true` switches on every model feature above. Off by default. |
+| `META_VOICE_ENABLED` | `true` turns on Meta speech-to-text. Off by default. |
+| `META_MODELS`, `META_ASR_MODEL`, `META_IMAGE_MODEL`, `META_API_BASE_URL` | Optional overrides. Defaults are in `shared/providers/meta.ts` and `shared/providers/image.ts`. |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | Optional. Saves decisions to Supabase; without them a decision stays in the browser. |
 
-With `META_MODEL_ENABLED` on, the chat, the room's advisor, and the founder's own room and portrait use the same key.
+With `META_MODEL_ENABLED` on, each full run of the demo makes a handful of model calls (reading the story, the self-check,
+the three futures' answers, the board and the room's portrait). Set a spend limit on the Meta billing page as well.
 
-Every route that spends credits (`intake`, `chat`, `advisor`, `scene`, `transcribe`) refuses browser calls from other
-sites and allows each network address a burst of calls per ten minutes (`shared/http/guard.ts`). The count is kept per function
-instance, so it slows floods but is not a quota. Set a spend limit on the Meta billing page as well.
-
-### Saving decisions (optional)
-
-Without these settings, a decision is kept in the browser only. To save decisions in Supabase, apply
-`supabase/migrations/20261104120000_parallax_sessions.sql` to a project, then set:
-
-| Variable | What it does |
-| --- | --- |
-| `SUPABASE_URL` | The project's API URL. |
-| `SUPABASE_PUBLISHABLE_KEY` | Its publishable key. It is used only on the server, and row-level security limits each request to its own row. |
+To save decisions, apply `supabase/migrations/20261104120000_parallax_sessions.sql` to a project and set the two
+Supabase variables. Row-level security limits each request to its own row.
 
 ## Checks
 
-```bash
-npm run typecheck
+| Command | What it does | Calls a model? |
+| --- | --- | --- |
+| `npm run typecheck` | TypeScript, strict, across the app, the functions and the evaluation. | No |
+| `npm test` | The offline suite. A guard blocks every network request, so a test cannot spend credits. | No |
+| `npm run stress` | The randomised engine and pipeline suites. Set `STRESS_RUNS=2000` to go harder. | No |
+| `npm run verify` | Typecheck, tests and build, in order. This is what CI runs. | No |
+| `npm run smoke -- <url>` | Post-deploy checks against a live URL: the page, the bundle, the security headers, the health endpoint, and that paid routes refuse cross-site calls and empty requests before any model call. | No |
+| `npm run eval:live` | The live evaluation of the Meta features: 13 fixed cases against the real models, each with a pass rule that does not depend on wording. | **Yes** (billed; run with the owner's agreement) |
+
+CI (`.github/workflows/ci.yml`) runs typecheck, tests, build and a production dependency audit on every pull request and
+every push to `main`. CodeQL (`.github/workflows/codeql.yml`) scans the code for security issues.
+
+## Deployment
+
+The app deploys to Vercel from `main`. Vercel builds with `npm run build`, serves `dist/`, and deploys each function under
+`api/` (the Hobby plan allows twelve per deployment; there are eight). `vercel.json` sets the function time limit and the
+security headers. `.vercelignore` keeps test files out of the function bundle.
+
+After each deployment, run `npm run smoke -- <deployment-url>`. To roll back, promote the previous deployment in the
+Vercel dashboard.
+
+Set `META_API_KEY`, `META_MODEL_ENABLED` and the other variables above in the Vercel project's environment settings,
+never in the repository.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for how to report a problem and the design notes behind these points:
+
+- Server keys never reach the browser. The post-deploy smoke test checks the bundle for them.
+- Paid routes refuse calls from other sites and apply a per-visitor burst limit.
+- Saved decisions are private to one browser: the server stores only a hash of the device code.
+- Model replies are checked before they are shown, and a reply that does not match its schema is never shown raw.
+
+## Repository layout
+
+```
+api/            Vercel functions (intake, chat, advisor, scene, transcribe, whatif, session, health)
+shared/         logic both sides run: engine, paths, intake, chat, agent, scene, guards, Meta clients, tests
+web/            the React app (Vite): screens, the 3D courtyard, the reel and the room's advisor
+evals/          the live evaluation of the Meta features, and its results
+scripts/        post-deploy smoke test
+supabase/       database migration for saved decisions
+assets/         the 3D courtyard source and its credits (see assets/CREDITS.md)
+docs/           notes on the scene and immersive room
+.github/        CI, CodeQL, Dependabot, issue and pull request templates, code owners
 ```
 
-```bash
-npm test
-```
+## Built during the Meta Global AI Developer Hackathon
+
+Everything in this repository was built during the hackathon. The first commit (20 Oct, `f4d3239`) holds only a
+`.gitignore`. Product work begins on 29 Oct. To see the timeline, run:
 
 ```bash
-npm run stress
+git log --reverse --format='%h %ad %s' --date=short
 ```
 
-```bash
-npm run build
-```
-
-`npm test` runs offline: a guard blocks real network calls. `npm run stress` runs the randomised suites, and
-`STRESS_RUNS=2000 npm run stress` runs them harder.
-
-## Layout
-
-- `web/`: the React app (Vite).
-- `api/`: Vercel Functions: `intake`, `transcribe`, `chat`, `advisor`, `scene`, `session` and `health`.
-- `supabase/migrations/`: the database table and its row-level security.
-- `shared/`: the logic both sides run:
-  - `intake/`: reading the story, and the checks on it.
-  - `profile/`: the business profile, with defaults from `defaults/za.json`.
-  - `paths/`: the three paths.
-  - `engine/`: the cash simulation.
-  - `guard/`: keeps figures out of model replies.
-  - `chat/`: the future-self agent.
-  - `scene/`: the 3D room's claims, its dressing for each founder's business, and its advisor.
-  - `session/`: saved decisions in Supabase.
-  - `voice/`: WAV handling for speech-to-text.
-  - `http/`: the guard on the routes that spend credits.
-  - `immersive-server/`: offline building blocks for a future room server. Nothing in it is deployed.
-- `web/src/immersive/`: the 3D courtyard, walk mode, the room's advisor and the reel.
-
-Open `/?world` for the 3D demo room on its own. Add `?people` to see the draft characters.
+Team Sonar: Sibusiso (`Sibusiso-K`) wrote the cash engine, the intake and chat routes, the UI flow, and the
+self-check, what-ifs, board meeting, languages, planning agent and the Meta panel. Lethabo (`LethaboMH14`) wrote
+most of the 3D room: walk mode, the room's advisor, the reel and the PNG, and the draft characters. The commit history
+shows each change.
 
 ## Known limits
 
 - The default assumptions in `shared/defaults/za.json` are placeholders, not sourced figures. The app marks each one.
 - There are no accounts. A saved decision belongs to one browser's private code.
-- Without a Meta key, the chat and the room's advisor use scripted answers, and the app says so.
+- Without a Meta key the chat, the board, the planner and the room's advisor use scripted or in-code answers, and the app says so.
+- Replies in isiZulu, isiXhosa, Afrikaans, Sesotho and Setswana have not yet been reviewed by speakers of each language.
+  The screens are in English only.
+- A model call takes about 15 seconds for a story and about 30 seconds for a full board meeting.
+- What-ifs on the futures screen are a preview: they do not change the saved numbers.
 - The characters behind `?people` are drafts, not photoreal.
 - The reel has no sound: the browser's speech voices cannot be recorded.
-- The reel and read aloud were checked only in Chromium-based browsers. Safari, Android voices and real phones are not
-  yet checked.
+- The reel and read-aloud were checked only in Chromium-based browsers. Safari, Android voices and real phones are not yet checked.
 - Limits count by network address, so visitors who share one connection share the limit.
+- In development builds, React reports duplicate-key warnings on first load. The page renders complete; the source is not yet isolated.
 - The draft characters use one CC BY garment, the advisor's overshirt (CC BY 4.0). Its credit is in `assets/CREDITS.md`
   and in the room's caption, which shows whenever the characters do (`?people`).
+
+## Contributing and license
+
+Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md). This project is released under the [MIT license](LICENSE).
