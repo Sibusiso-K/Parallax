@@ -40,8 +40,9 @@ export default function Courtyard(p: CourtyardProps) {
   const [walkNotice, setWalkNotice] = useState('Walk up to an object, or press a place to walk there.');
   const [near, setNear] = useState<ObjectId | null>(null);
   // After a walk the guided camera eases back from where the walker stood, instead of jumping.
-  const hasWalked = useRef(false);
-  if (p.walk) hasWalked.current = true;
+  // Set once a walk has begun, so the guided camera eases back in afterwards. State, not a ref, because it is read during render.
+  const [hasWalked, setHasWalked] = useState(false);
+  if (p.walk && !hasWalked) setHasWalked(true);
   return (
     <>
     <Canvas
@@ -75,7 +76,7 @@ export default function Courtyard(p: CourtyardProps) {
       {p.walk ? (
         <WalkCamera manifest={p.manifest} place={p.place} reduced={p.reduced} onSelect={p.onSelect} onError={p.onWalkError} onNotice={setWalkNotice} onNear={setNear} onPlaceNear={p.onPlaceNear} handle={p.walkHandle} />
       ) : (
-        <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} easeIn={hasWalked.current} />
+        <GuidedCamera manifest={p.manifest} place={p.place} reduced={p.reduced} easeIn={hasWalked} />
       )}
     </Canvas>
     {p.walk && <WalkControls handle={p.walkHandle} notice={walkNotice} near={near} manifest={p.manifest} />}

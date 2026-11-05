@@ -915,8 +915,15 @@ function useModal(trap: boolean, focusFirst: boolean, target?: React.RefObject<H
 
 function EditField({ session, pathId, role, label, onApply, note }: { session: Session; pathId: PathLetter; role: 'equipment' | 'contract' | 'direct'; label: string; onApply: (p: PathLetter, role: 'equipment' | 'contract' | 'direct', v: number) => void; note: string }) {
   const line = session.paths[pathId].path.assumptions.find((x) => x.role === role && x.kind === (role === 'contract' ? 'income' : 'cost'));
-  const [v, setV] = useState(line ? String(line.base) : '');
-  useEffect(() => setV(line ? String(line.base) : ''), [line?.id, line?.base]);
+  const base = line ? String(line.base) : '';
+  const key = `${line?.id ?? ''}|${base}`;
+  const [v, setV] = useState(base);
+  // When the line changes (after an edit elsewhere), the box shows its new value. Done during render, not in an effect.
+  const [shownKey, setShownKey] = useState(key);
+  if (shownKey !== key) {
+    setShownKey(key);
+    setV(base);
+  }
   if (!line) return <p className="muted">This path has no such line.</p>;
   return (
     <form className="field" onSubmit={(e) => { e.preventDefault(); const t = v.trim(); onApply(pathId, role, /^\d{1,7}$/.test(t) ? Number(t) : Number.NaN); }}>
@@ -1020,6 +1027,8 @@ function EvidenceDrawer({ claim, session, onClose }: { claim: ResolvedClaim; ses
 }
 
 function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: Session; viewed: string[]; memo: Memo; setMemo: (m: Memo) => void; onClose: () => void }) {
+  // The date is taken once, when the memo opens, rather than on every render.
+  const [generated] = useState(() => new Date().toLocaleDateString('en-ZA'));
   const lines = useMemo(() => evidenceAppendix(session, viewed), [session, viewed]);
   useModal(true, true);
   const set = (p: Partial<Memo>) => setMemo({ ...memo, ...p });
@@ -1051,7 +1060,7 @@ function MemoSheet({ session, viewed, memo, setMemo, onClose }: { session: Sessi
           </tbody>
         </table>
         <p className="qual">After a first shortfall the projection continues; the engine does not model whether the business keeps trading or finds funding.</p>
-        <p className="muted small">{memoFooter(session)} Generated {new Date().toLocaleDateString('en-ZA')}.</p>
+        <p className="muted small">{memoFooter(session)} Generated {generated}.</p>
         <div className="no-print memo__actions">
           <button className="btn" onClick={() => window.print()}>Print or save as PDF</button>
           <span className="muted small">Your words stay in this browser tab until you print or close it. Nothing is saved to a server.</span>
