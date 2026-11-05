@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-05T00:27:46.263Z",
+  "model": "muse-spark-1.3",
+  "rows": [
+    {
+      "feature": "Future self + guard",
+      "case": "Walk me through how cash moved: where was the lowest point, and where did it end at month 36?",
+      "pass": true,
+      "detail": "states 2 of 2 asked figures; 0 not from the engine; 2 amounts; guard: substituted, substituted, substituted",
+      "ms": 11904
+    },
+    {
+      "feature": "Future self + guard",
+      "case": "When was cash tightest for you, how much was left at that point, and what was cash at month 36?",
+      "pass": true,
+      "detail": "states 2 of 2 asked figures; 0 not from the engine; 2 amounts; guard: substituted, substituted, substituted",
+      "ms": 8718
+    },
+    {
+      "feature": "Future self + guard",
+      "case": "What were the cash figures at month 12 and at month 36 in the likely case?",
+      "pass": true,
+      "detail": "states 2 of 2 asked figures; 0 not from the engine; 2 amounts; guard: substituted, substituted",
+      "ms": 10103
+    }
+  ]
+}
