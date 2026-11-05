@@ -8,6 +8,7 @@ export interface VoiceTransport {
   synthesize(text: string, signal: AbortSignal): Promise<unknown>;
 }
 function safeText(text: unknown): text is string {
+  // oxlint-disable-next-line no-control-regex -- a sanitiser: it removes control characters from provider text on purpose
   return typeof text === 'string' && text.trim().length > 0 && text.length <= 4000 && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/u.test(text);
 }
 export function createVoiceBoundary(transport: VoiceTransport): { stt: SttAdapter; tts: TtsAdapter } {

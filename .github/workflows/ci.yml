@@ -30,6 +30,8 @@ jobs:
           cache: npm
       - name: Install (exact versions from the lockfile)
         run: npm ci --no-audit --no-fund
+      - name: Lint (errors fail the build; warnings are reported)
+        run: npm run lint
       - name: Typecheck
         run: npm run typecheck
       - name: Test (offline)

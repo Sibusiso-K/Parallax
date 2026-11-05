@@ -57,6 +57,7 @@ async function parseJson(request: Request, signal: AbortSignal): Promise<unknown
   return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
 }
 function validText(value: string): boolean {
+  // oxlint-disable-next-line no-control-regex -- a sanitiser: it removes control characters from request text on purpose
   return value.length > 0 && value.length <= 4000 && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/u.test(value);
 }
 async function deadline<T>(request: Request, ms: number, task: (signal: AbortSignal) => Promise<T>): Promise<T> {
