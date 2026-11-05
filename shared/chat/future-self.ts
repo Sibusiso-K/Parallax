@@ -3,6 +3,7 @@ import { figureTable } from '../engine/analysis.js';
 import type { PathInput } from '../engine/simulate.js';
 import { guardSentences, type Check } from '../guard/figures.js';
 import { chatJson, type Deps, type MetaConfig } from '../providers/meta.js';
+import { LANGUAGE_CODES, replyInLine, type LanguageCode } from './languages.js';
 
 // The future-self chat (F9, F10): the founder questions the person they would be 36 months down one path.
 // Muse Spark writes the words; the engine owns every number. The model may only name a figure by its key, as a
@@ -40,6 +41,7 @@ export const chatRequest = z.object({
       decision: z.string().max(300).optional(),
       goals: z.array(z.string().max(60)).max(6).optional(),
       story: z.string().max(4000).optional(),
+      language: z.enum(LANGUAGE_CODES as [string, ...string[]]).optional(),
     })
     .default({}),
   history: z.array(z.object({ role: z.enum(['user', 'self']), text: z.string().max(2000) })).max(12).default([]),
@@ -85,10 +87,14 @@ function describe(key: string, pathId: string, labels: Map<string, string>): str
 export function buildPrompt(req: ChatRequest, table: Record<string, number>): { system: string; user: string } {
   const { path, context: c } = req;
   const labels = new Map(path.assumptions.map((a) => [a.id, a.label]));
+  // When the lowest point is still above the starting cash, cash never dipped: say so, or the model calls a rise a dip
+  // ("dipping toward R121,500" from R120,000, seen in a live test on 4 Nov).
+  const start = table[`${path.id}.start`];
+  const neverDipped = (key: string) => /\.lowest\.(likely|bad)$/.test(key) && start !== undefined && (table[key] ?? -Infinity) >= start;
   const figures = Object.keys(table)
     .map((key) => [key, describe(key, path.id, labels)] as const)
     .filter((e): e is readonly [string, string] => e[1] !== null)
-    .map(([key, what]) => `{{fig:${key}}}: ${what}`);
+    .map(([key, what]) => `{{fig:${key}}}: ${what}${neverDipped(key) ? ' (cash never fell below where it started on this case; do not call this a dip)' : ''}`);
   const business = c.business?.trim() || 'the business';
   const system = [
     `You are the founder of ${business}${c.location ? ` in ${c.location}` : ''}, speaking 36 months from now. Three years ago you faced this decision: "${c.decision?.trim() || 'a big business decision'}". You chose path ${path.letter}: "${path.name}". ${path.summary}`,
@@ -110,6 +116,7 @@ export function buildPrompt(req: ChatRequest, table: Record<string, number>): { 
     'ASSUMPTIONS on your path (id: what it is, money in or out):',
     ...path.assumptions.map((a) => `${a.id}: ${a.label} (${a.kind === 'income' ? 'money in' : 'money out'})`),
     '',
+    replyInLine(c.language as LanguageCode | undefined) || null,
     'Reply as JSON: {"reply": "...", "cites": ["A1"]}.',
   ]
     .filter((line) => line !== null)

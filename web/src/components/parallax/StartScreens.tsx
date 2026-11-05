@@ -7,6 +7,8 @@ import { Listen } from "./Listen";
 import { DecisionStrip, FieldCards, readValue } from "./FieldGrid";
 import { MicButton } from "./MicButton";
 import { StepNav } from "./StepNav";
+import { SelfCheck } from "./SelfCheck";
+import { LANGUAGES, LANGUAGE_CODES, type LanguageCode } from "../../../../shared/chat/languages";
 
 // The run in four lines, for a founder (or a judge) opening Parallax for the first time.
 const HOW_TO: [string, string][] = [
@@ -193,10 +195,26 @@ export function StartScreen() {
 }
 
 export function IntakeScreen() {
-  const { story, set } = useParallax();
+  const { story, set, language } = useParallax();
   const { busy, read } = useReadStory();
   return (
     <section className="screen intake">
+      <div className="lang-pick" role="group" aria-labelledby="lang-label">
+        <span id="lang-label" className="caps">
+          Your language
+        </span>
+        {LANGUAGE_CODES.map((code: LanguageCode) => (
+          <button key={code} type="button" className="chip" aria-pressed={language === code} onClick={() => set({ language: code })}>
+            {LANGUAGES[code]}
+          </button>
+        ))}
+        {language !== "en" && (
+          <p className="hint lang-note">
+            Write your story in {LANGUAGES[language]} if you like. Future you, the board and the moderator will reply in {LANGUAGES[language]}. The
+            screens stay in English, and every figure still comes from code.
+          </p>
+        )}
+      </div>
       <div className="pagehead">
         <div className="eyebrow">Tell</div>
         <h1>What are you deciding?</h1>
@@ -352,6 +370,7 @@ export function HeardScreen() {
         <>
           <DecisionStrip />
           <FieldCards />
+          <SelfCheck />
           <p className="notice small">
             <Src kind="placeholder" /> Defaults are estimates, not South African business averages. Review cost assumptions under Tools.
             Setback sizes are fixed rehearsal assumptions.

@@ -1,13 +1,13 @@
 # Immersive Explore: implementation status
 
-Execution pack: `C:\Users\USER\Desktop\Parallax\docs\immersive\execution-v1` (planning repo, untracked docs).
+Execution pack: kept in the team's planning workspace, not in this repository.
 Evidence ledger: `progress.json` in that pack. This file records what the implementation checkout actually contains.
 
 ## Phase 0: integration base (verified 2 Nov 2026)
 
 | Item | Value |
 |---|---|
-| Implementation checkout | `C:\Users\USER\Desktop\Parallax-photoreal` (git worktree of `Desktop\Parallax\.git`) |
+| Implementation checkout | a local git worktree of this repository |
 | Branch | `codex/photoreal-world` (at the time of this phase: local only. Pushed since; see the 4 Nov section) |
 | Base | `1c255ea` = `origin/feat/ui-marketplace-style` (Sibusiso-K, 2 Nov 13:52) |
 | World work carried | merge of `feat/immersive-world` @ `900e6ec` (LethaboMH14, 12 commits incl. figure guard) |

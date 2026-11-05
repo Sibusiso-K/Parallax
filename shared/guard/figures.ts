@@ -171,6 +171,7 @@ function guardInner(input: string, ctx: GuardContext): GuardResult {
   });
 
   // 4. Put the engine's values back.
+  // oxlint-disable-next-line no-control-regex -- a sanitiser: it removes control characters from model text on purpose
   text = text.replace(/\u0000(\d+)\u0000/g, (_m, i: string) => resolved[Number(i)] ?? SEE_CHART);
   return { text: text.replace(/[ \t]{2,}/g, ' ').trim(), clean, withheld: false, checks };
 }

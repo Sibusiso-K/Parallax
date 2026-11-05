@@ -316,6 +316,10 @@ export interface ChatContext {
   decision?: string;
   goals?: string[];
   story?: string;
+  /** Reply in this language (see shared/chat/languages.ts). English when absent. */
+  language?: string;
+  /** The kind of decision, so demo mode picks the right scripts even after a reload. Not sent to the server. */
+  decisionType?: string;
 }
 
 type ModelReply = { ok?: boolean; mode?: string; text?: unknown; citations?: unknown; clean?: unknown; checks?: unknown; model?: unknown; error?: unknown };
@@ -347,7 +351,7 @@ async function* chat(
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         path: { id: path.id, letter: path.letter, name: path.name, summary: path.summary, startingCash: path.startingCash, assumptions: path.assumptions },
-        context,
+        context: { ...context, decisionType: undefined },
         history: history.filter((h) => h.text.trim()).slice(-8).map((h) => ({ role: h.role, text: h.text.slice(0, 2000) })),
         message: message.slice(0, 1000),
       }),
@@ -386,14 +390,18 @@ async function* chat(
     yield { type: "done", trace: { model: "none (the answer failed)", checks: [] } };
     return;
   }
-  yield* scripted(path.id);
+  yield* scripted(path, context.decisionType);
 }
 
-async function* scripted(pathId: string): AsyncIterable<ChatChunk> {
-  const path = lastPaths.get(pathId);
-  const letter = path?.letter ?? "A";
-  const list = REPLIES[lastDecision][letter];
-  const key = `${lastDecision}.${letter}`;
+// Takes the path itself: after a reload the paths come back from the saved decision, not from paths(), so looking
+// them up in lastPaths gave every future path A's script.
+async function* scripted(given: PathCard, decisionType?: string): AsyncIterable<ChatChunk> {
+  // After a reload paths() has not run, so lastDecision would still be its default; the saved decision says which.
+  const decision: DecisionType = decisionType && decisionType in REPLIES ? (decisionType as DecisionType) : lastDecision;
+  const path = lastPaths.get(given.id) ?? given;
+  const letter = path.letter;
+  const list = REPLIES[decision][letter];
+  const key = `${decision}.${letter}`;
   const i = counters[key] ?? 0;
   counters[key] = i + 1;
   const reply = list[i % list.length]!;

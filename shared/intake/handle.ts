@@ -40,9 +40,14 @@ export async function handleIntake(body: unknown, extract?: Extractor): Promise<
   if (extract) {
     try {
       const fromModel = extraction.safeParse(await extract(text));
-      if (fromModel.success) {
+      // A reply can match the schema and still say nothing (every field optional). That is not a reading: say so, and
+      // do not label the answer as the model's.
+      const filled = fromModel.success ? Object.values(fromModel.data).filter((v) => v !== undefined && v !== null).length : 0;
+      if (fromModel.success && filled > 0) {
         raw = fromModel.data;
         mode = 'model';
+      } else if (fromModel.success) {
+        notice = "The model found nothing to read in your text. Please fill in the form.";
       } else {
         notice = "We couldn't read everything. Please fill in the form.";
       }

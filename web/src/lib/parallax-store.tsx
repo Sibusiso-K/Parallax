@@ -5,6 +5,7 @@ import { eraseSaved, loadSaved, saveState } from "./session";
 import { buildWorld, type SceneDressing, type WorldContext } from "./world";
 import { applyPatch } from "./store-patch";
 import type { FieldKey, IntakeResponse, PathCard, Profile, Simulation } from "./types";
+import type { LanguageCode } from "../../../shared/chat/languages";
 
 export type Letter = "A" | "B" | "C";
 export type Step =
@@ -77,6 +78,8 @@ interface State {
   scene: SceneDressing | null;
   /** This founder's portrait from Muse Image, shown for all three paths (null: the path's own picture or silhouette). */
   portrait: string | null;
+  /** The language the founder writes in and hears replies in. The screens stay in English. */
+  language: LanguageCode;
 }
 
 const initial: State = {
@@ -107,6 +110,7 @@ const initial: State = {
   announce: "",
   scene: null,
   portrait: null,
+  language: "en",
 };
 
 type Ctx = State & {
@@ -159,7 +163,7 @@ const fresh = (): State => ({ ...initial, sessionId: `decision-${++decisionSeq}`
 const SAVED_KEYS = [
   "step", "agreed", "story", "intake", "fields", "quotes", "assumed", "missing", "followed", "paths", "active", "chats",
   "comfort", "bothering", "pinned", "chosen", "decision", "reasons", "questions", "sessionId", "revision", "explore",
-  "scene", "portrait",
+  "scene", "portrait", "language",
 ] as const satisfies readonly (keyof State)[];
 const STEPS: readonly Step[] = ["roadmap","start", "intake", "heard", "generating", "profile", "paths", "chat", "explore", "compare", "comfort", "summary"];
 const NEEDS_PATHS: readonly Step[] = ["roadmap","paths", "chat", "explore", "compare", "comfort", "summary"];
@@ -206,7 +210,10 @@ export interface Resume {
 export function ParallaxProvider({ children }: { children: ReactNode }) {
   const [s, setS] = useState<State>(fresh);
   const ref = useRef(s);
-  ref.current = s;
+  // The ref follows the state after each render commits, not during render. Event handlers and the page-close flush read it.
+  useEffect(() => {
+    ref.current = s;
+  }, [s]);
   // The saved decision, once loaded: offered on the start screen, never applied without the founder's say-so.
   const savedRef = useRef<State | null>(null);
   const [resume, setResume] = useState<Resume | null>(null);
@@ -215,9 +222,9 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
   const [offering, setOffering] = useState(false);
 
   useEffect(() => {
-    let live = true;
+    const token = { live: true };
     void loadSaved().then((raw) => {
-      if (!live) return;
+      if (!token.live) return;
       const restored = restoreFrom(raw);
       savedRef.current = restored;
       if (restored) {
@@ -232,7 +239,7 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
       setLoaded(true);
     });
     return () => {
-      live = false;
+      token.live = false;
     };
   }, []);
 
@@ -331,6 +338,8 @@ export function ParallaxProvider({ children }: { children: ReactNode }) {
         decision: str(f.decision),
         goals: Array.isArray(f.goals) ? f.goals.map(String) : str(f.goals)?.split(/,\s*/),
         story: str(cur.story)?.slice(0, 4000),
+        language: cur.language !== "en" ? cur.language : undefined,
+        decisionType: str(f.decisionType),
       };
       const history = cur.chats[letter].filter((m) => !m.streaming).map((m) => ({ role: m.role, text: m.text }));
       const user: Msg = { id: nid(), role: "user", text, citations: [], askedFrom };

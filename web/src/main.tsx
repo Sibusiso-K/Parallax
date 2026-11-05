@@ -16,6 +16,10 @@ import { ExploreScreen } from "@/components/parallax/ExploreScreen";
 import { Splash } from "@/components/parallax/Splash";
 import { RoadmapScreen } from "@/components/parallax/RoadmapScreen";
 import { RoadmapStrip } from "@/components/parallax/RoadmapStrip";
+import { watchMetaCalls } from "@/lib/meta-log";
+
+// Every call to a route that can use Meta's models is noted for the "Meta inside" panel (metadata only).
+watchMetaCalls();
 
 const SCREENS = {
   start: StartScreen,

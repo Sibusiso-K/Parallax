@@ -1,4 +1,4 @@
-// A guard for the routes that spend Meta credits: intake, chat, advisor, scene and transcribe. It runs only when a model
+// A guard for the routes that spend Meta credits: intake, chat, advisor, scene, transcribe and whatif. It runs only when a model
 // is connected, so demo mode and the tests are unaffected. Two checks:
 //   1. A browser call from another site is refused. Browsers always send Origin on a POST, and it must match this host.
 //      A script outside a browser can leave Origin out, so this stops other sites, not determined callers.
@@ -6,12 +6,12 @@
 //      the memory of one warm function instance, so it is a brake on loops and floods, not a global quota.
 // The real ceiling on spend is the spend limit on the Meta billing page.
 
-export type PaidRoute = 'intake' | 'chat' | 'advisor' | 'scene' | 'transcribe' | 'swarm' | 'world' | 'document';
+export type PaidRoute = 'intake' | 'chat' | 'advisor' | 'scene' | 'transcribe' | 'whatif' | 'swarm' | 'world' | 'document';
 
 export const WINDOW_MS = 10 * 60_000;
 
 /** Calls per visitor per route per window. Generous for one founder; a scene is the dearest call, so it gets the fewest. */
-export const LIMITS: Readonly<Record<PaidRoute, number>> = { intake: 20, scene: 10, chat: 40, advisor: 40, transcribe: 15, swarm: 12, world: 60, document: 12 };
+export const LIMITS: Readonly<Record<PaidRoute, number>> = { intake: 20, scene: 10, chat: 40, advisor: 40, transcribe: 15, whatif: 40, swarm: 12, world: 60, document: 12 };
 
 const MAX_TRACKED = 5_000;
 const hits = new Map<string, { start: number; count: number }>();

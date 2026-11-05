@@ -7,6 +7,7 @@ import { speak, setReadAloud, useSpeech } from "@/lib/speech";
 import { Listen } from "./Listen";
 import { CashChart } from "./charts";
 import { StepNav } from "./StepNav";
+import { BoardMeeting } from "./BoardMeeting";
 
 const PROMPTS = ["When did cash get tightest?", "What would you warn me about?", "Was it worth it?"];
 const end = (a: number[]) => a[a.length - 1] ?? 0;
@@ -15,8 +16,8 @@ const end = (a: number[]) => a[a.length - 1] ?? 0;
 export function TraceList({ checks }: { checks: { name: string; ok: boolean | null }[] }) {
   return (
     <ul>
-      {checks.filter((c) => typeof c.ok === "boolean").map((c) => (
-        <li key={c.name}>
+      {checks.filter((c) => typeof c.ok === "boolean").map((c, i) => (
+        <li key={`${i}-${c.name}`}>
           {c.ok ? "✓" : "✗"} {c.name}
         </li>
       ))}
@@ -62,9 +63,13 @@ export function ChatScreen() {
     if (speech.readAloud && latest) speak(latest.id, latest.text);
   }, [chats, speech.readAloud]);
 
+  // The last message's text is read into a variable first, so the dependency list is a plain value the rule can check.
+  const lastText = msgs[msgs.length - 1]?.text;
   useEffect(() => {
     list.current?.lastElementChild?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [msgs.length, msgs[msgs.length - 1]?.text]);
+    // The scroll runs when a message arrives or the last one changes; those are the dependencies on purpose.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
+  }, [msgs.length, lastText]);
 
   if (!path || !figures) return <NoPaths />;
 
@@ -78,6 +83,8 @@ export function ChatScreen() {
 
   return (
     <>
+    <h1 className="sr-only">Ask future you</h1>
+    <BoardMeeting />
     <div className="row pagecols">
       <section className="panel chat">
         <header className="chat-head">
@@ -132,8 +139,8 @@ export function ChatScreen() {
                 {m.citations.length > 0 && (
                   <div className="based">
                     <span className="caps">Based on</span>
-                    {m.citations.map((c) => (
-                      <button key={c.id} type="button" className="chip" onClick={() => set({ panel: { letter: active, rowId: c.id } })}>
+                    {m.citations.map((c, ci) => (
+                      <button key={`${ci}-${c.id}`} type="button" className="chip" onClick={() => set({ panel: { letter: active, rowId: c.id } })}>
                         {c.label}
                       </button>
                     ))}

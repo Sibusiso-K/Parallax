@@ -1,4 +1,5 @@
 import { answerAsFutureSelf, chatRequest } from '../shared/chat/future-self.js';
+import { boardRequest, moderateBoard } from '../shared/chat/board.js';
 import { guardPaidRoute } from '../shared/http/guard.js';
 import { ModelError, modelConfigOrNull } from '../shared/providers/meta.js';
 
@@ -22,6 +23,17 @@ export async function POST(request: Request): Promise<Response> {
     body = JSON.parse(text);
   } catch {
     return json({ ok: false, error: 'Ask your future self something.' }, 400);
+  }
+  // The board meeting's moderator shares this route (and its guard), so it adds no function to the deployment.
+  if (body && typeof body === 'object' && (body as { kind?: unknown }).kind === 'board') {
+    const board = boardRequest.safeParse(body);
+    if (!board.success) return json({ ok: false, error: board.error.issues[0]?.message ?? 'The board could not be read.' }, 400);
+    try {
+      return json({ ok: true, mode: 'model', ...(await moderateBoard(cfg, board.data)) }, 200);
+    } catch (err) {
+      console.warn(JSON.stringify({ event: 'board.failed', kind: err instanceof ModelError ? err.kind : 'unknown' }));
+      return json({ ok: false, error: "The moderator couldn't sum up just now." }, 502);
+    }
   }
   const req = chatRequest.safeParse(body);
   if (!req.success) {
